@@ -30,8 +30,15 @@ trap 'rm -rf "$stage" "$from"' EXIT
 cp -r "$src"/mycelium-* "$stage/"
 # Development dependencies (e.g. Hyperdrive, for unit tests) are not
 # deployed: pruned from the staged copy, offline.
+# Native addons keep only this platform's prebuilds (rocksdb-native alone
+# carries some 180 MB for thirteen platforms).
+platform=$(node -p 'process.platform + "-" + process.arch')
 for m in "$stage"/mycelium-*; do
-  [ -d "$m/node_modules" ] && (cd "$m" && npm prune -q --omit=dev --offline --no-audit --no-fund >/dev/null)
+  [ -d "$m/node_modules" ] || continue
+  (cd "$m" && npm prune -q --omit=dev --offline --no-audit --no-fund >/dev/null)
+  find "$m/node_modules" -type d -name prebuilds | while read -r p; do
+    for b in "$p"/*; do [ "$(basename "$b")" = "$platform" ] || rm -rf "$b"; done
+  done
 done
 cp "$from/runner.js" "$from/execute.js" "$from/report.js" "$from/hook.sh" "$stage/"
 cp "$from/package.json" "$stage/machinery.json"
