@@ -1,0 +1,8 @@
+{"event":"start","code":"/bootstrap/mycelium-node/cli.js","args":["seed","/data/store","--host=172.30.0.2","--bundle=/in/packages.bundle"],"ms":0}
+{"event":"dht","port":49737,"ms":8}
+{"event":"imported","branches":1,"objects":2199,"ms":10962}
+{"event":"serving","key":"a1a26a3e845f3310786221e8ada7338019f6ae04854a99172666cc710ae78737","ms":10962,"metrics":{"connections":0,"bytesReceived":0,"bytesSent":0,"version":2203,"db":{"length":2203,"contiguous":2203,"bytes":670368},"blobs":{"length":2473,"contiguous":2473,"bytes":20613070}}}
+{"event":"peer","ms":13112,"peers":1}
+{"event":"peer","ms":20404,"peers":1}
+{"event":"peer","ms":21839,"peers":2}
+{"event":"peer","ms":29911,"peers":2}

@@ -3,14 +3,16 @@
 # modules a node uses (mycelium-uri, mycelium-xpath, mycelium-git,
 # mycelium-node) as plain folders, without development dependencies, and
 # native addons with only the linux-x64 prebuilds (the containers').
-#   cluster/stage.sh <dir>
+#   cluster/stage.sh <dir> [module]...   (default: the four above)
 # Run from the dev repository's root. Prints the staged size.
 set -eu
 dir=$1
+shift
+[ $# -gt 0 ] || set -- mycelium-uri mycelium-xpath mycelium-git mycelium-node
 src=$(pwd)
 rm -rf "$dir"
 mkdir -p "$dir"
-for m in mycelium-uri mycelium-xpath mycelium-git mycelium-node; do
+for m in "$@"; do
   cp -r "$src/$m" "$dir/"
   rm -rf "$dir/$m/test" "$dir/$m/fixture" "$dir/$m/fixture.git"
   [ -d "$dir/$m/node_modules" ] || continue

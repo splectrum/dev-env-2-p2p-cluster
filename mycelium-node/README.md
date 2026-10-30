@@ -23,6 +23,14 @@ joiner.metrics()   // connections, bytes received and sent, drive sizes
   node at a fixed port plus a second persistent node. A cluster does not
   need the public DHT, and here it cannot reach it (no outbound UDP).
 
+- `materialise(backend, layout, dir)` (pkg/materialise): a deployment's
+  layout (each folder of an installed tree linked to a package instance, a
+  tree oid in the package repository) written out as plain folders. Only
+  the layout's trees are read, so on a replica only their blocks are
+  loaded; a tree's entries are read in parallel, since each read is a
+  round trip to a peer. `readDeployment(backend, name)` reads
+  `deployments/<name>.json` from the package repository's main.
+
 Two findings from probing, both in `lib/node.js`:
 
 - A DHT of one node keeps no findable announcements: with one persistent
