@@ -46,7 +46,7 @@ const environment = {
 const kinds = ['Seed', 'Join', 'Status']
 function plan (pending) {
   return pending.map(({ name, text }) => {
-    const m = text.match(/^(Seed|Join|Status):\s*(\S+)\s*$/m)
+    const m = text.match(/^(Seed|Join|Status):[ \t]*(\S+)[ \t]*$/m)
     return { name, kind: m && m[1], arg: m && m[2], line: m && m[0] }
   }).sort((a, b) => (kinds.indexOf(a.kind) - kinds.indexOf(b.kind)) || a.name.localeCompare(b.name))
 }
