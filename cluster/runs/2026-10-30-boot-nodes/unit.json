@@ -1,0 +1,11 @@
+{
+  "invocation": "cluster/boot-nodes.sh <bootstrap-repo> packages.bundle <record> 2",
+  "dev": "a67e5f9803e784d5c5527d9d8e40598d4024dea8",
+  "bootstrap": "a71cb894a48154b05f596eaae9e1891ec91af811",
+  "packages": { "bytes": 13415319, "sha256": "77d92c168c0c1c5f39443bf81b41b8de7aababf6fff5cdd18af0c68986768b13",
+    "refs": ["refs/heads/main b87d8e37080a0d7f6f451b2d1d260821f7ec3752"] },
+  "image": "bare-base:1.36.0",
+  "docker": "29.9.2",
+  "key": "a1a26a3e845f3310786221e8ada7338019f6ae04854a99172666cc710ae78737",
+  "ms": 37585
+}

@@ -47,7 +47,88 @@ multi-ref atomicity are needed.
   the seed over Hyperswarm and reads the repository from its replica,
   lazily. Records in `cluster/runs/`.
 
-## Next
+## 3. The package repository on Hyperdrive — done, thin path
 
-3. The package repository on Hyperdrive. 4. The seed node and the
-bootstrap repository. 5. The deployment repository.
+- `cluster/pkg/build.sh`: six modules, 308 installed folders, 185 package
+  instances (each stored once, by tree oid): 2,199 objects, 29 MB loose,
+  a 13.4 MB bundle. The seed takes the bundle into its drive in 11 s.
+- A deployment is a layout of links: folder to instance (tree oid) in the
+  package repository, whose drive key and commit name it. A node reads
+  only the trees its layout names (`materialise`, mycelium-node).
+- Our modules arrive by hand (staged from the dev tree); third-party
+  packages come in once, at the boundary, from npm's install, with
+  linux-x64 prebuilds only.
+- Laziness: on the dev repository's main (13 MB bundle) a node reading the
+  root tree received 25 KB. A node's own modules are nearly the whole
+  package repository today, so a booting node receives 22 to 23 MB of it;
+  the gain will show once the package repository holds more than one
+  node's needs.
+
+## 4. The seed node — done
+
+- `cluster/bootstrap`: a self-contained bootstrap repository (94 MB
+  checkout, mostly native addons). The base has Bare only.
+- The seed starts from it with the package repository's bundle (the very
+  first repository, from the outside world, once). A joining node needs
+  only the bootstrap checkout and the seed's key: it obtains the package
+  repository, materialises four modules (2,575 files, 68 MB written, 22 MB
+  received, 7 s) and starts from them. Record: `cluster/runs/
+  2026-10-30-boot-nodes` (a seed and two joining nodes).
+
+## 5. The deployment repository — done, thin path
+
+- `cluster/deployment`: a repository seeded with requests (Seed, Join,
+  Status), executed with layer/request's flow; each response records a
+  node or the cluster's state, with its unit (states by commit,
+  environment: dev commit, bootstrap commit, packages hash). A later
+  status request came in with request intake and was executed by a second
+  kick: the seed had sent 32 MB to the two joiners. Kept:
+  `cluster/runs/2026-10-30-deployment.bundle` (10 KB).
+- Its capability/default holds a link (dev commit and path), not a copy:
+  the execution code runs from the dev repository at that commit.
+
+## Done, against the request
+
+1. Contract suite and test-run model on a persisted Hyperdrive under Bare,
+   through p2p-git's own adapter: yes (r1). The test-run instances
+   themselves are still native git repositories; their requests exercise
+   the Hyperdrive engine.
+2. Two Bare nodes in containers, Hyperswarm, a replicated repository: yes.
+3. A node from a plain Bare base through a bootstrap repository, taking
+   its modules from the package repository, loaded lazily: yes.
+4. A deployment repository brings up a seed and joining nodes and records
+   them: yes (one seed, two joining nodes).
+5. Every step recorded and rerunnable, metrics at the boundary, kept as
+   small runs: the records in `cluster/runs/` and `test-runs/`. The package
+   and bootstrap repositories are not kept: they are rebuilt from the dev
+   commit, and the records carry their commits and hashes.
+
+## First observations on p2p/boundary
+
+- The outside world comes in once, as bundles: the package repository
+  (built with npm and native git on the host) and the first repository on
+  a node. Inside, nodes only replicate and read.
+- Docker is the outside world's tool: the deployment repository runs on
+  the host. Inside the cluster nothing needs it.
+- The public DHT is unreachable here; a cluster brings its own (two
+  persistent nodes at least). Peers are reachable directly, so no
+  holepunching.
+
+## Deviations and open points
+
+- Process: four commits (`21b91bf` to `eee62cc`) went onto `main`
+  directly, not through `execute/main`, and were pushed; without
+  force-push they stay. `execute/main` was brought level with `main`, and
+  every later change went through it.
+- mycelium-node has no product repository yet (a new module's repository
+  is created by the human): proposed `pear-full-square/mycelium-node`.
+- Hypercore decisions (per-package cores or groups, batching): one drive
+  holds the whole package repository now. A replica's first read costs
+  about 100 ms; materialising reads some 2,500 files in parallel. Numbers
+  for one core per package are still to be taken.
+- Kept runs are not yet small: r1 is 13 MB, because instances carry their
+  modules' node_modules. Next: test-run instances holding links into the
+  package repository.
+- mycelium-node has no command set for the test-run model (its operations
+  are long-running processes); its tests are `npm test` and the cluster
+  records.
