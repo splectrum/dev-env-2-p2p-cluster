@@ -1,0 +1,6 @@
+{"event":"dht","port":49737,"ms":8}
+{"event":"imported","branches":1,"objects":195,"ms":1645}
+{"event":"serving","key":"94954a68eb0b9a1d8a326d2c3d0b7ce6763d4e02d651b7639b61346c89bbe80d","ms":1645,"metrics":{"connections":0,"bytesReceived":0,"bytesSent":0,"version":199,"db":{"length":199,"contiguous":199,"bytes":47966},"blobs":{"length":396,"contiguous":396,"bytes":13199290}}}
+{"event":"peer","ms":3382,"peers":1}
+{"event":"peer","ms":5043,"peers":1}
+{"event":"peer","ms":6674,"peers":1}

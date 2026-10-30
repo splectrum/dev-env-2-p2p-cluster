@@ -1,0 +1,11 @@
+{
+  "invocation": "cluster/two-nodes.sh dev-main.bundle <record> /main/* /main/mycelium-git/readme.md /main/*/*",
+  "dev": "c0a88f64661804c33593a75889ab59655ed29290",
+  "bundle": { "name": "dev-main.bundle", "bytes": 13144524, "sha256": "12705b09a6e8f7756ca8d931b046b4b0a37e2837957d897be0606f194ee81422",
+    "refs": ["refs/heads/main c0a88f64661804c33593a75889ab59655ed29290"] },
+  "image": "bare-base:1.36.0",
+  "staged": "75M",
+  "docker": "29.9.2",
+  "key": "94954a68eb0b9a1d8a326d2c3d0b7ce6763d4e02d651b7639b61346c89bbe80d",
+  "ms": 15564
+}

@@ -1,0 +1,11 @@
+{
+  "invocation": "cluster/two-nodes.sh fixture.bundle <record> /main/* /main/docs/a",
+  "dev": "c0a88f64661804c33593a75889ab59655ed29290",
+  "bundle": { "name": "fixture.bundle", "bytes": 1166, "sha256": "169856e82c2916c2f866a12e5b28487025af368c5f12291e5e273bb199cdd8c8",
+    "refs": ["refs/heads/execute/main 39f4b8e61626d4619a411b9674ea50443f42bd15","refs/heads/main 39f4b8e61626d4619a411b9674ea50443f42bd15","refs/heads/overlay/config 40c73e1135ce40a9a1a309732439491401dde4c8","refs/heads/pending/default 9ebec34ce81fa7f96c94f9e611e6aee22e68259e","HEAD 39f4b8e61626d4619a411b9674ea50443f42bd15"] },
+  "image": "bare-base:1.36.0",
+  "staged": "75M",
+  "docker": "29.9.2",
+  "key": "00279acf8b7255a5d74a86c547e4dc0ad41a986a8b86b41d6c073c1491a3f4e9",
+  "ms": 11562
+}

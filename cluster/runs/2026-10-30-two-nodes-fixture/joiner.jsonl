@@ -1,0 +1,4 @@
+{"event":"replica","key":"00279acf8b7255a5d74a86c547e4dc0ad41a986a8b86b41d6c073c1491a3f4e9","version":23,"ms":83}
+{"result":{"selected":[["/main/README.md",{"type":"blob","oid":"c73a75548372203286bac9fe4010e7b0f9d1e814"}],["/main/docs",{"type":"tree","oid":"a8d705f02f6f3fde0476c946f5f22cc5fb58238c"}],["/main/readme",{"type":"blob","oid":"b6fc4c620b67d95f953a5c1c1230aaab5db5a1b0"}]],"ms":174,"metrics":{"connections":1,"bytesReceived":7328,"bytesSent":2398,"version":23,"db":{"length":23,"contiguous":1,"bytes":4392},"blobs":{"length":22,"contiguous":0,"bytes":1194}}}}
+{"event":"replica","key":"00279acf8b7255a5d74a86c547e4dc0ad41a986a8b86b41d6c073c1491a3f4e9","version":23,"ms":69}
+{"result":{"selected":[["/main/docs/a",{"type":"blob","oid":"8c7e5a667f1b771847fe88c01c3de34413a1b220"}]],"ms":151,"metrics":{"connections":1,"bytesReceived":8775,"bytesSent":2834,"version":23,"db":{"length":23,"contiguous":1,"bytes":4392},"blobs":{"length":22,"contiguous":0,"bytes":1194}}}}
