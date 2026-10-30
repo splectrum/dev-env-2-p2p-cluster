@@ -1,6 +1,6 @@
 {
   "name": "mycelium-node",
-  "id": "75e46b99-49cb-42c5-b29d-bbf128458ef0",
+  "id": "81d993e3-ff8b-4784-94d2-18e2046dedaa",
   "description": "A cluster node: its store on Hyperswarm, replicating",
   "type": "module",
   "exports": "./index.js",
