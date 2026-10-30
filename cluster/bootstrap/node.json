@@ -1,0 +1,4 @@
+{
+  "modules": ["mycelium-uri", "mycelium-xpath", "mycelium-git", "mycelium-node"],
+  "start": "mycelium-node/cli.js"
+}
