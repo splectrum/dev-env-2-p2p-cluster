@@ -49,7 +49,7 @@ t1=$(date +%s%3N)
 cat > "$record/unit.json" <<JSON
 {
   "invocation": "cluster/two-nodes.sh $(basename "$bundle") <record> $*",
-  "dev": "$(git -C "$src" rev-parse HEAD)$( [ -z "$(git -C "$src" status --porcelain)" ] || echo '+uncommitted')",
+  "dev": "$(git -C "$src" rev-parse HEAD)$( [ -z "$(git -C "$src" status --porcelain -- . ':!cluster/runs')" ] || echo '+uncommitted')",
   "bundle": { "name": "$(basename "$bundle")", "bytes": $(wc -c < "$bundle"), "sha256": "$(sha256sum "$bundle" | cut -c1-64)",
     "refs": [$(git bundle list-heads "$bundle" | sed 's/^\(.*\) \(.*\)$/"\2 \1"/' | paste -sd, -)] },
   "image": "bare-base:$(bare --version | sed 's/^v//')",
