@@ -231,6 +231,15 @@ layer implements them.
     and intake), replacing the in-code lookup at the end of an install,
     behind the same contract.
 - mycelium-uri validates entity URIs (their shape).
+- **One addressable data world.** The resource structure (swarm, node,
+  repository) together with our repository URIs (branch, path) gives one
+  URI space from the swarm down to every object it holds:
+  `/<swarm>/<node>/<repo>/<branch>/<path>`. `p2p-rns` resolves the first
+  segments, a repository its branches and paths; replication loads lazily
+  what a URI reaches, so addressing anything in the swarm is cheap.
+  Selection works across all of it (`/<swarm>/*/test-run-*/main/responses/*`).
+  The vision's next layers extend the same space: with AVRO a URI names a
+  typed value, with Kafka topics and partitions are resources in it.
 
 ## Repository-to-repository talk
 
