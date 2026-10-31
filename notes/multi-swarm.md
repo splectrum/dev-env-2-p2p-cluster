@@ -78,3 +78,29 @@ What differs from a node on a host:
 
 Related: `unit/iot` in `splectrum/roadmap-1:capabilities.md`; devices and
 phones are outside this phase.
+
+## Bridging swarms
+
+A node that is a member of two swarms can bridge them. With one URI space
+per swarm, a resource in another swarm is then requested by writing a
+single URI: `/<other-swarm>/<node>/<repo>/<branch>/<path>`.
+
+- **Delegation.** A swarm's `p2p-rns` sees that the first segment names
+  another swarm and refers the lookup to the bridge registered for it (as
+  DNS delegates a zone); the bridge resolves it in the other swarm's
+  `p2p-rns`.
+- **Reads through a relay.** The bridge holds a replica of the resource and
+  serves it in the first swarm. Hypercore verifies every block against
+  the owner's key, so a bridge is trusted for availability only, never for
+  integrity: what arrives is exactly what the owner wrote.
+- **Requests across.** A request for a repository in the other swarm goes
+  through the bridge into that repository's inbox; there the bridge is the
+  writer, flagged external, and the owner's intake applies its policy.
+- **The bridge is a boundary**: what each swarm exposes to the other is a
+  policy (`p2p-replicate`), and audit and metrics are taken there.
+- **Swarm names** must then be unique beyond one swarm: a swarm's key is
+  its identity, its friendly name an alias known to the swarms that
+  bridge to it.
+
+The same shape bridges a swarm and the outside world (hosted git, other
+systems): the bridge is where the boundary is crossed.
