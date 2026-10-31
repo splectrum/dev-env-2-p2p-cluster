@@ -1,7 +1,7 @@
 {
   "name": "test-run",
-  "id": "46ba2e65-5221-43f2-96cd-6dec6c82d35c",
-  "description": "The run machinery: runner.js, execute.js, report.js and the kick (hook.sh)",
+  "id": "dba3214e-36bc-4e22-bd9d-eeb80242850f",
+  "description": "The run machinery: runner.js, execute.js, report.js, instance.js and the kick (hook.sh); instances native or on the p2p layer",
   "type": "module",
   "license": "MIT"
 }

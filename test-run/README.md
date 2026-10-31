@@ -12,7 +12,16 @@ git -C /tmp/runs/r1 show main:responses/report-runs/report.md
 ```
 
 - Instances are bare repositories: no working tree, only objects and refs,
-  reached through requests.
+  reached through requests. An instance is a native bare repository, or
+  (`ENGINE=hyperdrive test-run/seed.sh ...`) a repository on the p2p
+  layer: a folder holding a p2p-store (`store/`) whose repository `repo`
+  (p2p-mrepo) is the instance. `instance.js` opens either. A p2p
+  instance's kick extracts its tree with the p2p layer from the
+  environment (p2p-mrepo where the instance runs: `MREPO_TOOLS`, or the
+  instance's `hooks/tools`), as a native one's uses git, and runs the
+  machinery on Bare (`RUNTIME` overrides). A p2p instance's store is open
+  in one process at a time, so the report is made in the executing
+  process. Since step 3 (machinery `dba3214e-36bc-4e22-bd9d-eeb80242850f`).
 - `seed.sh` creates the instance with `repo/seed` (mycelium-repo), from a
   template it stages: `main` (a readme only), `capability/test`
   (every module, `mycelium-*`, plus `runner.js`, `execute.js` and
