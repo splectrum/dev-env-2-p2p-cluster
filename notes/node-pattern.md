@@ -8,8 +8,9 @@ main documentation. The vision beyond it (several swarm memberships,
 closed-box devices) is in `multi-swarm.md`.
 
 It replaces the shape of what was built first (`mycelium-node`,
-`cluster/bootstrap`, `cluster/deployment`): those stay as probes, the
-evidence behind some of what follows, not as the design.
+`cluster/bootstrap`, `cluster/deployment`, removed in step 1): its records
+stay (`cluster/runs/`), the evidence behind some of what follows, not as
+the design.
 
 The pattern is simple and secure: a plain runtime, every repository on
 Hypercore, everything moved by replication, secrets only in memory.

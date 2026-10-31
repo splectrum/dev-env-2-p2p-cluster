@@ -120,22 +120,14 @@ Adapters, one per engine, each run against the same contract suite
 - `p2pgitBackend(gitdir, { fs })`: p2p-git, the embedded engine:
   isomorphic-git stripped to plumbing (loose objects only, no working
   tree, pluggable fs, for Bare with bare-fs or Hyperdrive). It keeps
-  isomorphic-git's API, so it shares that adapter (`isoStyleBackend`)
-  On a Hyperdrive, through p2p-git's own adapter:
+  isomorphic-git's API, so it shares that adapter (`isoStyleBackend`).
+  p2p-git (`pear-full-square/p2p-git`, at `d7d154d`) brings its own
+  Hyperdrive adapter, so a repository on a Hyperdrive is
   `p2pgitBackend('/', { fs: createFs(drive) })`, with `createFs` from
-  `p2p-git/hyperdrive-fs` (p2p-git at `d7d154d`, which reports folders as
-  folders and adds `readlink` and `symlink`).
-- `openHyperdrive(dir, { key })` (`mycelium-git/hyperdrive`): a node's
-  store, p2p-git on a persisted, Corestore-backed Hyperdrive. The
-  repository is the drive's root; objects and refs are drive entries, so
-  they replicate with the drive. Returns `{ backend, drive, corestore,
-  close }`. The CLI's `--engine=hyperdrive` takes the Corestore folder as
-  the repository, and `import <repo> <from>` brings in a native
-  repository's branches with their history. The contract suite
-  (`test/hyperdrive.test.js`) and the command set
-  (`test/commands-hyperdrive.txt`, `test/commands-bare-hyperdrive.txt`)
-  pass on it, on Node and on Bare. Corestore and Hyperdrive are now
-  dependencies: they are deployed.
+  `p2p-git/hyperdrive-fs`. Opening the drive (its Corestore, its keys) is
+  not this module's concern: mycelium knows nothing of p2p. The contract
+  suite runs on a drive too (`test/hyperdrive.test.js`), with Corestore and
+  Hyperdrive as development dependencies, for that test only.
 - `isogitBackend(gitdir, { fs })`: isomorphic-git (1.44.8) over a
   filesystem, node's by default. For compatibility: the same repository,
   read and written by an engine that also runs where native git does not.
@@ -162,8 +154,6 @@ the same writes give the same oids on every engine (`test/engines.test.js`).
   the writes commit as `cli` at a fixed time, so their oids are stable too,
   and each line's state carries on to the next. `test/commands-isogit.txt`
   is the same on isomorphic-git (`--engine=isogit`), and
-  `test/commands-p2pgit.txt` on p2p-git, `test/commands-hyperdrive.txt` on
-  p2p-git on a persisted Hyperdrive (its fixture imported into the drive by
-  `test/fixture-hyperdrive.sh`), and `test/commands-bare-*.txt` the same on
-  Bare, all with the same expectations. `node test/variants.js`
+  `test/commands-p2pgit.txt` on p2p-git, and `test/commands-bare-*.txt` the
+  same on Bare, all with the same expectations. `node test/variants.js`
   generates those from `commands.txt`

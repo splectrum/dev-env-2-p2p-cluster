@@ -67,9 +67,9 @@ Where the first build departs from the design, and why it is superseded:
   packages referenced by gitlinks.
 - Container storage, identity and membership were missing.
 
-The probes stay in the repository (`mycelium-node/`, `cluster/`) until the
-plan's steps replace them; then they are removed by commits, their
-records kept.
+The first build's code (`mycelium-node/`, the scripts in `cluster/`) was
+removed in step 1; its records stay in `cluster/runs/`, its code in this
+repository's history (`fa009fd`).
 
 ## Deviations
 

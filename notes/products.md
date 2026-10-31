@@ -14,7 +14,8 @@ the product repository's main. Recorded per update.
   files, and keeps the product's LICENSE. Later splits merge plainly.
 - `mycelium-uri`, `mycelium-xpath`: unchanged since phase 1
   (`dev-env-1-mycelium-git@33634de`); nothing to merge.
-- `mycelium-node`: no product repository yet.
+- `mycelium-node`: the first build's module, removed in step 1; it never
+  had a product repository.
 - `p2p-git`: used at `d7d154d`, which carries this phase's fixes; now
   `pear-full-square/p2p-git` (below).
 
