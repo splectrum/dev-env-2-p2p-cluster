@@ -15,5 +15,24 @@ the product repository's main. Recorded per update.
 - `mycelium-uri`, `mycelium-xpath`: unchanged since phase 1
   (`dev-env-1-mycelium-git@33634de`); nothing to merge.
 - `mycelium-node`: no product repository yet.
-- `bare-for-pear/p2p-git`: used at `d7d154d`, which carries this phase's
-  fixes; no further change needed.
+- `p2p-git`: used at `d7d154d`, which carries this phase's fixes; now
+  `pear-full-square/p2p-git` (below).
+
+## The p2p series and the managers (2026-10-31)
+
+All in `pear-full-square` (the design: `node-pattern.md`, `plan.md`):
+
+| Module | Repository | State |
+|---|---|---|
+| `p2p-store` | `pear-full-square/p2p-store` | created, empty |
+| `p2p-dht` | `pear-full-square/p2p-dht` | created, empty |
+| `p2p-connect` | `pear-full-square/p2p-connect` | created, empty |
+| `p2p-replicate` | `pear-full-square/p2p-replicate` | created, empty |
+| `p2p-channel` | `pear-full-square/p2p-channel` | created, empty |
+| `p2p-git` | `pear-full-square/p2p-git` | moved from `bare-for-pear/p2p-git`; mycelium-git's dependency still names the old place (plan, step 1) |
+| `mycelium-p2p` | to create | |
+| `p2p-node-manager` | to create | |
+| `p2p-swarm-manager` | to create | |
+
+`pear-full-square/p2p-swarm` was created before the connections module
+was named `p2p-connect`; it is unused.

@@ -9,7 +9,7 @@ along it.** A first build ran through the request's five steps on a thin
 path (2026-10-30). Reviewed afterwards, it had been built before the design
 was thought through: it stands as a set of probes, and its findings went
 into the design. The design: `node-pattern.md` (settled, with open points)
-and `multi-cluster.md` (vision). The plan: `plan.md`.
+and `multi-swarm.md` (vision). The plan: `plan.md`.
 
 ## The first build, as probes
 
@@ -61,7 +61,7 @@ Where the first build departs from the design, and why it is superseded:
 - The package repository, bootstrap and deployment repository were native
   git on the host; all repositories now live on Hypercore.
 - The bootstrap was a 94 MB checkout mounted into containers, and secrets
-  had no design; nodes are now provisioned through an auxiliary cluster,
+  had no design; nodes are now provisioned through an auxiliary swarm,
   secrets in memory only.
 - Packages were layouts in JSON per module; they are now multi-module
   packages referenced by gitlinks.
