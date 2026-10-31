@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 // Command line for mycelium-git, the test entry point.
-//   node cli.js [--engine=isogit|p2pgit] <op> ...    (default engine: native)
+//   node cli.js [--engine=isogit|p2pgit|<module>] <op> ...  (default engine: native)
+//   An engine given as a module (a path, relative to this file) exports
+//   openBackend(dir) → { backend, close }: mycelium-git runs on it without
+//   knowing what it is.
 //   node cli.js select <repo> <path>                [path, node] pairs
 //   node cli.js read <repo> <path>                  the file's content, as text
 //   node cli.js put <repo> <branch> <path> <text>   one put, committed
@@ -50,10 +53,13 @@ const ops = {
   delete: async (repo, w, name, into) => { await w.deleteBranch(branch(name), branch(into)); return null }
 }
 
+const isModule = engine.endsWith('.js')
+let opened = null
 try {
-  if (!(engine in engines)) throw new Error(`unknown engine: ${engine}`)
+  if (!isModule && !(engine in engines)) throw new Error(`unknown engine: ${engine}`)
   if (!(op in ops)) throw new Error(`unknown op: ${op}`)
-  const backend = engines[engine](dir)
+  if (isModule) opened = await (await import(engine)).openBackend(dir)
+  const backend = isModule ? opened.backend : engines[engine](dir)
   const repo = openRepo(backend)
   const result = op === 'select' || op === 'read'
     ? await ops[op](repo, ...args)
@@ -61,5 +67,7 @@ try {
   console.log(JSON.stringify({ result }))
 } catch (err) {
   console.log(JSON.stringify({ error: err.message }))
-  process.exit(1)
+  process.exitCode = 1
+} finally {
+  if (opened) await opened.close()
 }

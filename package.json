@@ -7,7 +7,8 @@
     "p2p-dht",
     "p2p-connect",
     "p2p-replicate",
-    "p2p-channel"
+    "p2p-channel",
+    "p2p-mrepo"
   ],
   "dependencies": {
     "fs": "npm:bare-node-fs@1.0.2",

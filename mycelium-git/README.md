@@ -128,6 +128,11 @@ Adapters, one per engine, each run against the same contract suite
   not this module's concern: mycelium knows nothing of p2p. The contract
   suite runs on a drive too (`test/hyperdrive.test.js`), with Corestore and
   Hyperdrive as development dependencies, for that test only.
+- An engine given as a module: the CLI's `--engine=<path>` (relative to
+  `cli.js`, ending in `.js`) imports a module exporting
+  `openBackend(dir) → { backend, close }`. That is how repositories on the
+  p2p layer (`p2p-mrepo/engine.js`) run mycelium-git's command sets:
+  mycelium-git runs on the backend without knowing what it is.
 - `isogitBackend(gitdir, { fs })`: isomorphic-git (1.44.8) over a
   filesystem, node's by default. For compatibility: the same repository,
   read and written by an engine that also runs where native git does not.
