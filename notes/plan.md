@@ -11,10 +11,11 @@ rules follow (`rules.md`): the rules constrain the implementation.
 
 | Layer | Organisation | Concern |
 |---|---|---|
-| node application, cluster manager, node manager | `pear-full-square` (this repository first) | nodes and clusters, as repositories in operation |
-| mycelium-p2p | `pear-full-square` | a mycelium repository instance on a host |
+| cluster manager, node manager | `pear-full-square` | management, on the host machine: starting, provisioning, monitoring, recording nodes |
+| node application | `pear-full-square` | the node repository in operation |
+| mycelium-p2p | `pear-full-square` | a mycelium repository instance on a peer |
 | mycelium (uri, xpath, git, layer, repo) | `pear-full-square` | the data fabric: repositories over a backend contract |
-| the substrate (name to settle) | `bare-for-pear` | peers, resources, replication, transfer, metrics |
+| the substrate, `p2p-peer` (name proposed) | `bare-for-pear` | inside a node's process: identity, DHT, swarm, replication, resources, metrics; no management |
 | p2p-git | `bare-for-pear` | git on a Hyperdrive (its `hyperdrive-fs`), or on any filesystem |
 | Hypercore, Corestore, Hyperdrive, Hyperswarm | Holepunch | storage, replication, discovery |
 
@@ -40,17 +41,21 @@ hold as designed.
   (`hyperdrive-fs`) is what makes it p2p, so it stays there.
 - The product repository `pear-full-square/mycelium-git` is updated.
 
-### 2. The substrate: a host
+### 2. The substrate: a peer
 
-- One host per process: one Corestore (its primary key given, not
+"Host" means the host machine only; the substrate is what a process needs
+to be a peer.
+
+- One peer per process: one Corestore (its primary key given, not
   stored), one DHT node, one swarm, replication on every connection.
 - Resources opened by name (own, a namespace) or by key (a replica),
   announced per resource; a private DHT for clusters (two persistent
   nodes); a membership hook (firewall); metrics per connection and per
   resource.
-- Validated: two hosts on one machine, then a host and a container.
+- Validated: two peers on one machine, then a peer on the host machine
+  and one in a container.
 
-### 3. mycelium-p2p: repository instances on a host
+### 3. mycelium-p2p: repository instances on a peer
 
 - Create an instance (its keypair), import one from the boundary (a bundle
   or a native repository), open one by key; reopen on start.
@@ -65,7 +70,7 @@ hold as designed.
 - The inbox (one writer core per writer, priority, internal or external),
   intake into `pending/default`, bundles as entries, exactly once,
   rejections answered; responses read from the replica.
-- Validated: two repositories on two hosts asking each other.
+- Validated: two repositories on two peers asking each other.
 
 ### 5. The capability store
 
@@ -84,7 +89,7 @@ hold as designed.
   key; the node repository in operation.
 - Containerised and hardened, from the plain base with the join closure
   only.
-- The node manager on the host: starts the container, provisions it
+- The node manager (`pear-full-square`) on the host machine: starts the container, provisions it
   through the auxiliary cluster (the secret into memory from the vault,
   an encrypted file first; packages by replication), monitors it (logs,
   lifecycle events, resource samples) and records it; graceful stop,
@@ -92,7 +97,7 @@ hold as designed.
 
 ### 7. Genesis and join
 
-- The cluster manager, controlling the seed: genesis from non-P2P
+- The cluster manager (`pear-full-square`), controlling the seed: genesis from non-P2P
   repositories, the first DHT, the capability store primed.
 - A node manager starting a node that joins; a node on another host
   joining under its own manager.
@@ -116,6 +121,6 @@ channels, zero knowledge, AVRO and Kafka.
 
 ## Needs the human
 
-- Repositories for new modules: `bare-for-pear` for the substrate (its
-  name to settle), `pear-full-square` for mycelium-p2p. Until then they are
-  folders here.
+- Repositories for new modules: `bare-for-pear/p2p-peer` (the substrate;
+  name proposed), and in `pear-full-square`: mycelium-p2p, the node
+  manager and the cluster manager. Until then they are folders here.
