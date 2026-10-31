@@ -20,4 +20,25 @@ key is never recorded.
 
 **Record**: `record/`.
 
-**Findings**: below, once recorded.
+**Findings** (record of 2026-10-31, dev `48be636`; 4 cases, all exit 0):
+
+- **The secrets are written to the storage, in clear.** The primary key
+  and the drive's two secret keys (db core, blobs core) were found as raw
+  bytes in RocksDB's write-ahead log (`db/000004.log`), on Node and on
+  Bare alike. No option prevents it: Corestore stores its primary key as
+  the storage's seed whether one is passed in or not, and `unsafe: true`
+  only acknowledges passing one.
+- **The store is self-unlocking.** Reopened with no key at all, it had the
+  same primary key, the same drive key, and the drive was writable.
+  Whoever has the storage folder has every write right in it.
+- **The same on tmpfs**, which works for a Corestore (Node and Bare): the
+  secrets are then in RAM, as part of the store.
+
+**What this means for the design.** "The secret is not in the store" does
+not hold with Corestore as it is. What does hold: **the whole store in
+RAM**, on a tmpfs. The node pattern's store is disposable anyway (rebuilt
+from checkpoints and from the swarm), so keeping it in memory costs only a
+rebuild at each start, and the secrets never touch a disk. For a store too
+large for RAM, or one that must survive restarts, the options are an
+encrypted volume unlocked from the vault, or signing outside the store
+(open point: release or sign). Recorded in `notes/node-pattern.md`.
