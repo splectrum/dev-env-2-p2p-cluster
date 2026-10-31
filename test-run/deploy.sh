@@ -63,9 +63,11 @@ From dev commit $source_commit."
 # The staged folder deployed as one commit on the layer (layer/deploy).
 commit=$(node --input-type=module -e "
 import { deploy } from '$src/mycelium-layer/index.js'
-import { nativeBackend } from '$src/mycelium-git/index.js'
-const [repo, layer, folder, message] = process.argv.slice(1)
-const r = await deploy({ backend: nativeBackend(repo), layer, folder, message,
+import { openInstance } from '$src/test-run/instance.js'
+const [repo, layer, folder, message, code] = process.argv.slice(1)
+const instance = await openInstance(repo, { code })
+const r = await deploy({ backend: instance.backend, layer, folder, message,
   author: { name: 'test-run', email: 'test-run@localhost' } })
-console.log(r.commit)" "$repo" "$cap" "$stage" "$message")
+await instance.close()
+console.log(r.commit)" "$repo" "$cap" "$stage" "$message" "$src")
 echo "deployed $cap $(echo "$commit" | cut -c1-7)"

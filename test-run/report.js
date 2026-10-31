@@ -2,73 +2,91 @@
 // Report: interprets the record. For every executed Run request it compares
 // each recorded invocation with the expectation the request gave for it.
 //   node report.js <repo> runs
+//   import { makeReport } from './report.js'; await makeReport(backend)
+// (in the executing process: a p2p instance's store is open in one process
+// at a time).
 // Expectations are on the test lines, after '=>':
 //   => <json>        the last JSON line of the output must equal it
 //   => exit <code>   the exit code must be <code> ('null': did not start)
 // Reads the repository only, through mycelium-git (deployed next to this
 // file), at the states each run recorded; prints markdown.
 
+import process from 'node:process'
 import { isDeepStrictEqual } from 'node:util'
-import { nativeBackend, openRepo, pinned } from './mycelium-git/index.js'
+import { dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { openRepo, pinned } from './mycelium-git/index.js'
+import { openInstance } from './instance.js'
 
-const [repo, scope] = process.argv.slice(2)
-if (!repo || scope !== 'runs') {
-  console.error('usage: report.js <repo> runs')
-  process.exit(2)
-}
-
-const backend = nativeBackend(repo)
-const now = openRepo(backend)
-const found = async path => (await now.select(path)).length > 0
-const text = async (at, path) => (await at.read(path)).toString()
+const code = dirname(fileURLToPath(import.meta.url))
 const lines = t => t.split('\n').filter(Boolean)
 
-const out = ['# Test report', '']
-const totals = { requests: 0, invocations: 0, met: 0, unmet: 0, unchecked: 0, incomplete: 0 }
-
-for (const [base] of await now.select('/main/responses/*')) {
-  const name = base.split('/').pop()
-  if (!await found(`${base}/unit.json`)) continue
-  const unit = JSON.parse(await text(now, `${base}/unit.json`))
-  const m = (unit.invocation.line || '').match(/^Run:\s*(\S+)\s+in\s+(\S+)/)
-  if (!m) continue
-  totals.requests++
-  const [, testsPath, folder] = m
-  const cap = Object.keys(unit.state).find(b => b.startsWith('capability/'))
-  out.push(`## ${name}`, '', `\`${testsPath}\` in \`${folder}\`, from \`${cap}\` at \`${unit.state[cap].slice(0, 7)}\`.`, '')
-
-  if (!await found(`${base}/results.jsonl`) || await found(`${base}/error.txt`)) {
-    totals.incomplete++
-    out.push('**Did not complete.** No record of invocations to check.', '')
-    continue
+if ((process.argv[1] || '').endsWith('report.js')) {
+  const [repo, scope] = process.argv.slice(2)
+  if (!repo || scope !== 'runs') {
+    console.error('usage: report.js <repo> runs')
+    process.exit(2)
   }
-
-  // The expectations, from the tests file at the state the run recorded.
-  const at = openRepo(pinned(backend, unit.state))
-  const testsAt = testsPath.startsWith('pending/') ? 'pending/default' : cap
-  const testLines = (await text(at, `/${testsAt}/${testsPath}`)).split('\n')
-  const rows = []
-  const counts = { met: 0, unmet: 0, unchecked: 0 }
-  for (const rec of lines(await text(now, `${base}/results.jsonl`)).map(l => JSON.parse(l))) {
-    const expectation = (testLines[rec.line - 1].split('=>')[1] || '').trim()
-    const verdict = check(rec, expectation)
-    counts[verdict.status]++
-    if (verdict.status !== 'met') {
-      rows.push(`| ${rec.line} | \`${rec.command.join(' ')}\` | ${expectation ? '`' + expectation + '`' : '—'} | \`${verdict.got}\` | ${verdict.status} |`)
-    }
-  }
-  totals.invocations += counts.met + counts.unmet + counts.unchecked
-  for (const k of Object.keys(counts)) totals[k] += counts[k]
-  out.push(`${counts.met} met, ${counts.unmet} not met, ${counts.unchecked} without expectation.`, '')
-  if (rows.length) {
-    out.push('| Line | Invocation | Expected | Got | |', '|---|---|---|---|---|', ...rows, '')
+  const instance = await openInstance(repo, { code })
+  try {
+    console.log(await makeReport(instance.backend))
+  } finally {
+    await instance.close()
   }
 }
 
-out.push('## Summary', '',
-  `${totals.requests} requests, ${totals.invocations} invocations: ${totals.met} met, ` +
-  `${totals.unmet} not met, ${totals.unchecked} without expectation; ${totals.incomplete} did not complete.`, '')
-console.log(out.join('\n'))
+export async function makeReport (backend) {
+  const now = openRepo(backend)
+  const found = async path => (await now.select(path)).length > 0
+  const text = async (at, path) => (await at.read(path)).toString()
+
+  const out = ['# Test report', '']
+  const totals = { requests: 0, invocations: 0, met: 0, unmet: 0, unchecked: 0, incomplete: 0 }
+
+  for (const [base] of await now.select('/main/responses/*')) {
+    const name = base.split('/').pop()
+    if (!await found(`${base}/unit.json`)) continue
+    const unit = JSON.parse(await text(now, `${base}/unit.json`))
+    const m = (unit.invocation.line || '').match(/^Run:\s*(\S+)\s+in\s+(\S+)/)
+    if (!m) continue
+    totals.requests++
+    const [, testsPath, folder] = m
+    const cap = Object.keys(unit.state).find(b => b.startsWith('capability/'))
+    out.push(`## ${name}`, '', `\`${testsPath}\` in \`${folder}\`, from \`${cap}\` at \`${unit.state[cap].slice(0, 7)}\`.`, '')
+
+    if (!await found(`${base}/results.jsonl`) || await found(`${base}/error.txt`)) {
+      totals.incomplete++
+      out.push('**Did not complete.** No record of invocations to check.', '')
+      continue
+    }
+
+    // The expectations, from the tests file at the state the run recorded.
+    const at = openRepo(pinned(backend, unit.state))
+    const testsAt = testsPath.startsWith('pending/') ? 'pending/default' : cap
+    const testLines = (await text(at, `/${testsAt}/${testsPath}`)).split('\n')
+    const rows = []
+    const counts = { met: 0, unmet: 0, unchecked: 0 }
+    for (const rec of lines(await text(now, `${base}/results.jsonl`)).map(l => JSON.parse(l))) {
+      const expectation = (testLines[rec.line - 1].split('=>')[1] || '').trim()
+      const verdict = check(rec, expectation)
+      counts[verdict.status]++
+      if (verdict.status !== 'met') {
+        rows.push(`| ${rec.line} | \`${rec.command.join(' ')}\` | ${expectation ? '`' + expectation + '`' : '—'} | \`${verdict.got}\` | ${verdict.status} |`)
+      }
+    }
+    totals.invocations += counts.met + counts.unmet + counts.unchecked
+    for (const k of Object.keys(counts)) totals[k] += counts[k]
+    out.push(`${counts.met} met, ${counts.unmet} not met, ${counts.unchecked} without expectation.`, '')
+    if (rows.length) {
+      out.push('| Line | Invocation | Expected | Got | |', '|---|---|---|---|---|', ...rows, '')
+    }
+  }
+
+  out.push('## Summary', '',
+    `${totals.requests} requests, ${totals.invocations} invocations: ${totals.met} met, ` +
+    `${totals.unmet} not met, ${totals.unchecked} without expectation; ${totals.incomplete} did not complete.`, '')
+  return out.join('\n')
+}
 
 function check (rec, expectation) {
   const last = lines(rec.stdout || '').pop()
