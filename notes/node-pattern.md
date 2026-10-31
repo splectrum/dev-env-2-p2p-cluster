@@ -165,18 +165,22 @@ layer implements them.
 - **A repository belongs to an owner: its node**, the single writer.
   Copies elsewhere do not change that.
 - **Entities have URIs**, unique, built on the p2p layer's identities.
-  A repository is named by its type, with an instance identifier below it:
+  The node owns the names of the repositories it creates; there is no
+  instance segment:
 
   ```
-  /<swarm>                                              the swarm
-  /<swarm>/<node>                                       a node
-  /<swarm>/<node>/<type>/<instance>                     a repository, owned by that node
-  /<swarm>/<node>/<type>/<instance>/<branch>/<path>     inside it, as our URIs already work
+  /<swarm>                                   the swarm
+  /<swarm>/<node>                            a node
+  /<swarm>/<node>/<name>                     a repository, owned by that node
+  /<swarm>/<node>/<name>/<branch>/<path>     inside it, as our URIs already work
   ```
 
-  The type (`node`, `capability-store`, `test-run`, ...) is a fixed
-  vocabulary: it says which paradigm, rules and capabilities apply. The
-  same URI wherever a copy is read.
+  A repository's name is its type (`node`, `capability-store`,
+  `test-run`, ...) when the node holds one of that type, or a name prefixed
+  with its type when it holds more than one (`test-run-r12`). The type is
+  a fixed vocabulary: it says which paradigm, rules and capabilities apply.
+  The naming logic runs on the node. The same URI wherever a copy is
+  read.
 - **Three levels of identity:**
   - the **URI**: the address, friendly, unique; it can change (a rename,
     ownership moving), with the change recorded;
@@ -204,7 +208,7 @@ layer implements them.
   that:
   - the swarm's names (its nodes) are recorded by the swarm, written by
     the seed;
-  - a node's names (its repositories, by type and instance) are recorded
+  - a node's names (its repositories, by type or type-prefixed name) are recorded
     by the node itself, in its own repository: it owns them and is their
     single writer.
 - **A resource lookup, `p2p-rns`** (resource name service), like DNS: it
@@ -227,8 +231,6 @@ layer implements them.
     and intake), replacing the in-code lookup at the end of an install,
     behind the same contract.
 - mycelium-uri validates entity URIs (their shape).
-- Open: whether a type with a single instance per node may leave its
-  instance segment out.
 
 ## Repository-to-repository talk
 
