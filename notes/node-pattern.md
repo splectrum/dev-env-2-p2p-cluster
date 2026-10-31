@@ -155,6 +155,38 @@ within it. Every module of the series is instrumented and audited
 (`plan.md`, step 2). The series holds no management: the node manager and the
 swarm manager are applications on the host machine (`pear-full-square`).
 
+## Entities and names
+
+Mycelium knows nothing of p2p. It works with entities through contracts it
+defines (repositories it can reach, the inbox, identities), as it already
+does for storage (the backend contract, with engines plugged in); the p2p
+layer implements them.
+
+- **A repository belongs to an owner: its node**, the single writer.
+  Copies elsewhere do not change that.
+- **Entities have URIs**, built from the p2p layer's identities:
+
+  ```
+  /<swarm>                                  the swarm
+  /<swarm>/<node>                           a node
+  /<swarm>/<node>/<repo>                    a repository, owned by that node
+  /<swarm>/<node>/<repo>/<branch>/<path>    inside it, as our URIs already work
+  ```
+
+  The same URI wherever a copy is read.
+- **Friendly names.** Each segment is a friendly name under our URI rules
+  (lowercase `a-z`, `0-9`, `-`); an encoded key is always a valid name as
+  well. Names are unique within their parent and resolve to identities at
+  the boundary only; inside, everything works with keys, as with our URIs'
+  case-insensitive lookup. Names stay stable while keys may change: a
+  rebuilt node keeps its name, pointed at its new key, and the change is
+  recorded.
+- mycelium-uri validates entity URIs (their shape); the p2p layer resolves
+  them (names to keys, keys to replicas) and records names, in a registry
+  that is itself a repository, changed by requests.
+- Open: who writes the name registry, whether a node registers names
+  itself, and which module of the p2p layer does this.
+
 ## Repository-to-repository talk
 
 The core communication mode for now, for low-frequency exchange; higher
