@@ -7,6 +7,7 @@
 // split on whitespace and run without a shell, so arguments are literal.
 // Blank lines and '#' lines are skipped. One JSON line per invocation.
 
+import process from 'node:process'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { spawnSync } from 'node:child_process'
 
