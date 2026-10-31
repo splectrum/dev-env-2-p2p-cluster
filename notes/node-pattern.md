@@ -216,16 +216,18 @@ layer implements them.
   as messages, the sender's identity from the connection).
   - Registrations are accepted from owners only: a node registers names
     under itself, and a node's own name is checked unique when it joins.
-  - **First an in-code implementation**: a bootstrap component, on the
-    seed, needing no mycelium repository, since not enough is built yet
-    to base it on one.
+  - **First an in-code implementation**: a bootstrap component on the
+    master node (the seed), needing no mycelium repository, since not
+    enough is built yet to base it on one. It lives in memory, for the
+    lifetime of the master node only, and keeps nothing: should the master
+    node restart before the in-code lookup is replaced, owners register
+    again from their own records.
   - **Later a repository-based one** (a lookup repository with its inbox
     and intake), replacing the in-code lookup at the end of an install,
     behind the same contract.
 - mycelium-uri validates entity URIs (their shape).
 - Open: where the contract and the in-code lookup live (a mycelium module
-  of their own?); whether the in-code lookup keeps its records (or owners
-  register again, refreshing, as DHT announcements are); and whether a
+  of their own?); and whether a
   type with a single instance per node may leave its instance segment
   out.
 
