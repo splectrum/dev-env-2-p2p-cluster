@@ -78,6 +78,27 @@ documentation.
 | secrets in RAM | tmpfs | process memory |
 | disposable store | internal volume | app-private storage |
 
+## The host side
+
+1. **A node manager per node.** A long-running process, living as long as
+   its node, in the node's own folder on the host. It starts the container
+   (mounts, limits, the secret from the vault), monitors it (the
+   container's logs captured, Docker's lifecycle events, resource
+   samples), records what only the outside can see (crashes, OOM kills,
+   hangs), and is the node's management platform (status, logs, start,
+   graceful stop, restart, rebuild). A host runs as many as it has nodes.
+2. **No folder hierarchy.** Node folders stand side by side; nothing is
+   organised by nesting. Managers talk repository to repository.
+3. **A cluster manager** on a host that starts a cluster manages the node
+   managers it controls: it starts them (the first node, then others) and
+   follows them through their repositories.
+4. **Independence.** A node manager and its node keep running when the
+   cluster manager stops; the cluster manager picks them up again when it
+   restarts.
+5. **Scope.** A cluster manager manages only the nodes it controls. Other
+   nodes join and are part of the cluster while living on other hosts,
+   under their own managers: the general pattern.
+
 ## What a running node is
 
 One process, the runtime with the host, running: a DHT node (taking part
@@ -105,6 +126,9 @@ is still to be designed.
 5. **Starting from zero and joining.** Creating the first node and its DHT
    from nothing, from non-P2P repositories, and a node joining an existing
    cluster: to be taken up step by step, after the above.
-6. **Hyperdrive with an explicit keypair:** how a drive is opened writable
+6. **Repository-to-repository talk:** how the cluster manager and a node
+   manager (and a manager and its node) exchange requests and responses,
+   each a single writer of its own repository. To be designed.
+7. **Hyperdrive with an explicit keypair:** how a drive is opened writable
    with a keypair of its own, given that its blobs core is derived from its
    db core.
