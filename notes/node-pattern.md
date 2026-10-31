@@ -197,12 +197,21 @@ layer implements them.
   case-insensitive lookup. Names stay stable while keys may change: a
   rebuilt node keeps its name, pointed at its new key, and the change is
   recorded.
+- **A node supplies its friendly name when it joins.** The swarm checks it
+  is unique and records it with the node's identity; a name already taken
+  is refused, and the join is answered either way.
+- **The names follow ownership**, so no central registry is needed beyond
+  that:
+  - the swarm's names (its nodes) are recorded by the swarm, written by
+    the seed;
+  - a node's names (its repositories, by type and instance) are recorded
+    by the node itself, in its own repository: it owns them and is their
+    single writer.
 - mycelium-uri validates entity URIs (their shape); the p2p layer resolves
-  them (names to keys, keys to replicas) and records names, in a registry
-  that is itself a repository, changed by requests.
-- Open: who writes the name registry, whether a node registers names
-  itself, which module of the p2p layer does this, and whether a type
-  with a single instance per node may leave its instance segment out.
+  them, through the swarm's record to the node, and through the node's
+  record to the repository's internal id and key.
+- Open: which module of the p2p layer does this, and whether a type with a
+  single instance per node may leave its instance segment out.
 
 ## Repository-to-repository talk
 
