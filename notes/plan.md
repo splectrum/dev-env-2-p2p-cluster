@@ -17,8 +17,8 @@ A **swarm** is the cluster: the set of nodes joined over the p2p layer.
 |---|---|---|
 | management, on the host machine | `p2p-node-manager`, `p2p-swarm-manager` | a node; the swarm (the nodes it controls, priming, genesis): starting, provisioning, monitoring, recording |
 | the node | the node application | the node repository in operation; composes the layers below |
-| the bridge | `mycelium-p2p` | mycelium repository instances on the p2p layer |
-| the data fabric | mycelium (`mycelium-uri`, `-xpath`, `-git`, `-layer`, `-repo`) | repositories and their rules over a backend contract; p2p-git is one engine; depends on no p2p module |
+| entities | the p2p layer's repository and naming module (name open) | swarms, nodes and their repositories as entities with URIs and friendly names, offered to mycelium through its contracts |
+| the data fabric | mycelium (`mycelium-uri`, `-xpath`, `-git`, `-layer`, `-repo`) | repositories and their rules over contracts (a backend, repositories it can reach, an inbox, entities); p2p-git is one engine; knows nothing of p2p |
 | git on Hypercore | `p2p-git` | git objects and refs on a Hyperdrive (its `hyperdrive-fs`) |
 | the p2p series | `p2p-store`, `p2p-dht`, `p2p-connect`, `p2p-replicate`, `p2p-channel` | storage, discovery, connections, replication, messages; no git, no repositories, no management |
 | Holepunch | Hypercore, Corestore, Hyperdrive, Hyperswarm, HyperDHT | storage, replication, discovery |
@@ -81,14 +81,22 @@ The p2p layer is a series of modules, one concern each:
 - Validated: two peers on one machine, then one on the host machine and
   one in a container; the audit and metrics of each recorded.
 
-### 3. mycelium-p2p: repository instances on a peer
+### 3. Repositories as entities on the p2p layer
 
-- Create an instance (its keypair), import one from the boundary (a bundle
-  or a native repository), open one by key; reopen on start.
+Mycelium knows nothing of p2p: it works with entities (repositories, nodes,
+the swarm) through contracts it defines; the p2p layer implements them
+(`node-pattern.md`, entities and names).
+
+- In mycelium: the contracts (repositories it can reach: create, open by
+  identity, clone with origin, list; the inbox; entities as identities)
+  and validating entity URIs (mycelium-uri).
+- In the p2p layer: create an instance (its keypair, owned by its node),
+  import one from the boundary (a bundle or a native repository), open one
+  by identity, clone; reopen on start; names resolved to keys.
 - The contract suite and the command set on an instance and on a replica
   (reads).
 - **Test-run instances on Hypercore**: the test-run model's instances are
-  mycelium-p2p instances, executed under Bare. This completes the
+  repositories on the p2p layer, executed under Bare. This completes the
   request's first done item as intended.
 
 ### 4. Repository-to-repository talk
@@ -148,10 +156,11 @@ channels, zero knowledge, AVRO and Kafka.
 ## Needs the human
 
 - Created in `pear-full-square`: `p2p-store`, `p2p-dht`, `p2p-connect`,
-  `p2p-replicate`, `p2p-channel`; `p2p-git` moved there. Still to create:
-  `mycelium-p2p`, `p2p-node-manager`, `p2p-swarm-manager`. Until then
-  those are folders here. `pear-full-square/p2p-swarm` was created before
-  the connections module was renamed `p2p-connect`, and is unused.
+  `p2p-replicate`, `p2p-channel`, `p2p-node-manager`,
+  `p2p-swarm-manager`; `p2p-git` moved there. Still to name and create:
+  the p2p layer's repository and naming module (step 3).
+  `pear-full-square/p2p-swarm` was created before the connections module
+  was renamed `p2p-connect`, and is unused.
 - Open in step 2: where audit goes (proposed: an append-only, signed core
   per node, replicated to its node manager over the management plane;
   facts only, never secrets) and how detailed it is.
