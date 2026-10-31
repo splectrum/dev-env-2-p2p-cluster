@@ -1,9 +1,11 @@
 # The node pattern
 
+A **swarm** is the cluster: the set of nodes joined over the p2p layer.
+
 Status: **settled in discussion, 2026-10-31**, except where marked as a
 direction or open. Once proven, it becomes part of the architecture in the
-main documentation. The vision beyond it (several cluster memberships,
-closed-box devices) is in `multi-cluster.md`.
+main documentation. The vision beyond it (several swarm memberships,
+closed-box devices) is in `multi-swarm.md`.
 
 It replaces the shape of what was built first (`mycelium-node`,
 `cluster/bootstrap`, `cluster/deployment`): those stay as probes, the
@@ -19,7 +21,7 @@ Hypercore, everything moved by replication, secrets only in memory.
    Repositories outside (native git, hosted repositories, bundles) are
    sources and targets at the boundary only: imported once, exported as
    copies.
-2. **A repository on Hypercore needs no cluster.** It is created and used
+2. **A repository on Hypercore needs no swarm.** It is created and used
    locally (shown in step 1: the contract suite and the command set on a
    persisted Hyperdrive, Node and Bare, no network). Networking only adds
    replication, over any duplex stream; a swarm is one way to get streams.
@@ -53,10 +55,10 @@ Hypercore, everything moved by replication, secrets only in memory.
    boot repository's key and commit). One boot repository can start many
    nodes, each with its own clone and key.
 8. **Local first, network last.** The node is complete and live on
-   Hypercore before it opens a socket to its cluster.
+   Hypercore before it opens a socket to its swarm.
 9. **A disposable store.** The Corestore sits in the container's own
    filesystem (no mount), rebuilt from checkpoints (the repositories the
-   node writes) and from the cluster (the replicas it holds, by key).
+   node writes) and from the swarm (the replicas it holds, by key).
 10. **Identity in a vault, secrets in RAM only.** The node's secret (its
     Corestore primary key, and any explicit keypairs) lives in a vault on
     the host, never in a store, repository, bundle, folder or image. It
@@ -64,14 +66,14 @@ Hypercore, everything moved by replication, secrets only in memory.
     into a Hypercore either: a core is a replicated, signed, persistent
     log.
 
-## Provisioning: the auxiliary cluster
+## Provisioning: the auxiliary swarm
 
 Direction; it rests on one probe still to run (a container joining a DHT
 on the host).
 
-The node manager's side runs a small cluster local to the host, on an
-internal network with no route out: the **auxiliary cluster**, the
-management plane. The node's own cluster is the data plane.
+The node manager's side runs a small swarm local to the host, on an
+internal network with no route out: the **auxiliary swarm**, the
+management plane. The node's own swarm is the data plane.
 
 1. The node manager starts the container with only a small fixed join
    closure (Bare, the swarm, Corestore, the secret stream), attached to
@@ -79,12 +81,12 @@ management plane. The node's own cluster is the data plane.
 2. The container generates an ephemeral keypair and writes its public key
    to its log. The node manager, following the log, authorises exactly
    that key. No secret is needed to start.
-3. The container joins the auxiliary cluster and receives its secret over
+3. The container joins the auxiliary swarm and receives its secret over
    an ephemeral channel on the Noise-encrypted connection, into memory,
    from the host's provisioning node (backed by the vault).
 4. It loads its packages by replication from the capability store,
    lazily, verified by commits and the store's key.
-5. It goes live (point 7) and sets up or joins its proper cluster, as its
+5. It goes live (point 7) and sets up or joins its proper swarm, as its
    request says.
 6. The auxiliary link stays as the management channel between the node
    manager and its node.
@@ -102,7 +104,7 @@ between them, even with none to the outside.
 | the host's own folders | the host side's boundary with the outside world: bundles and files brought in by hand, exports to carry elsewhere | the host's |
 
 No folder is mapped into the container; nothing reaches it except through
-the auxiliary cluster (and a tmpfs, if a secret must ever be a file).
+the auxiliary swarm (and a tmpfs, if a secret must ever be a file).
 
 ## The pattern elsewhere
 
@@ -110,7 +112,7 @@ the auxiliary cluster (and a tmpfs, if a secret must ever be a file).
 |---|---|---|
 | runtime | plain image with Bare | Bare in the app (a worklet) |
 | isolation | the container | the app sandbox |
-| manager to node | the auxiliary cluster, on the host's internal network | replication and the secret channel over the worklet's IPC pipe |
+| manager to node | the auxiliary swarm, on the host's internal network | replication and the secret channel over the worklet's IPC pipe |
 | vault | host vault, keychain or encrypted file | the OS keystore |
 | secrets | process memory | process memory |
 | disposable store | container filesystem | app-private storage |
@@ -118,9 +120,9 @@ the auxiliary cluster (and a tmpfs, if a secret must ever be a file).
 
 ## The host side
 
-1. **A node manager per node.** A long-running process, living as long as
+1. **A node manager per node** (`p2p-node-manager`). A long-running process, living as long as
    its node, in the node's own folder on the host. It starts the container
-   (limits, hardening, networks), provisions it (the auxiliary cluster),
+   (limits, hardening, networks), provisions it (the auxiliary swarm),
    monitors it (the container's logs captured, the runtime's lifecycle
    events, resource samples), records what only the outside can see
    (crashes, out-of-memory kills, hangs), and is the node's management
@@ -128,30 +130,30 @@ the auxiliary cluster (and a tmpfs, if a secret must ever be a file).
    runs as many as it has nodes.
 2. **No folder hierarchy.** Node folders stand side by side; nothing is
    organised by nesting. Managers talk repository to repository.
-3. **A cluster manager** on a host that starts a cluster manages the node
+3. **A swarm manager** (`p2p-swarm-manager`) on a host that starts a swarm manages the node
    managers it controls: it starts them (the first node, then others) and
    follows them through their repositories.
 4. **Independence.** A node manager and its node keep running when the
-   cluster manager stops; the cluster manager picks them up again when it
+   swarm manager stops; the swarm manager picks them up again when it
    restarts.
-5. **Priming.** A cluster manager may control a single node, the seed
-   (the first DHT node). It is also responsible for priming the cluster
+5. **Priming.** A swarm manager may control a single node, the seed
+   (the first DHT node). It is also responsible for priming the swarm
    with its capabilities: bringing them into the capability store, at the
    boundary.
-6. **Scope.** A cluster manager manages only the nodes it controls. Other
-   nodes join and are part of the cluster while living on other hosts,
+6. **Scope.** A swarm manager manages only the nodes it controls. Other
+   nodes join and are part of the swarm while living on other hosts,
    under their own managers: the general pattern.
 
 ## What a running node is
 
 One process, the runtime with the p2p series (`p2p-store`, `p2p-dht`,
-`p2p-swarm`, `p2p-channel`, `p2p-git`; `pear-full-square`), running: a DHT node (taking part in the cluster's
+`p2p-connect`, `p2p-replicate`, `p2p-channel`, `p2p-git`; `pear-full-square`), running: a DHT node (taking part in the swarm's
 DHT), a server listening on the node's keypair, the swarm with its
 announcements kept alive, replication on every connection, and the
 Corestore. Repositories (applications) are opened, served and joined
 within it. Every module of the series is instrumented and audited
 (`plan.md`, step 2). The series holds no management: the node manager and the
-cluster manager are applications on the host machine (`pear-full-square`).
+swarm manager are applications on the host machine (`pear-full-square`).
 
 ## Repository-to-repository talk
 

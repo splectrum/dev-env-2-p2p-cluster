@@ -1,7 +1,7 @@
 # Phase 2: plan
 
 Status: **proposed, 2026-10-31**. The request's phase, reworked along the
-design (`node-pattern.md`; `multi-cluster.md` stays vision). Step by step,
+design (`node-pattern.md`; `multi-swarm.md` stays vision). Step by step,
 one thin path end to end before generalising; each step is a request whose
 execution is recorded, with metrics at the boundary, and nothing moves on
 before its step is validated. Where a step settles a design choice, the
@@ -9,14 +9,22 @@ rules follow (`rules.md`): the rules constrain the implementation.
 
 ## The layers being built
 
-| Layer | Organisation | Concern |
+A **swarm** is the cluster: the set of nodes joined over the p2p layer.
+"Host" means the host machine only. All our modules are in
+`pear-full-square`; from the top down:
+
+| Layer | Modules | Concern |
 |---|---|---|
-| cluster manager, node manager | `pear-full-square` | management, on the host machine: starting, provisioning, monitoring, recording nodes |
-| node application | `pear-full-square` | the node repository in operation |
-| mycelium-p2p | `pear-full-square` | a mycelium repository instance on a peer |
-| mycelium (uri, xpath, git, layer, repo) | `pear-full-square` | the data fabric: repositories over a backend contract |
-| the p2p series: `p2p-store`, `p2p-dht`, `p2p-swarm`, `p2p-channel`, `p2p-git` | `pear-full-square` | every aspect of the p2p layer, inside a node's process, one concern per module, instrumented; no management |
-| Hypercore, Corestore, Hyperdrive, Hyperswarm | Holepunch | storage, replication, discovery |
+| management, on the host machine | `p2p-node-manager`, `p2p-swarm-manager` | a node; the swarm (the nodes it controls, priming, genesis): starting, provisioning, monitoring, recording |
+| the node | the node application | the node repository in operation; composes the layers below |
+| the bridge | `mycelium-p2p` | mycelium repository instances on the p2p layer |
+| the data fabric | mycelium (`mycelium-uri`, `-xpath`, `-git`, `-layer`, `-repo`) | repositories and their rules over a backend contract; p2p-git is one engine; depends on no p2p module |
+| git on Hypercore | `p2p-git` | git objects and refs on a Hyperdrive (its `hyperdrive-fs`) |
+| the p2p series | `p2p-store`, `p2p-dht`, `p2p-connect`, `p2p-replicate`, `p2p-channel` | storage, discovery, connections, replication, messages; no git, no repositories, no management |
+| Holepunch | Hypercore, Corestore, Hyperdrive, Hyperswarm, HyperDHT | storage, replication, discovery |
+
+Managing happens only at the top, in the two managers; everything below is
+mechanism.
 
 ## Steps
 
@@ -28,7 +36,7 @@ rules follow (`rules.md`): the rules constrain the implementation.
    over an internal network.
 3. A Hyperdrive opened writable with an explicit keypair.
 
-They decide whether "secrets in memory only" and the auxiliary cluster
+They decide whether "secrets in memory only" and the auxiliary swarm
 hold as designed.
 
 ### 1. Mycelium back to its own concern
@@ -42,20 +50,21 @@ hold as designed.
 
 ### 2. The p2p series
 
-"Host" means the host machine only. The p2p layer is a series of modules,
-one concern each (names proposed), in `pear-full-square`:
+The p2p layer is a series of modules, one concern each:
 
 | Module | Concern | Capability |
 |---|---|---|
-| `p2p-store` | resources and their keys, locally: the Corestore opened with a given primary key (nothing secret on disk), resources by name or key, explicit keypairs, hold and pin, replication over any stream | `state/hyperdrive`, `p2p/replicate` |
+| `p2p-store` | local storage: the Corestore opened with a given primary key (nothing secret on disk), resources by name or key, explicit keypairs; works with no peer at all | `state/hyperdrive` |
 | `p2p-dht` | discovery: a persistent DHT node, a private DHT's bootstrap (two persistent nodes at least), announce and lookup | `p2p/discover` |
-| `p2p-swarm` | connections: the server on the node's keypair, outgoing connections, the membership hook; yields encrypted streams | `p2p/connect` |
+| `p2p-connect` | connections: the server on the node's keypair, outgoing connections, the membership hook; yields encrypted streams | `p2p/connect` |
+| `p2p-replicate` | moving data between stores: which resources may replicate to which peers (policy: knowing a key is otherwise enough), accounting per peer and resource, explicit transfers (hold, pin, prefetch, mirror), over any stream (a connection, a pipe, a socket) | `p2p/replicate` |
 | `p2p-channel` | messages on a connection, not stored: the secret handover, later dedicated channels | (new) |
 | `p2p-git` | git on a Hyperdrive (its `hyperdrive-fs`) | `state/hyperdrive` |
 
 - Each is usable alone or in combination: a repository with no network
-  uses `p2p-store` alone; mobile and the auxiliary link use the store and
-  channels over a pipe or socket; a full node uses all of them. No module
+  uses `p2p-store` alone; mobile and the auxiliary link use the store,
+  replication and channels over a pipe or socket; a full node uses all of
+  them. No module
   composes the others: the application does.
 - **Instrumentation and audit are part of every module**, by one shared
   contract: each module reports its activity as structured events (what,
@@ -67,9 +76,8 @@ one concern each (names proposed), in `pear-full-square`:
     changes), append-only;
   - **metrics**: counters and samples, summarised per interval, at the
     boundary.
-- `p2p-git` moves from `bare-for-pear` to `pear-full-square` with the
-  series (by the human: a transfer of the repository, or a new one taking
-  its history with a plain merge); mycelium-git's dependency follows.
+- `p2p-git` has moved from `bare-for-pear` to `pear-full-square` with the
+  series; mycelium-git's dependency follows (step 1).
 - Validated: two peers on one machine, then one on the host machine and
   one in a container; the audit and metrics of each recorded.
 
@@ -107,19 +115,19 @@ one concern each (names proposed), in `pear-full-square`:
   key; the node repository in operation.
 - Containerised and hardened, from the plain base with the join closure
   only.
-- The node manager (`pear-full-square`) on the host machine: starts the container, provisions it
-  through the auxiliary cluster (the secret into memory from the vault,
+- `p2p-node-manager` on the host machine: starts the container, provisions it
+  through the auxiliary swarm (the secret into memory from the vault,
   an encrypted file first; packages by replication), monitors it (logs,
   lifecycle events, resource samples) and records it; graceful stop,
   restart, rebuild.
 
 ### 7. Genesis and join
 
-- The cluster manager (`pear-full-square`), controlling the seed: genesis from non-P2P
+- `p2p-swarm-manager`, controlling the seed: genesis from non-P2P
   repositories, the first DHT, the capability store primed.
 - A node manager starting a node that joins; a node on another host
   joining under its own manager.
-- The cluster's record, reached through requests.
+- The swarm's record, reached through requests.
 
 ## The request's done, mapped
 
@@ -128,21 +136,22 @@ one concern each (names proposed), in `pear-full-square`:
 | 1. contract suite and test-run model on a persisted Hyperdrive under Bare | steps 1 and 3 |
 | 2. two Bare nodes in containers, Hyperswarm, a replicated repository | steps 2, 3 and 6 |
 | 3. a node from a plain Bare base through a bootstrap repository, packages loaded lazily | steps 5 and 6 |
-| 4. a deployment repository bringing up a seed and a joining node, recording them | step 7 (the cluster manager and its record) |
+| 4. a deployment repository bringing up a seed and a joining node, recording them | step 7 (`p2p-swarm-manager` and its record) |
 | 5. every step recorded and rerunnable, metrics at the boundary, small runs | every step; small runs with step 5 |
 
 ## Not in this phase
 
-The vision in `multi-cluster.md` (boot, management and destination
-memberships as separate clusters, closed-box devices), mobile, streaming
+The vision in `multi-swarm.md` (boot, management and destination
+memberships as separate swarms, closed-box devices), mobile, streaming
 channels, zero knowledge, AVRO and Kafka.
 
 ## Needs the human
 
-- Repositories in `pear-full-square` for the p2p series (`p2p-store`,
-  `p2p-dht`, `p2p-swarm`, `p2p-channel`; names proposed), mycelium-p2p,
-  the node manager and the cluster manager; and `p2p-git` moved there from
-  `bare-for-pear`. Until then they are folders here.
+- Created in `pear-full-square`: `p2p-store`, `p2p-dht`, `p2p-connect`,
+  `p2p-replicate`, `p2p-channel`; `p2p-git` moved there. Still to create:
+  `mycelium-p2p`, `p2p-node-manager`, `p2p-swarm-manager`. Until then
+  those are folders here. `pear-full-square/p2p-swarm` was created before
+  the connections module was renamed `p2p-connect`, and is unused.
 - Open in step 2: where audit goes (proposed: an append-only, signed core
   per node, replicated to its node manager over the management plane;
   facts only, never secrets) and how detailed it is.
