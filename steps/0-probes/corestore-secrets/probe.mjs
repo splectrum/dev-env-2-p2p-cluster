@@ -5,7 +5,8 @@
 // Hyperdrive, writes a file and closes. Then looks for the secrets on disk
 // two ways: the raw bytes in every file, and by reopening the store with
 // no key at all (if it opens with the same primary key and its drive is
-// writable, the secrets were persisted). One JSON line on stdout.
+// writable, the secrets were persisted). The storage is removed afterwards.
+// One JSON line on stdout.
 
 import fs from 'node:fs'
 import path from 'node:path'
@@ -61,6 +62,7 @@ const reopen = {
 }
 await reopened.close()
 await again.close()
+fs.rmSync(dir, { recursive: true, force: true })
 
 console.log(JSON.stringify({
   runtime: typeof Bare !== 'undefined' ? `bare ${Bare.version}` : `node ${process.version}`,

@@ -37,10 +37,11 @@ cat > "$here/$part/record/unit.json" <<JSON
     "node": "$(node --version)",
     "bare": "$(bare --version)",
     "os": "$(uname -sr)",
-    "docker": "$(docker version --format '{{.Server.Version}}' 2>/dev/null || echo none)",
+    "docker": "$(docker info --format '{{.ServerVersion}}' 2>/dev/null | grep . || echo none)",
     "modules": { "corestore": "$(v corestore)", "hypercore": "$(v hypercore)", "hypercore-storage": "$(v hypercore-storage)", "hyperdrive": "$(v hyperdrive)", "hyperswarm": "$(v hyperswarm)", "hyperdht": "$(v hyperdht)" }
   },
   "nondeterministic": { "started": "$started", "finished": "$(date -u +%Y-%m-%dT%H:%M:%SZ)" }
 }
 JSON
+node -e "JSON.parse(require(\"fs\").readFileSync(process.argv[1]))" "$here/$part/record/unit.json"
 echo "recorded $part"
