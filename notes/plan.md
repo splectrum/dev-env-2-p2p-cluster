@@ -14,8 +14,8 @@ rules follow (`rules.md`): the rules constrain the implementation.
 | node application, cluster manager, node manager | `pear-full-square` (this repository first) | nodes and clusters, as repositories in operation |
 | mycelium-p2p | `pear-full-square` | a mycelium repository instance on a host |
 | mycelium (uri, xpath, git, layer, repo) | `pear-full-square` | the data fabric: repositories over a backend contract |
-| the substrate: host, hyperdrive-fs | `bare-for-pear` | peers, resources, replication, transfer, metrics |
-| p2p-git | `bare-for-pear` | git on any filesystem |
+| the substrate (name to settle) | `bare-for-pear` | peers, resources, replication, transfer, metrics |
+| p2p-git | `bare-for-pear` | git on a Hyperdrive (its `hyperdrive-fs`), or on any filesystem |
 | Hypercore, Corestore, Hyperdrive, Hyperswarm | Holepunch | storage, replication, discovery |
 
 ## Steps
@@ -36,8 +36,8 @@ hold as designed.
 - mycelium-git returns to the backend contract over a given filesystem:
   `openHyperdrive`, the Hyperdrive engine and the Corestore and Hyperdrive
   dependencies leave it (their tests move down with them).
-- git on a Hyperdrive sits below: `hyperdrive-fs` (a Hyperdrive as a
-  filesystem) as its own module, or kept in p2p-git.
+- git on a Hyperdrive sits below, in p2p-git: its Hyperdrive adapter
+  (`hyperdrive-fs`) is what makes it p2p, so it stays there.
 - The product repository `pear-full-square/mycelium-git` is updated.
 
 ### 2. The substrate: a host
@@ -116,8 +116,6 @@ channels, zero knowledge, AVRO and Kafka.
 
 ## Needs the human
 
-- Repositories for new modules: `bare-for-pear` for the substrate (and
-  `hyperdrive-fs`, if it becomes its own module), `pear-full-square` for
-  mycelium-p2p. Until then they are folders here.
-- The choice in step 1: `hyperdrive-fs` as its own module or kept in
-  p2p-git.
+- Repositories for new modules: `bare-for-pear` for the substrate (its
+  name to settle), `pear-full-square` for mycelium-p2p. Until then they are
+  folders here.
