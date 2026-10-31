@@ -133,8 +133,13 @@ is still to be designed.
 6. **Repository-to-repository talk:** how the cluster manager and a node
    manager (and a manager and its node) exchange requests and responses,
    each a single writer of its own repository. To be designed.
-7. **Referencing capabilities:** how node repositories refer to the
-   capabilities that live in the capability store. To be designed.
+7. **Referencing capabilities.** Settled: references are gitlinks (git's
+   own `160000` entries, a commit in another repository, with the store's
+   key recorded beside them); one capability store to start; the seed
+   writes it. A reference is per package: a consistent set of modules,
+   resolved and tested together, so no node mixes versions; and it goes
+   through a categorisation of capability packages (by capability URI).
+   The package and categorisation design is open.
 8. **Hyperdrive with an explicit keypair:** how a drive is opened writable
    with a keypair of its own, given that its blobs core is derived from its
    db core.
