@@ -1,0 +1,12 @@
+{
+  "invocation": "steps/record.sh 2-p2p-series validation unit-p2p-store=sh steps/1-mycelium/validation/unit-tests.sh p2p-store unit-p2p-dht=sh steps/1-mycelium/validation/unit-tests.sh p2p-dht unit-p2p-connect=sh steps/1-mycelium/validation/unit-tests.sh p2p-connect unit-p2p-replicate=sh steps/1-mycelium/validation/unit-tests.sh p2p-replicate unit-p2p-channel=sh steps/1-mycelium/validation/unit-tests.sh p2p-channel node=sh steps/2-p2p-series/validation/two-peers.sh node steps/2-p2p-series/validation/record bare=sh steps/2-p2p-series/validation/two-peers.sh bare steps/2-p2p-series/validation/record container=sh steps/2-p2p-series/validation/two-peers.sh container steps/2-p2p-series/validation/record ",
+  "state": { "dev": "ef28d8e3b63eb2d5087111ebf8a9273657451b68", "pendingDefault": "0b8e0c4" },
+  "environment": {
+    "node": "v22.22.0",
+    "bare": "v1.36.0",
+    "git": "git version 2.43.0",
+    "os": "Linux 6.18.44-fc-v185",
+    "docker": "29.9.2"
+  },
+  "nondeterministic": { "started": "2026-10-31T20:25:32Z", "finished": "2026-10-31T20:25:46Z" }
+}
