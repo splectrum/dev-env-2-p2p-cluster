@@ -26,7 +26,7 @@ done with them.
 | 0. Probes | `0-probes/` | done |
 | 1. Mycelium back to its own concern | `1-mycelium/` | done |
 | 2. The p2p series, minimal and instrumented | `2-p2p-series/` | done |
-| 3. Repositories on the p2p layer | `3-repositories/` | pending |
+| 3. Repositories on the p2p layer | `3-repositories/` | done (p2p-mrepo's product repository to create) |
 | 4. The swarm: genesis | `4-genesis/` | pending |
 | 5. A node joining | `5-node-joining/` | pending |
 | 6. A node on another host | `6-other-host/` | pending |

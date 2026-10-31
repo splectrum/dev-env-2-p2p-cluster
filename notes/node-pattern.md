@@ -319,6 +319,11 @@ frequency (streaming) comes later, through dedicated channels.
   Bare handles SIGTERM through `process.on`; npm's `bare` wrapper on a
   host suppresses signals, so long-running Bare processes on a host start
   with the runtime's binary, as containers do.
+- **Repositories on Hypercore, as mycelium sees them** (`steps/3-repositories`):
+  p2p-mrepo gives mycelium repositories on a p2p-store as mycelium
+  backends; mycelium-git's contract suite and command sets pass on them;
+  test-run instances on Hypercore, executed under Bare, record the same as
+  native ones.
 - **The p2p series composed** (`steps/2-p2p-series/validation`): two peers
   find each other, connect, replicate lazily and talk on a channel, on
   Node, on Bare and between the host and a hardened container with its
