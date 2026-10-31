@@ -12,7 +12,6 @@
 // file), at the states each run recorded; prints markdown.
 
 import process from 'node:process'
-import { isDeepStrictEqual } from 'node:util'
 import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { openRepo, pinned } from './mycelium-git/index.js'
@@ -88,6 +87,17 @@ export async function makeReport (backend) {
   return out.join('\n')
 }
 
+// Two parsed JSON values equal, key order aside (as util's
+// isDeepStrictEqual, which Bare's util does not have).
+function jsonEqual (a, b) {
+  if (a === b) return true
+  if (typeof a !== 'object' || typeof b !== 'object' || a === null || b === null) return false
+  if (Array.isArray(a) !== Array.isArray(b)) return false
+  const ka = Object.keys(a)
+  const kb = Object.keys(b)
+  return ka.length === kb.length && ka.every(k => Object.hasOwn(b, k) && jsonEqual(a[k], b[k]))
+}
+
 function check (rec, expectation) {
   const last = lines(rec.stdout || '').pop()
   let response
@@ -101,5 +111,5 @@ function check (rec, expectation) {
   }
   let want
   try { want = JSON.parse(expectation) } catch { return { status: 'unmet', got: 'bad expectation' } }
-  return { status: isDeepStrictEqual(response, want) ? 'met' : 'unmet', got }
+  return { status: jsonEqual(response, want) ? 'met' : 'unmet', got }
 }
