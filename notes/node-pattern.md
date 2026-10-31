@@ -95,7 +95,11 @@ documentation.
 4. **Independence.** A node manager and its node keep running when the
    cluster manager stops; the cluster manager picks them up again when it
    restarts.
-5. **Scope.** A cluster manager manages only the nodes it controls. Other
+5. **Priming.** A cluster manager may control a single node, the seed
+   (the first DHT node). It is also responsible for priming the cluster
+   with its capabilities: bringing them into the capability store, at the
+   boundary.
+6. **Scope.** A cluster manager manages only the nodes it controls. Other
    nodes join and are part of the cluster while living on other hosts,
    under their own managers: the general pattern.
 
@@ -129,6 +133,8 @@ is still to be designed.
 6. **Repository-to-repository talk:** how the cluster manager and a node
    manager (and a manager and its node) exchange requests and responses,
    each a single writer of its own repository. To be designed.
-7. **Hyperdrive with an explicit keypair:** how a drive is opened writable
+7. **Referencing capabilities:** how node repositories refer to the
+   capabilities that live in the capability store. To be designed.
+8. **Hyperdrive with an explicit keypair:** how a drive is opened writable
    with a keypair of its own, given that its blobs core is derived from its
    db core.
