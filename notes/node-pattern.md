@@ -164,16 +164,32 @@ layer implements them.
 
 - **A repository belongs to an owner: its node**, the single writer.
   Copies elsewhere do not change that.
-- **Entities have URIs**, built from the p2p layer's identities:
+- **Entities have URIs**, unique, built on the p2p layer's identities.
+  A repository is named by its type, with an instance identifier below it:
 
   ```
-  /<swarm>                                  the swarm
-  /<swarm>/<node>                           a node
-  /<swarm>/<node>/<repo>                    a repository, owned by that node
-  /<swarm>/<node>/<repo>/<branch>/<path>    inside it, as our URIs already work
+  /<swarm>                                              the swarm
+  /<swarm>/<node>                                       a node
+  /<swarm>/<node>/<type>/<instance>                     a repository, owned by that node
+  /<swarm>/<node>/<type>/<instance>/<branch>/<path>     inside it, as our URIs already work
   ```
 
-  The same URI wherever a copy is read.
+  The type (`node`, `capability-store`, `test-run`, ...) is a fixed
+  vocabulary: it says which paradigm, rules and capabilities apply. The
+  same URI wherever a copy is read.
+- **Three levels of identity:**
+  - the **URI**: the address, friendly, unique; it can change (a rename,
+    ownership moving), with the change recorded;
+  - the **internal id**: the repository's own permanent identity (a GUID,
+    as our modules have), recorded inside the repository and mapped to
+    its URI; it survives renames, rebuilds and key changes. This is the
+    identity mycelium works with;
+  - the **key**: the p2p layer's identity for the repository, current, and
+    replaced when a repository is rebuilt.
+
+  The p2p layer keeps the mappings (URI to internal id, internal id to
+  key); a repository opened by key confirms its internal id. Most of the
+  abstraction between mycelium and p2p sits in this.
 - **Friendly names.** Each segment is a friendly name under our URI rules
   (lowercase `a-z`, `0-9`, `-`); an encoded key is always a valid name as
   well. Names are unique within their parent and resolve to identities at
@@ -185,7 +201,8 @@ layer implements them.
   them (names to keys, keys to replicas) and records names, in a registry
   that is itself a repository, changed by requests.
 - Open: who writes the name registry, whether a node registers names
-  itself, and which module of the p2p layer does this.
+  itself, which module of the p2p layer does this, and whether a type
+  with a single instance per node may leave its instance segment out.
 
 ## Repository-to-repository talk
 
