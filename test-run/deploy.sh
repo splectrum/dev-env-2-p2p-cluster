@@ -50,6 +50,7 @@ find "$stage" -type d -name prebuilds -path '*node_modules*' | while read -r p; 
   for b in "$p"/*; do [ "$(basename "$b")" = "$platform" ] || rm -rf "$b"; done
 done
 cp "$from/runner.js" "$from/execute.js" "$from/report.js" "$from/hook.sh" "$stage/"
+[ -f "$from/instance.js" ] && cp "$from/instance.js" "$stage/"
 cp "$from/package.json" "$stage/machinery.json"
 ids() { sed -n 's/.*"id": "\(.*\)".*/\1/p' "$1"; }
 modules=$(cd "$stage" && for m in mycelium-* p2p-*; do [ -f "$m/package.json" ] && echo "$m $(ids "$m/package.json")"; done)
