@@ -8,11 +8,9 @@ Hyperdrive. Its modules are folders on `main`:
   updated in its product repository in `pear-full-square`
 - `mycelium-layer`, `mycelium-repo`: layer and repository capabilities,
   with no repositories of their own
-- `mycelium-node`: a cluster node, its store on Hyperswarm, and
-  materialising from the package repository (no product repository yet)
 - `test-run/`: the test-run machinery; `test-runs/`: kept runs
-- `cluster/`: the cluster's base image, package repository, bootstrap and
-  deployment repository, and their records (`cluster/runs/`)
+- `steps/`: the phase's steps after `notes/plan.md`, each with its records
+- `cluster/`: the first build's records
 - `notes/`: the phase's status and the environment probes
 
 `vision.md` holds directions that are not settled, for information.
