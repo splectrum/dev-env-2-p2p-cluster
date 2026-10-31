@@ -130,9 +130,32 @@ is still to be designed.
 5. **Starting from zero and joining.** Creating the first node and its DHT
    from nothing, from non-P2P repositories, and a node joining an existing
    cluster: to be taken up step by step, after the above.
-6. **Repository-to-repository talk:** how the cluster manager and a node
-   manager (and a manager and its node) exchange requests and responses,
-   each a single writer of its own repository. To be designed.
+6. **Repository-to-repository talk.** Direction, discussed:
+   - **An inbox per repository**, multi-writer: one append-only core per
+     writer, signed by its key. The inbox is the set of those cores,
+     listed in the repository's configuration with, per writer, a
+     priority and a flag: internal or external.
+   - **No consensus in the inbox.** The repository's own intake process
+     orders: it reads the inbox (by priority), validates each entry and
+     commits accepted requests into `pending/default`, the internal queue.
+     `pending/default` is the linearised view; intake is the apply step.
+   - **An entry is a bundle**: self-contained, verifiable by its oids, the
+     same format as at every other boundary, so an entry arriving through
+     a writer core or through the exchange folder is handled the same way.
+     A bundle may have prerequisites the repository already holds; one
+     missing them is refused.
+   - **Validation at intake:** an admitted writer; a well-formed bundle; a
+     request whose URIs validate (external entries meet the boundary's
+     rules); a capability to execute it. Exactly once: each entry is known
+     by writer key and sequence, recorded with the accepted request.
+     Rejections are answered.
+   - **Responses** are on `main` as now; the sender reads them from its
+     replica.
+   - **Communication patterns** (fire and forget, confirmed, handshakes)
+     are a higher-level concern, built on this.
+   - Open: framing large bundles in a core (or a size limit, with links
+     for large data), admission of new writers, clearing accepted
+     entries.
 7. **Referencing capabilities.** Settled: references are gitlinks (git's
    own `160000` entries, a commit in another repository, with the store's
    key recorded beside them); one capability store to start; the seed
