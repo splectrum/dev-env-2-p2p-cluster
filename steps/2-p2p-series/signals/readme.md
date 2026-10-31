@@ -15,4 +15,19 @@ with `docker stop`.
 
 **Record**: `record/`.
 
-**Findings**: below, once recorded.
+**Findings** (record of 2026-10-31, dev `45636c8`; 4 cases):
+
+| Runner | SIGTERM handled |
+|---|---|
+| Node | yes, in 2 s, exited |
+| the Bare runtime's binary | yes, exited |
+| npm's `bare` wrapper | **no**: still alive after the signal |
+| the binary in `bare-base`, `docker stop` | yes, exited |
+
+- **Bare handles SIGTERM through `process.on`.** Step 0's finding was the
+  wrapper's: npm's `bare` command spawns the binary with
+  `suppressSignals: true`, so a signal sent to it never reaches Bare.
+- So long-running Bare processes on a host are started with the runtime's
+  binary (`$(npm root -g)/bare/node_modules/bare-runtime-linux-x64/bin/bare`),
+  as containers already do; the wrapper is for interactive use only.
+  Step 0's record is kept as it was; its readme carries the correction.

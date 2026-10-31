@@ -11,11 +11,11 @@
 # peer's audit (every module's events) is written to the record folder.
 set -eu
 case=$1
-rec=$2
+mkdir -p "$2"
+rec=$(cd "$2" && pwd)
 here=$(cd "$(dirname "$0")" && pwd)
 root=$(cd "$here/../../.." && pwd)
 bare=$(npm root -g)/bare/node_modules/bare-runtime-linux-x64/bin/bare
-mkdir -p "$rec"
 serveout=$(mktemp)
 net=step-2-aux subnet=172.32.0
 cleanup () {
