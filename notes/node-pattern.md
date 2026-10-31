@@ -140,6 +140,26 @@ is still to be designed.
    resolved and tested together, so no node mixes versions; and it goes
    through a categorisation of capability packages (by capability URI).
    The package and categorisation design is open.
+
+   Direction, discussed:
+   - **Multi-module packages.** A package is a set of modules with one
+     resolved dependency tree (a shared `node_modules`), e.g. `mycelium`
+     with all its modules: a wholesome, consistent set of capabilities,
+     tested as one. Module instances stay stored once, shared between
+     packages.
+   - **The capability store is the single point** of import (third-party
+     code crosses the boundary there, once), validation (a package is
+     available only once tested as a whole, with its evidence) and
+     maintenance (updates, fixes, retirement). Running nodes pin exact
+     commits and move only when their repository asks.
+   - **The repository decides what to ask for**, from what the store has
+     made available; the resolution is recorded as an exact commit (a
+     gitlink and the store's key).
+   - **Later:** a repository asks the store to include a missing package
+     (a request to the store); a module's descriptor says which
+     capabilities it provides and how to instantiate them; the
+     repository's own map (its internal knowledge) says which package
+     serves each capability URI.
 8. **Hyperdrive with an explicit keypair:** how a drive is opened writable
    with a keypair of its own, given that its blobs core is derived from its
    db core.
