@@ -15,7 +15,7 @@ dir=$1
 shift
 src=$(pwd)
 [ -e "$dir" ] && { echo "exists: $dir" >&2; exit 2; }
-[ -z "$(git -C "$src" status --porcelain -- . ":!steps/*/*/record")" ] || { echo "dev tree has uncommitted changes; commit first" >&2; exit 2; }
+[ -z "$(git -C "$src" status --porcelain -- . ":!steps/*/*/record/*")" ] || { echo "dev tree has uncommitted changes; commit first" >&2; exit 2; }
 source_commit=$(git -C "$src" rev-parse --short HEAD)
 stage=$(mktemp -d)
 trap 'rm -rf "$stage"' EXIT

@@ -15,7 +15,7 @@ set -eu
 repo=$1
 cap=${2:-capability/test}
 src=$(pwd)
-[ -z "$(git -C "$src" status --porcelain -- . ":!steps/*/*/record")" ] || { echo "dev tree has uncommitted changes; commit first" >&2; exit 2; }
+[ -z "$(git -C "$src" status --porcelain -- . ":!steps/*/*/record/*")" ] || { echo "dev tree has uncommitted changes; commit first" >&2; exit 2; }
 source_commit=$(git -C "$src" rev-parse --short HEAD)
 machinery=${MACHINERY:-$(cat "$src/test-run/machinery")}
 from=$(mktemp -d)
