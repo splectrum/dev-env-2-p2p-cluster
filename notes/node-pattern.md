@@ -130,7 +130,9 @@ is still to be designed.
 5. **Starting from zero and joining.** Creating the first node and its DHT
    from nothing, from non-P2P repositories, and a node joining an existing
    cluster: to be taken up step by step, after the above.
-6. **Repository-to-repository talk.** Direction, discussed:
+6. **Repository-to-repository talk.** Settled as the core communication
+   mode for now, for low-frequency exchange; higher frequency (streaming)
+   comes later, through dedicated channels. As discussed:
    - **An inbox per repository**, multi-writer: one append-only core per
      writer, signed by its key. The inbox is the set of those cores,
      listed in the repository's configuration with, per writer, a
