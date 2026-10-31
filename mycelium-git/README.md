@@ -133,6 +133,11 @@ Adapters, one per engine, each run against the same contract suite
   `openBackend(dir) → { backend, close }`. That is how repositories on the
   p2p layer (`p2p-mrepo/engine.js`) run mycelium-git's command sets:
   mycelium-git runs on the backend without knowing what it is.
+- A tree's entries come in git's order on every engine (a folder's name
+  compared as if it ended in `/`, as native git stores them): the
+  isomorphic-git-style adapter sorts them so, since isomorphic-git gives
+  plain name order. Found in step 3, when a report's sections came out in
+  another order on Hypercore.
 - `isogitBackend(gitdir, { fs })`: isomorphic-git (1.44.8) over a
   filesystem, node's by default. For compatibility: the same repository,
   read and written by an engine that also runs where native git does not.

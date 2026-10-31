@@ -81,13 +81,18 @@ test('a replica by key: read through mycelium, lazily, read only', async () => {
   const y = r2.replicate(false)
   x.pipe(y).pipe(x)
   const replica = await mrepos({ store: s2 }).replica(a.key)
+  r2.track(replica.drive)
   await replica.drive.update({ wait: true })
   assert.equal((await replica.info()).id, a.id)
   const repo = openRepo(replica.backend)
   assert.equal((await repo.read('/main/readme')).toString(), 'hello')
   assert.equal((await repo.read('/overlay/config/docs/a')).toString(), 'conf')
-  const held = s2.resources().find(r => r.how === 'replica')
-  assert.ok(held.db.contiguous < held.db.length, 'only what was read')
+  // Lazily: of the objects the repository holds (one blob each), only those
+  // read came over (what is held from the start is no measure: a small
+  // index can arrive whole).
+  const blobs = r2.metrics().filter(m => m.part === 'blobs').reduce((n, m) => n + m.downloaded.blocks, 0)
+  const total = s2.resources().find(r => r.how === 'replica').blobs.length
+  assert.ok(blobs > 0 && blobs < total, `only what was read: ${blobs} of ${total} blobs`)
   assert.equal(replica.drive.writable, false)
   await s1.close()
   await s2.close()
