@@ -13,7 +13,7 @@ import { spawnSync } from 'node:child_process'
 
 const [testsFile, cwd, outputFile] = process.argv.slice(2)
 // Output as text: Bare's spawnSync gives bytes whatever the encoding asked.
-const text = x => (x == null ? x : x.toString())
+const asText = x => (x == null ? x : x.toString())
 if (!outputFile) {
   console.error('usage: runner.js <tests-file> <cwd> <output-file>')
   process.exit(2)
@@ -27,7 +27,7 @@ readFileSync(testsFile, 'utf8').split('\n').forEach((text, i) => {
   const run = spawnSync(command, args, { cwd, encoding: 'utf8' })
   out.push(JSON.stringify({
     line: i + 1, command: [command, ...args], code: run.status,
-    stdout: text(run.stdout), stderr: text(run.stderr), error: run.error?.message
+    stdout: asText(run.stdout), stderr: asText(run.stderr), error: run.error?.message
   }))
 })
 
