@@ -1,0 +1,12 @@
+{
+  "invocation": "steps/0-probes/record.sh drive-keypair node=node drive-keypair/probe.mjs /tmp/claude-0/-home-user/d01f3080-f030-5051-8c75-7cd188d75161/scratchpad/dk-node bare=bare drive-keypair/probe.mjs /tmp/claude-0/-home-user/d01f3080-f030-5051-8c75-7cd188d75161/scratchpad/dk-bare ",
+  "state": { "dev": "23e309f73c010d90abb579a3d90f4bba2ae8fad6", "pendingDefault": "1d0e581" },
+  "environment": {
+    "node": "v22.22.0",
+    "bare": "v1.36.0",
+    "os": "Linux 6.18.44-fc-v185",
+    "docker": "none",
+    "modules": { "corestore": "7.16.1", "hypercore": "11.39.6", "hypercore-storage": "3.4.0", "hyperdrive": "13.3.4", "hyperswarm": "4.17.2", "hyperdht": "6.35.0" }
+  },
+  "nondeterministic": { "started": "2026-10-31T19:35:17Z", "finished": "2026-10-31T19:35:18Z" }
+}
