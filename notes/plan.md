@@ -90,42 +90,45 @@ as designed.
 - **Test-run instances on Hypercore**, executed under Bare: this completes
   the request's first done item as intended.
 
-### 4. The lookup, in code
+### 4. The swarm: genesis
 
-- On the master node, in memory, for its lifetime only: register (owners
-  only: a node under its own name; a node's name checked unique when it
-  joins), resolve a URI (`/<swarm>/<node>/<name>/...`) to its internal id
-  and key, list by URI pattern, reverse.
-- Mycelium's contract for it; registrations and lookups carried as
-  messages (`p2p-channel`), the sender's identity from the connection.
-- Validated: nodes registering what they create, and resolving each
-  other's repositories by URI.
+From zero: the swarm comes first, everything else joins it.
 
-### 5. The node and its manager
-
-- The boot repository cloned live into the node's Corestore under its own
-  key; the node repository in operation; its name supplied on joining.
-- Containerised and hardened, from the plain base with the join closure
-  only.
-- `p2p-node-manager` on the host machine: starts the container, provisions
-  it through the auxiliary swarm (the secret into memory from the vault,
-  an encrypted file first), monitors it (logs, lifecycle events, resource
-  samples) and records it; graceful stop, restart, rebuild.
+- `p2p-swarm-manager` starts the master node (through a node manager, as
+  every node is started): genesis from non-P2P repositories, the first
+  DHT (two persistent nodes), the packages primed.
+- **The lookup, in code**, on the master node, in memory, for its lifetime
+  only: register (owners only: a node under its own name; a node's name
+  checked unique when it joins), resolve a URI (`/<swarm>/<node>/<name>/...`)
+  to its internal id and key, list by URI pattern, reverse. Mycelium's
+  contract for it; registrations and lookups carried as messages
+  (`p2p-channel`), the sender's identity from the connection.
 - **Packages in code first:** the master node serves the node packages as
-  a resource (pinned, a multi-module package with one dependency tree);
-  the node loads them by replication and materialises them.
+  a resource (pinned, a multi-module package with one dependency tree).
+- The swarm's record in code first (the lookup and the managers' own
+  records), reached through requests.
+
+### 5. A node joining
+
+- `p2p-node-manager` on the host machine starts the node: containerised
+  and hardened, from the plain base with the join closure only; provisions
+  it through the auxiliary swarm (the secret into memory from the vault,
+  an encrypted file first); monitors it (logs, lifecycle events, resource
+  samples) and records it; graceful stop, restart, rebuild.
+- The boot repository cloned live into the node's Corestore under its own
+  key; the node repository in operation.
+- The node joins with its friendly name, loads its packages from the
+  master node by replication and materialises them, and registers what it
+  creates in the lookup.
 - **Requests in code first:** delivered as bundles over `p2p-channel` into
   the receiving repository's intake, which commits them into
   `pending/default`; responses read from the replica.
+- Validated: nodes resolving each other's repositories by URI.
 
-### 6. Genesis and join
+### 6. A node on another host
 
-- `p2p-swarm-manager`, controlling the master node: genesis from non-P2P
-  repositories, the first DHT, the lookup started, the packages primed.
-- A node manager starting a node that joins; a node on another host
-  joining under its own manager.
-- The swarm's record in code first (the lookup and the managers' own
-  records), reached through requests.
+- A node on another host joining under its own node manager: the general
+  pattern (a swarm manager manages only the nodes it controls).
 
 ## Further down the roadmap
 
@@ -146,9 +149,9 @@ is built and proven:
 | Request's done | Where |
 |---|---|
 | 1. contract suite and test-run model on a persisted Hyperdrive under Bare | steps 1 and 3 |
-| 2. two Bare nodes in containers, Hyperswarm, a replicated repository | steps 2, 3 and 5 |
-| 3. a node from a plain Bare base through a bootstrap repository, packages loaded lazily | step 5 (packages in code first) |
-| 4. a deployment repository bringing up a seed and a joining node, recording them | step 6, in code first; the deployment repository further down the roadmap |
+| 2. two Bare nodes in containers, Hyperswarm, a replicated repository | steps 2, 3, 4 and 5 |
+| 3. a node from a plain Bare base through a bootstrap repository, packages loaded lazily | steps 4 and 5 (packages in code first) |
+| 4. a deployment repository bringing up a seed and a joining node, recording them | steps 4 and 5, in code first; the deployment repository further down the roadmap |
 | 5. every step recorded and rerunnable, metrics at the boundary, small runs | every step; small runs with the capability store, further down |
 
 ## Not in this phase
