@@ -1,6 +1,6 @@
 # Step 0. Probes
 
-Status: **in progress**. Request: `pending/phase-2/step-0-probes/request.md`
+Status: **done** (2026-10-31). Request: `pending/phase-2/step-0-probes/request.md`
 on `pending/default`. Scope: `notes/plan.md`, step 0.
 
 Small, local probes whose answers the design rests on. Each states its
@@ -15,6 +15,17 @@ records its outcome in its `record/`.
 
 Done when each part has run, its outcome is recorded, and what it means
 for the design is written into `notes/node-pattern.md`.
+
+## Outcome
+
+| Part | Answer | Record |
+|---|---|---|
+| `corestore-secrets/` | The primary key and the drives' secret keys are written to the store (its write-ahead log), in clear; the store reopens writable with no key. On tmpfs the same, in RAM. So: **the whole store in RAM**. | `corestore-secrets/record/` (4 cases, Node and Bare, disk and tmpfs) |
+| `drive-keypair/` | **Yes**, through the db core (Hyperdrive's internal `_db`); the drive moves with its keypair alone; its key is derived from a manifest naming the signer; a store taking over the writing must hold the whole drive. | `drive-keypair/record/` (Node and Bare) |
+| `container-dht/` | **Yes**: a hardened container on an internal network joins the host's DHT at the gateway address and connects in under 40 ms. Bare ignores SIGTERM handlers registered through `process.on`. | `container-dht/record/` (host on Node and on Bare) |
+
+The design changes this brings are in `notes/node-pattern.md` (the store in
+RAM; explicit keypairs; the auxiliary swarm confirmed).
 
 The probes share one set of pinned dependencies (`package.json`), the same
 versions the first build used.

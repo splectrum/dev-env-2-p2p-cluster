@@ -56,20 +56,29 @@ Hypercore, everything moved by replication, secrets only in memory.
    nodes, each with its own clone and key.
 8. **Local first, network last.** The node is complete and live on
    Hypercore before it opens a socket to its swarm.
-9. **A disposable store.** The Corestore sits in the container's own
-   filesystem (no mount), rebuilt from checkpoints (the repositories the
-   node writes) and from the swarm (the replicas it holds, by key).
+9. **A disposable store, in RAM.** The Corestore holds its secrets: it
+   writes its primary key and its cores' secret keys into its storage, in
+   clear, and reopens writable with no key given (probe
+   `steps/0-probes/corestore-secrets`). So the store lives in RAM, on a
+   tmpfs in the container, and is rebuilt at each start from checkpoints
+   (the repositories the node writes) and from the swarm (the replicas it
+   holds, by key). A store too large for RAM, or one that must survive a
+   restart, needs an encrypted volume unlocked from the vault, or signing
+   outside the store (open).
 10. **Identity in a vault, secrets in RAM only.** The node's secret (its
     Corestore primary key, and any explicit keypairs) lives in a vault on
-    the host, never in a store, repository, bundle, folder or image. It
+    the host, never in a persistent store, repository, bundle, folder or
+    image. It
     reaches the node only into memory, at each start. Secrets never go
     into a Hypercore either: a core is a replicated, signed, persistent
     log.
 
 ## Provisioning: the auxiliary swarm
 
-Direction; it rests on one probe still to run (a container joining a DHT
-on the host).
+Confirmed by probe `steps/0-probes/container-dht`: a hardened container
+from the plain base, on an internal network, joins a DHT run by the host
+at the network's gateway address and connects to the host's node (under
+40 ms).
 
 The node manager's side runs a small swarm local to the host, on an
 internal network with no route out: the **auxiliary swarm**, the
@@ -98,13 +107,14 @@ between them, even with none to the outside.
 
 | Where | Holds | Lifetime |
 |---|---|---|
-| the container's own filesystem | the join closure, the Corestore (rebuildable) | gone with the container |
+| the container's own filesystem (read-only) | the join closure | the image's |
+| a tmpfs in the container | the Corestore, secrets included (rebuildable) | RAM only, gone with the container |
 | the container's memory | the node's secret | until the node stops |
 | the host's vault | node secrets, long-lived keypairs | persistent, guarded |
 | the host's own folders | the host side's boundary with the outside world: bundles and files brought in by hand, exports to carry elsewhere | the host's |
 
 No folder is mapped into the container; nothing reaches it except through
-the auxiliary swarm (and a tmpfs, if a secret must ever be a file).
+the auxiliary swarm.
 
 ## The pattern elsewhere
 
@@ -296,28 +306,31 @@ frequency (streaming) comes later, through dedicated channels.
   package serves each capability URI; a repository asking the store to
   include a missing package.
 
+## Probed
+
+- **Explicit keypairs** (`steps/0-probes/drive-keypair`): a Hyperdrive is
+  writable with an explicit keypair through its db core (Hyperdrive's
+  internal `_db` option, to wrap in `p2p-store`); the drive moves to
+  another store with its keypair alone; its key is derived from a manifest
+  naming the signer, so a replica opens it by the drive's key; a store
+  taking over the writing must first hold the whole drive.
+- **Signals under Bare** (`steps/0-probes/container-dht`): a SIGTERM
+  handler registered through `process.on` (bare-node-process) did not
+  fire; a node's graceful stop needs Bare's own signal handling.
+
 ## Open
 
-1. **What the Corestore persists.** Whether Corestore and Hypercore write
-   the primary key, or writable cores' secret keys, into their storage
-   when the primary key is passed in at open. If they do, the key reaches
-   the disk and must be kept out. A local probe.
-2. **A container joining a DHT on the host:** the probe the provisioning
-   direction rests on.
-3. **A Hyperdrive with an explicit keypair:** how a drive is opened
-   writable with a keypair of its own, given that its blobs core is
-   derived from its db core.
-4. **The secure processes** for the keys that need securing: the
+1. **The secure processes** for the keys that need securing: the
    Corestore on the host, any transport of a secret (only vault to vault,
    encrypted to the receiving vault's key), and the code in the container
    (only verified code, the secret only in memory).
-5. **Release or sign.** The vault hands the secret over into memory
+2. **Release or sign.** The vault hands the secret over into memory
    (start here), or keeps it and signs on request (stronger; depends on
    Hypercore allowing an external signer). Which vault first, and who
    generates a node's secret (proposed: the vault).
-6. **The inbox:** framing large bundles in a core (or a size limit, with
+3. **The inbox:** framing large bundles in a core (or a size limit, with
    links for large data), admission of new writers, clearing accepted
    entries.
-7. **The p2p series** (its instrumentation and audit included), and **starting from zero
+4. **The p2p series** (its instrumentation and audit included), and **starting from zero
    and joining** (the first node and its DHT, a node joining), step by
    step.

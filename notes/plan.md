@@ -37,7 +37,10 @@ mechanism.
 
 ## Steps
 
-### 0. Probes (local, small)
+### 0. Probes (local, small) — done
+
+Record: `steps/0-probes/`. The store lives in RAM (it holds its secrets);
+explicit keypairs work; the auxiliary swarm works.
 
 1. What Corestore and Hypercore persist when the primary key is passed in
    at open: does a secret reach the disk?
