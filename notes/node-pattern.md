@@ -153,6 +153,11 @@ is still to be designed.
      replica.
    - **Communication patterns** (fire and forget, confirmed, handshakes)
      are a higher-level concern, built on this.
+   - **Future vision** (not for implementation now): like ports, a first
+     message on the repository's standard inbox sets up a dedicated
+     channel between the two (e.g. a pair of cores of their own, or a
+     channel on the connection) for what does not fit request by request,
+     such as streaming; the inbox stays the well-known entry point.
    - Open: framing large bundles in a core (or a size limit, with links
      for large data), admission of new writers, clearing accepted
      entries.
