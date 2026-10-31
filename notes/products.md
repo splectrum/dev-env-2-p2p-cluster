@@ -32,7 +32,7 @@ All in `pear-full-square` (the design: `node-pattern.md`, `plan.md`):
 | `p2p-git` | `pear-full-square/p2p-git` | moved from `bare-for-pear/p2p-git`; mycelium-git's dependency still names the old place (plan, step 1) |
 | `p2p-node-manager` | `pear-full-square/p2p-node-manager` | created, empty |
 | `p2p-swarm-manager` | `pear-full-square/p2p-swarm-manager` | created, empty |
-| repositories and names on the p2p layer | to name and create | |
+| `p2p-rns` | to create | the resource name service |
 
 `pear-full-square/p2p-swarm` was created before the connections module
 was named `p2p-connect`; it is unused.

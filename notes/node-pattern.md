@@ -207,13 +207,14 @@ layer implements them.
   - a node's names (its repositories, by type and instance) are recorded
     by the node itself, in its own repository: it owns them and is their
     single writer.
-- **A resource lookup**, like DNS: it receives a record of every resource
-  created in the swarm (and of every node joining) and answers lookups by
-  URI: a URI to its internal id and to what opens it, a listing by URI
-  pattern, and the reverse. It is a mycelium-level abstraction, for use
-  with mycelium repositories, and knows nothing of p2p: mycelium defines
-  its contract; the p2p layer only carries it (registrations and lookups
-  as messages, the sender's identity from the connection).
+- **A resource lookup, `p2p-rns`** (resource name service), like DNS: it
+  receives a record of every resource created in the swarm (and of every
+  node joining) and answers lookups by URI: a URI to its internal id and to
+  what opens it, a listing by URI pattern, and the reverse. It is rooted in
+  p2p (it knows keys, nodes and the swarm, and is reached as messages, the
+  sender's identity from the connection) and delivers an abstracted
+  resource lookup to its users: they see URIs and identities, never p2p.
+  Mycelium is one of its users.
   - Registrations are accepted from owners only: a node registers names
     under itself, and a node's own name is checked unique when it joins.
   - **First an in-code implementation**: a bootstrap component on the
@@ -226,10 +227,8 @@ layer implements them.
     and intake), replacing the in-code lookup at the end of an install,
     behind the same contract.
 - mycelium-uri validates entity URIs (their shape).
-- Open: where the contract and the in-code lookup live (a mycelium module
-  of their own?); and whether a
-  type with a single instance per node may leave its instance segment
-  out.
+- Open: whether a type with a single instance per node may leave its
+  instance segment out.
 
 ## Repository-to-repository talk
 
