@@ -11,4 +11,10 @@ under Bare.
 
 **Record**: `record/` (the kept run `2026-10-31-r6.bundle`).
 
-**Findings**: below, once recorded.
+**Findings** (record of 2026-10-31, dev `45a3c42`; 2 cases, exit 0):
+
+- **r6: 627 of 627 met**, with the pinned machinery `dba3214e`, found by
+  its id, on an instance on Hypercore, executed under Bare; kept at
+  13.9 MB.
+- **Identical to r5** (the same machinery, in development): every
+  response's invocations and the report.
