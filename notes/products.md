@@ -29,11 +29,11 @@ All in `pear-full-square` (the design: `node-pattern.md`, `plan.md`):
 
 | Module | Repository | State |
 |---|---|---|
-| `p2p-store` | `pear-full-square/p2p-store` | created, empty |
-| `p2p-dht` | `pear-full-square/p2p-dht` | created, empty |
-| `p2p-connect` | `pear-full-square/p2p-connect` | created, empty |
-| `p2p-replicate` | `pear-full-square/p2p-replicate` | created, empty |
-| `p2p-channel` | `pear-full-square/p2p-channel` | created, empty |
+| `p2p-store` | `pear-full-square/p2p-store` | `ec382f5` (step 2, from dev `adbbc29`) |
+| `p2p-dht` | `pear-full-square/p2p-dht` | `6b1f41b` (step 2, from dev `adbbc29`) |
+| `p2p-connect` | `pear-full-square/p2p-connect` | `a26b020` (step 2, from dev `adbbc29`) |
+| `p2p-replicate` | `pear-full-square/p2p-replicate` | `0b46561` (step 2, from dev `adbbc29`) |
+| `p2p-channel` | `pear-full-square/p2p-channel` | `c4fb7c7` (step 2, from dev `adbbc29`) |
 | `p2p-git` | `pear-full-square/p2p-git` | moved from `bare-for-pear/p2p-git`, `main` at `d7d154d`; mycelium-git's dependency names it since step 1 |
 | `p2p-node-manager` | `pear-full-square/p2p-node-manager` | created, empty |
 | `p2p-swarm-manager` | `pear-full-square/p2p-swarm-manager` | created, empty |
@@ -41,3 +41,13 @@ All in `pear-full-square` (the design: `node-pattern.md`, `plan.md`):
 
 `pear-full-square/p2p-swarm` was created before the connections module
 was named `p2p-connect`; it is unused.
+
+The five p2p modules were merged into their product repositories in step 2
+(`steps/2-p2p-series/product/`): each repository's initial commit (its
+LICENSE) joined to the folder's split history, so later splits merge
+plainly. Their tests run in this repository, where the series is one
+dependency tree (npm workspaces): a module's development dependencies on
+another of the series (`p2p-dht` for `p2p-connect`'s test, `p2p-store` for
+`p2p-replicate`'s) name it by package name, which only the workspace
+resolves. Publishing the series as a package (the capability store) will
+settle how they resolve elsewhere.

@@ -1,0 +1,16 @@
+{"module":"p2p-store","kind":"store-opened","time":1793478345368,"primaryKeyGiven":true}
+{"module":"p2p-dht","kind":"dht-started","time":1793478345376,"role":"node","host":"172.32.0.10","port":49737,"routingTable":1}
+{"module":"p2p-store","kind":"resource-opened","time":1793478345383,"resource":"57931f4b70690a86955ebd9a5a329672623a549eefd47a86967db4153547281a","how":"replica","name":null,"writable":false,"length":0}
+{"module":"p2p-connect","kind":"connection-opened","time":1793478345407,"peer":"c54b6db035615c668b86eb50b8bd23ab8501e9cbe47b08495d1cb3513e238c02","initiator":true,"remoteHost":"172.32.0.1"}
+{"module":"p2p-replicate","kind":"replication-started","time":1793478345407,"peer":"c54b6db035615c668b86eb50b8bd23ab8501e9cbe47b08495d1cb3513e238c02"}
+{"module":"p2p-connect","kind":"topic-joined","time":1793478345410,"topic":"e50f62de99333f9d38779fbff37a5dd5fc8564dbaa1a588383ac692222fa43c3","server":false,"client":true}
+{"module":"p2p-channel","kind":"channel-opened","time":1793478345411,"channel":"step-2","peer":"c54b6db035615c668b86eb50b8bd23ab8501e9cbe47b08495d1cb3513e238c02"}
+{"module":"p2p-channel","kind":"message","time":1793478345464,"channel":"step-2","peer":"c54b6db035615c668b86eb50b8bd23ab8501e9cbe47b08495d1cb3513e238c02","direction":"out","type":"request","bytes":57}
+{"module":"p2p-channel","kind":"message","time":1793478345465,"channel":"step-2","peer":"c54b6db035615c668b86eb50b8bd23ab8501e9cbe47b08495d1cb3513e238c02","direction":"in","type":"reply","bytes":83}
+{"module":"p2p-channel","kind":"message","time":1793478345466,"channel":"step-2","peer":"c54b6db035615c668b86eb50b8bd23ab8501e9cbe47b08495d1cb3513e238c02","direction":"out","type":"message","bytes":39}
+{"module":"p2p-connect","kind":"connection-closed","time":1793478345668,"peer":"c54b6db035615c668b86eb50b8bd23ab8501e9cbe47b08495d1cb3513e238c02","bytesReceived":6899,"bytesSent":1791,"ms":261}
+{"module":"p2p-channel","kind":"channel-closed","time":1793478345668,"channel":"step-2","peer":"c54b6db035615c668b86eb50b8bd23ab8501e9cbe47b08495d1cb3513e238c02","pending":0}
+{"module":"p2p-replicate","kind":"replication-ended","time":1793478345668,"peer":"c54b6db035615c668b86eb50b8bd23ab8501e9cbe47b08495d1cb3513e238c02"}
+{"module":"p2p-connect","kind":"connect-closed","time":1793478345669}
+{"module":"p2p-dht","kind":"dht-closed","time":1793478345669,"role":"node"}
+{"module":"p2p-store","kind":"store-closed","time":1793478345671}

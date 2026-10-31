@@ -315,9 +315,14 @@ frequency (streaming) comes later, through dedicated channels.
   another store with its keypair alone; its key is derived from a manifest
   naming the signer, so a replica opens it by the drive's key; a store
   taking over the writing must first hold the whole drive.
-- **Signals under Bare** (`steps/0-probes/container-dht`): a SIGTERM
-  handler registered through `process.on` (bare-node-process) did not
-  fire; a node's graceful stop needs Bare's own signal handling.
+- **Signals under Bare** (`steps/2-p2p-series/signals`, correcting step 0):
+  Bare handles SIGTERM through `process.on`; npm's `bare` wrapper on a
+  host suppresses signals, so long-running Bare processes on a host start
+  with the runtime's binary, as containers do.
+- **The p2p series composed** (`steps/2-p2p-series/validation`): two peers
+  find each other, connect, replicate lazily and talk on a channel, on
+  Node, on Bare and between the host and a hardened container with its
+  store on a tmpfs; every module's events form each peer's audit.
 
 ## Open
 

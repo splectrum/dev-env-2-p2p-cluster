@@ -1,0 +1,12 @@
+{
+  "invocation": "steps/record.sh 2-p2p-series signals node=sh steps/2-p2p-series/signals/run.sh node bare-binary=sh steps/2-p2p-series/signals/run.sh bare-binary bare-wrapper=sh steps/2-p2p-series/signals/run.sh bare-wrapper container=sh steps/2-p2p-series/signals/run.sh container ",
+  "state": { "dev": "45636c8b724ddea588b75acb5ab5877e01fe1508", "pendingDefault": "0b8e0c4" },
+  "environment": {
+    "node": "v22.22.0",
+    "bare": "v1.36.0",
+    "git": "git version 2.43.0",
+    "os": "Linux 6.18.44-fc-v185",
+    "docker": "29.9.2"
+  },
+  "nondeterministic": { "started": "2026-10-31T20:23:39Z", "finished": "2026-10-31T20:23:51Z" }
+}

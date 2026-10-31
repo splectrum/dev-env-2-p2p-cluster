@@ -1,0 +1,4 @@
+{"case":"node","command":"sh steps/2-p2p-series/signals/run.sh node","exit":0,"ms":3016,"result":{"runner":"node","result":{"handled":true,"ms":1974},"aliveAfterSigterm":false}}
+{"case":"bare-binary","command":"sh steps/2-p2p-series/signals/run.sh bare-binary","exit":0,"ms":3109,"result":{"runner":"bare-binary","result":{"handled":true,"ms":1858},"aliveAfterSigterm":false}}
+{"case":"bare-wrapper","command":"sh steps/2-p2p-series/signals/run.sh bare-wrapper","exit":0,"ms":3019,"result":{"runner":"bare-wrapper","result":{"ready":true},"aliveAfterSigterm":true}}
+{"case":"container","command":"sh steps/2-p2p-series/signals/run.sh container","exit":0,"ms":2401,"result":{"runner":"container","result":{"handled":true,"ms":1875}}}

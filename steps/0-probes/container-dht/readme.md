@@ -40,6 +40,9 @@ Bare, both exit 0, the same outcome):
   the host's handler never fired, so the probe's host ends by itself. A
   node's graceful stop under Bare needs Bare's own signal handling
   (bare-signals); to settle in step 2.
+  **Corrected in step 2** (`steps/2-p2p-series/signals/`): Bare does act on
+  it; the signal went to npm's `bare` wrapper, which suppresses signals
+  and never passed it on to the runtime.
 - Not verified: that the internal network has no route out (in this
   session the outside is unreachable for UDP anyway).
 

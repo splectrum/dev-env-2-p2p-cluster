@@ -66,7 +66,11 @@ repository at `pear-full-square/mycelium-git@c97f3a0`.
 - mycelium-git's dependency names `pear-full-square/p2p-git`.
 - The product repository `pear-full-square/mycelium-git` is updated.
 
-### 2. The p2p series, minimal and instrumented
+### 2. The p2p series, minimal and instrumented — done
+
+Record: `steps/2-p2p-series/`. Five modules, instrumented; two peers
+validated on Node, on Bare and host to container; the product
+repositories at their first versions.
 
 | Module | Concern | Capability |
 |---|---|---|
