@@ -44,9 +44,9 @@ evidence behind some of what follows, not as the design.
    clone and key.
 8. **Local first, network last.** The node is complete and live on
    Hypercore before it opens a socket.
-9. **A disposable store.** The Corestore sits in a volume internal to the
-   container, rebuilt from checkpoints (the repositories the node writes)
-   and from the cluster (the replicas it holds, by key).
+9. **A disposable store.** The Corestore sits in the container's own
+   filesystem (no mount), rebuilt from checkpoints (the repositories the
+   node writes) and from the cluster (the replicas it holds, by key).
 10. **Identity in a vault.** The node's secret (its Corestore primary key,
     and any explicit keypairs) lives in a vault on the host, not in the
     store, the exchange point or the image. At start it is handed over
@@ -54,13 +54,18 @@ evidence behind some of what follows, not as the design.
     memory and removed. Secrets never touch a disk: swap and core dumps
     are closed off for the container.
 
-## Mounts
+## Where things live
 
-| Mount | Holds | Lifetime |
+Two mounts; the store needs none.
+
+| Where | Holds | Lifetime |
 |---|---|---|
-| exchange folder (host) | boot material, bundles, requests, responses; nothing secret | shared, carried around |
-| data volume (internal) | the Corestore, rebuildable | disposable |
-| `/secrets` (tmpfs) | the node's secret, only while it is handed over | RAM only |
+| exchange folder (bind mount from the host) | boot material, bundles, requests, responses; nothing secret | shared, carried around |
+| `/secrets` (tmpfs mount) | the node's secret, only while it is handed over | RAM only |
+| the container's own filesystem | the Corestore, rebuildable | gone with the container |
+
+Once proven, this becomes part of the architecture in the main
+documentation.
 
 ## The pattern elsewhere
 
