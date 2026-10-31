@@ -1,0 +1,6 @@
+{"case":"unit-mycelium-uri","command":"sh steps/1-mycelium/validation/unit-tests.sh mycelium-uri","exit":0,"ms":209,"result":{"module":"mycelium-uri","pass":12,"fail":0}}
+{"case":"unit-mycelium-xpath","command":"sh steps/1-mycelium/validation/unit-tests.sh mycelium-xpath","exit":0,"ms":210,"result":{"module":"mycelium-xpath","pass":4,"fail":0}}
+{"case":"unit-mycelium-git","command":"sh steps/1-mycelium/validation/unit-tests.sh mycelium-git","exit":0,"ms":5637,"result":{"module":"mycelium-git","pass":78,"fail":0}}
+{"case":"unit-mycelium-layer","command":"sh steps/1-mycelium/validation/unit-tests.sh mycelium-layer","exit":0,"ms":3090,"result":{"module":"mycelium-layer","pass":8,"fail":0}}
+{"case":"unit-mycelium-repo","command":"sh steps/1-mycelium/validation/unit-tests.sh mycelium-repo","exit":0,"ms":1156,"result":{"module":"mycelium-repo","pass":3,"fail":0}}
+{"case":"test-run-r2","command":"sh steps/1-mycelium/validation/test-run.sh /tmp/claude-0/-home-user/d01f3080-f030-5051-8c75-7cd188d75161/scratchpad/r2 steps/1-mycelium/validation/record/2026-10-31-r2.bundle","exit":0,"ms":161836,"result":{"requests":10,"invocations":507,"met":507,"notMet":0,"withoutExpectation":0,"didNotComplete":0,"bundleBytes":5009860}}

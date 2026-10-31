@@ -1,0 +1,12 @@
+{
+  "invocation": "steps/record.sh 1-mycelium validation unit-mycelium-uri=sh steps/1-mycelium/validation/unit-tests.sh mycelium-uri unit-mycelium-xpath=sh steps/1-mycelium/validation/unit-tests.sh mycelium-xpath unit-mycelium-git=sh steps/1-mycelium/validation/unit-tests.sh mycelium-git unit-mycelium-layer=sh steps/1-mycelium/validation/unit-tests.sh mycelium-layer unit-mycelium-repo=sh steps/1-mycelium/validation/unit-tests.sh mycelium-repo test-run-r2=sh steps/1-mycelium/validation/test-run.sh /tmp/claude-0/-home-user/d01f3080-f030-5051-8c75-7cd188d75161/scratchpad/r2 steps/1-mycelium/validation/record/2026-10-31-r2.bundle ",
+  "state": { "dev": "5cbe6dab7e95dbd74ddbbbc925ea818d40f0b686", "pendingDefault": "7531ea9" },
+  "environment": {
+    "node": "v22.22.0",
+    "bare": "v1.36.0",
+    "git": "git version 2.43.0",
+    "os": "Linux 6.18.44-fc-v185",
+    "docker": "29.9.2"
+  },
+  "nondeterministic": { "started": "2026-10-31T19:59:16Z", "finished": "2026-10-31T20:02:09Z" }
+}
