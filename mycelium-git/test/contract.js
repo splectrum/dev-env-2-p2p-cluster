@@ -85,6 +85,22 @@ export function contract (name, makeBackend) {
     assert.deepEqual((await wrepo.select('/main/docs/*')).map(([p]) => p), ['/main/docs/a'])
   })
 
+  test(`${name}: a tree's entries come in git's order`, async () => {
+    // Git orders a tree's entries by name, a folder's as if it ended in
+    // '/': 'a-b' (a file) before 'a' (a folder), where plain name order
+    // gives the reverse. Selection follows the tree, so every engine gives
+    // git's order.
+    const c = await w.change('main')
+    await c.put('/order/a-b', 'file')
+    await c.put('/order/a/c', 'in a folder')
+    await c.commit('Order', { author, time })
+    assert.deepEqual((await wrepo.select('/main/order/*')).map(([p]) => p), ['/main/order/a-b', '/main/order/a'])
+    const c2 = await w.change('main')
+    c2.remove('/order/a-b')
+    c2.remove('/order/a/c')
+    await c2.commit('Order removed', { author, time })
+  })
+
   test(`${name}: change: emptied folders disappear`, async () => {
     const c = await w.change('main')
     c.remove('/notes/one.md')

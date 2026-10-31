@@ -6,6 +6,10 @@
 // test runs is here: the kinds of request, their order, and how each is
 // executed. It records what happened; it does not judge.
 //   node execute.js <repo> [capability-branch]   (default: capability/test)
+//   bare execute.js <repo> [capability-branch]
+// The instance is native or on the p2p layer (instance.js); the runner runs
+// on the runtime executing this, and the report is made here, in this
+// process (a p2p instance's store is open in one process at a time).
 //
 // A request is pending/<name>/request.md, with one of:
 //   Run: <tests-file> in <folder>   run a list of invocations (runner.js)
@@ -17,12 +21,15 @@
 // Beside unit.json and response.md, the response holds results.jsonl (Run),
 // report.md (Report), or error.txt when the runner or the report failed.
 
+import process from 'node:process'
 import { writeFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { spawnSync } from 'node:child_process'
-import { nativeBackend, openRepo, pinned } from './mycelium-git/index.js'
+import { openRepo, pinned } from './mycelium-git/index.js'
 import { executeRequests } from './mycelium-layer/index.js'
+import { openInstance } from './instance.js'
+import { makeReport as report } from './report.js'
 
 const code = dirname(fileURLToPath(import.meta.url))
 
@@ -31,21 +38,28 @@ if (!repo) {
   console.error('usage: execute.js <repo> [capability-branch]')
   process.exit(2)
 }
-const backend = nativeBackend(repo)
+const instance = await openInstance(repo, { code })
+const backend = instance.backend
+const onBare = typeof Bare !== 'undefined'
+const runtime = onBare ? process.execPath : 'node'
+const version = cmd => spawnSync(cmd, ['--version'], { encoding: 'utf8' }).stdout?.toString().trim() || null
 
 const executed = await executeRequests({
   backend,
   capability,
   author: { name: 'test-run', email: 'test-run@localhost' },
   environment: {
-    node: process.version,
-    git: spawnSync('git', ['--version'], { encoding: 'utf8' }).stdout.trim(),
-    bare: spawnSync('bare', ['--version'], { encoding: 'utf8' }).stdout?.trim() || null,
+    node: version('node'),
+    git: version('git'),
+    bare: version('bare'),
+    runtime: onBare ? `bare ${Bare.version}` : `node ${process.version}`,
+    instance: instance.kind,
     platform: `${process.platform}-${process.arch}`
   },
   plan,
   handle
 })
+await instance.close()
 console.log(JSON.stringify({ executed }))
 
 // The kinds of request, and their order: runs first, then reports.
@@ -75,24 +89,27 @@ async function runTests (state, work, out, testsPath, folder) {
     const path = `/pending/default/${testsPath}`
     if ((await at.select(path)).length) writeFileSync(testsFile, await at.read(path))
   }
-  const r = spawnSync('node', [join(code, 'runner.js'), testsFile, join(code, folder),
+  const r = spawnSync(runtime, [join(code, 'runner.js'), testsFile, join(code, folder),
     join(out, 'results.jsonl')], { encoding: 'utf8' })
   if (r.status !== 0) {
-    writeFileSync(join(out, 'error.txt'), r.stderr)
+    writeFileSync(join(out, 'error.txt'), String(r.stderr))
     return `The runner did not complete (exit ${r.status}); its error output is \`error.txt\`.`
   }
-  const { invocations } = JSON.parse(r.stdout.trim().split('\n').pop())
+  const { invocations } = JSON.parse(String(r.stdout).trim().split('\n').pop())
   return `Executed ${invocations} invocations; the record is \`results.jsonl\`.`
 }
 
-// Interpret the record with the deployed report.js; the report is report.md,
-// and also the body of the response.
-function makeReport (out, scope) {
-  const r = spawnSync('node', [join(code, 'report.js'), repo, scope], { encoding: 'utf8' })
-  if (r.status !== 0) {
-    writeFileSync(join(out, 'error.txt'), r.stderr)
-    return { outcome: `The report could not be made (exit ${r.status}); its error output is \`error.txt\`.` }
+// Interpret the record with the deployed report.js, in this process; the
+// report is report.md, and also the body of the response.
+async function makeReport (out, scope) {
+  let text
+  try {
+    if (scope !== 'runs') throw new Error(`usage: Report: runs (not ${scope})`)
+    text = (await report(backend)) + '\n'
+  } catch (err) {
+    writeFileSync(join(out, 'error.txt'), String(err.stack || err) + '\n')
+    return { outcome: 'The report could not be made; its error output is `error.txt`.' }
   }
-  writeFileSync(join(out, 'report.md'), r.stdout)
-  return { outcome: 'Report made: `report.md`.', body: r.stdout }
+  writeFileSync(join(out, 'report.md'), text)
+  return { outcome: 'Report made: `report.md`.', body: text }
 }

@@ -8,6 +8,7 @@ the product repository's main. Recorded per update.
 |---|---|---|---|---|
 | `mycelium-git` | `pear-full-square/mycelium-git` | `eee62cc` | `693c5a5` | `3e021c4` |
 | `mycelium-git` | `pear-full-square/mycelium-git` | `f4b9d1d` | `1dd99c5` | `c97f3a0` |
+| `mycelium-git` | `pear-full-square/mycelium-git` | `ccbe05f` | `2d8ef6f` | `37bf41d` |
 
 - `mycelium-git` at `3e021c4`: this phase's folder started as a copy of
   phase 1's, so its split history was unrelated to the product's; the
@@ -16,6 +17,9 @@ the product repository's main. Recorded per update.
 - `mycelium-git` at `c97f3a0` (step 1): back to its backend contract, p2p-git
   from `pear-full-square`, id `64072bc6-cb98-4383-9d48-480f5d119889`; a
   plain merge, the previous split head an ancestor of the new one.
+- `mycelium-git` at `37bf41d` (step 3): engines given as modules, a tree's
+  entries in git's order on every engine; id
+  `7cadb8e9-88c5-4b56-8baf-5988072a0cc8`.
 - `mycelium-uri`, `mycelium-xpath`: unchanged since phase 1
   (`dev-env-1-mycelium-git@33634de`); nothing to merge.
 - `mycelium-node`: the first build's module, removed in step 1; it never
@@ -38,6 +42,7 @@ All in `pear-full-square` (the design: `node-pattern.md`, `plan.md`):
 | `p2p-node-manager` | `pear-full-square/p2p-node-manager` | created, empty |
 | `p2p-swarm-manager` | `pear-full-square/p2p-swarm-manager` | created, empty |
 | `p2p-rns` | to create | the resource name service |
+| `p2p-mrepo` | to create (name proposed) | mycelium repositories on the p2p layer, from step 3; a folder here until its repository exists |
 
 `pear-full-square/p2p-swarm` was created before the connections module
 was named `p2p-connect`; it is unused.

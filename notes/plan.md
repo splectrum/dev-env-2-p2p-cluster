@@ -90,7 +90,11 @@ repositories at their first versions.
 - Validated: two peers on one machine, then one on the host machine and
   one in a container; the audit and metrics of each recorded.
 
-### 3. Repositories on the p2p layer
+### 3. Repositories on the p2p layer — done
+
+Record: `steps/3-repositories/`. p2p-mrepo; test-run instances on
+Hypercore under Bare: r5 and r6 627 of 627, identical to the native runs;
+the machinery pinned at `dba3214e`.
 
 - Create a repository (its keypair, owned by its node), import one from
   the boundary (a bundle or a native repository), open one by key, clone

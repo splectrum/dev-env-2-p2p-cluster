@@ -1,16 +1,22 @@
 {
   "name": "dev-env-2-p2p-cluster",
   "private": true,
-  "description": "The p2p series as one dependency tree (npm workspaces): each module a folder, their dependencies resolved together. The dependencies here are what the application composing them needs: Bare's aliases for Node's built-ins.",
+  "type": "module",
+  "description": "The p2p series as one dependency tree (npm workspaces): each module a folder, their dependencies resolved together. The dependencies here are what the applications composing them need: Bare's aliases for Node's built-ins.",
   "workspaces": [
     "p2p-store",
     "p2p-dht",
     "p2p-connect",
     "p2p-replicate",
-    "p2p-channel"
+    "p2p-channel",
+    "p2p-mrepo"
   ],
   "dependencies": {
+    "child_process": "npm:bare-node-child-process@1.0.1",
     "fs": "npm:bare-node-fs@1.0.2",
-    "process": "npm:bare-node-process@1.0.1"
+    "path": "npm:bare-node-path@1.0.1",
+    "process": "npm:bare-node-process@1.0.1",
+    "url": "npm:bare-node-url@1.0.1",
+    "util": "npm:bare-node-util@1.0.0"
   }
 }

@@ -32,9 +32,12 @@ export function isoStyleBackend (git, gitdir, { fs = nodeFs } = {}) {
       return { tree: commit.tree, parents: commit.parent, message: commit.message }
     },
 
+    // A tree's entries in git's order, as native git gives them (a folder's
+    // name compared as if it ended in '/'); isomorphic-git sorts by plain
+    // name.
     async readTree (oid) {
       const { tree } = await git.readTree({ ...at, oid })
-      return tree.map(e => ({ name: e.path, mode: e.mode, type: e.type, oid: e.oid }))
+      return tree.map(e => ({ name: e.path, mode: e.mode, type: e.type, oid: e.oid })).sort(gitOrder)
     },
 
     async readBlob (oid) {
@@ -119,4 +122,9 @@ export function isoStyleBackend (git, gitdir, { fs = nodeFs } = {}) {
       }
     }
   }
+}
+
+const sortKey = e => Buffer.from(e.type === 'tree' ? `${e.name}/` : e.name)
+function gitOrder (a, b) {
+  return Buffer.compare(sortKey(a), sortKey(b))
 }

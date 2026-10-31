@@ -11,13 +11,16 @@ req=$2
 src=$(cd "$(dirname "$0")/.." && pwd)
 node --input-type=module -e "
 import { intake } from '$src/mycelium-layer/index.js'
-import { nativeBackend } from '$src/mycelium-git/index.js'
-const [repo, folder, name] = process.argv.slice(1)
+import { openInstance } from '$src/test-run/instance.js'
+const [repo, folder, name, code] = process.argv.slice(1)
+const instance = await openInstance(repo, { code })
 try {
-  await intake({ backend: nativeBackend(repo), folder, name,
+  await intake({ backend: instance.backend, folder, name,
     author: { name: 'test-run', email: 'test-run@localhost' } })
 } catch (err) {
   console.error(err.message)
-  process.exit(1)
-}" "$repo" "$req" "$(basename "$req")"
+  process.exitCode = 1
+} finally {
+  await instance.close()
+}" "$repo" "$req" "$(basename "$req")" "$src"
 echo "requested $(basename "$req")"
