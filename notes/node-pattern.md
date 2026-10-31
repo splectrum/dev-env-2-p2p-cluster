@@ -144,12 +144,13 @@ the auxiliary cluster (and a tmpfs, if a secret must ever be a file).
 
 ## What a running node is
 
-One process, the runtime with the substrate (`p2p-peer`, name proposed,
-for `bare-for-pear`), running: a DHT node (taking part in the cluster's
+One process, the runtime with the p2p series (`p2p-store`, `p2p-dht`,
+`p2p-swarm`, `p2p-channel`, `p2p-git`; `pear-full-square`), running: a DHT node (taking part in the cluster's
 DHT), a server listening on the node's keypair, the swarm with its
 announcements kept alive, replication on every connection, and the
 Corestore. Repositories (applications) are opened, served and joined
-within it. The substrate holds no management: the node manager and the
+within it. Every module of the series is instrumented and audited
+(`plan.md`, step 2). The series holds no management: the node manager and the
 cluster manager are applications on the host machine (`pear-full-square`).
 
 ## Repository-to-repository talk
@@ -229,6 +230,6 @@ frequency (streaming) comes later, through dedicated channels.
 6. **The inbox:** framing large bundles in a core (or a size limit, with
    links for large data), admission of new writers, clearing accepted
    entries.
-7. **The substrate modules** for `bare-for-pear`, and **starting from zero
+7. **The p2p series** (its instrumentation and audit included), and **starting from zero
    and joining** (the first node and its DHT, a node joining), step by
    step.

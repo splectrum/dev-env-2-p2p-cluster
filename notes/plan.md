@@ -15,8 +15,7 @@ rules follow (`rules.md`): the rules constrain the implementation.
 | node application | `pear-full-square` | the node repository in operation |
 | mycelium-p2p | `pear-full-square` | a mycelium repository instance on a peer |
 | mycelium (uri, xpath, git, layer, repo) | `pear-full-square` | the data fabric: repositories over a backend contract |
-| the substrate, `p2p-peer` (name proposed) | `bare-for-pear` | inside a node's process: identity, DHT, swarm, replication, resources, metrics; no management |
-| p2p-git | `bare-for-pear` | git on a Hyperdrive (its `hyperdrive-fs`), or on any filesystem |
+| the p2p series: `p2p-store`, `p2p-dht`, `p2p-swarm`, `p2p-channel`, `p2p-git` | `pear-full-square` | every aspect of the p2p layer, inside a node's process, one concern per module, instrumented; no management |
 | Hypercore, Corestore, Hyperdrive, Hyperswarm | Holepunch | storage, replication, discovery |
 
 ## Steps
@@ -41,19 +40,38 @@ hold as designed.
   (`hyperdrive-fs`) is what makes it p2p, so it stays there.
 - The product repository `pear-full-square/mycelium-git` is updated.
 
-### 2. The substrate: a peer
+### 2. The p2p series
 
-"Host" means the host machine only; the substrate is what a process needs
-to be a peer.
+"Host" means the host machine only. The p2p layer is a series of modules,
+one concern each (names proposed), in `pear-full-square`:
 
-- One peer per process: one Corestore (its primary key given, not
-  stored), one DHT node, one swarm, replication on every connection.
-- Resources opened by name (own, a namespace) or by key (a replica),
-  announced per resource; a private DHT for clusters (two persistent
-  nodes); a membership hook (firewall); metrics per connection and per
-  resource.
-- Validated: two peers on one machine, then a peer on the host machine
-  and one in a container.
+| Module | Concern | Capability |
+|---|---|---|
+| `p2p-store` | resources and their keys, locally: the Corestore opened with a given primary key (nothing secret on disk), resources by name or key, explicit keypairs, hold and pin, replication over any stream | `state/hyperdrive`, `p2p/replicate` |
+| `p2p-dht` | discovery: a persistent DHT node, a private DHT's bootstrap (two persistent nodes at least), announce and lookup | `p2p/discover` |
+| `p2p-swarm` | connections: the server on the node's keypair, outgoing connections, the membership hook; yields encrypted streams | `p2p/connect` |
+| `p2p-channel` | messages on a connection, not stored: the secret handover, later dedicated channels | (new) |
+| `p2p-git` | git on a Hyperdrive (its `hyperdrive-fs`) | `state/hyperdrive` |
+
+- Each is usable alone or in combination: a repository with no network
+  uses `p2p-store` alone; mobile and the auxiliary link use the store and
+  channels over a pipe or socket; a full node uses all of them. No module
+  composes the others: the application does.
+- **Instrumentation and audit are part of every module**, by one shared
+  contract: each module reports its activity as structured events (what,
+  when, which peer key, which resource key, bytes, outcome) and counters,
+  through an observer the application gives it. Never a secret, only facts
+  about one (a secret was handed over, to which key). Two kinds:
+  - **audit**: who did what (connections admitted or refused, resources
+    created, opened, announced, held; keys handed over; membership
+    changes), append-only;
+  - **metrics**: counters and samples, summarised per interval, at the
+    boundary.
+- `p2p-git` moves from `bare-for-pear` to `pear-full-square` with the
+  series (by the human: a transfer of the repository, or a new one taking
+  its history with a plain merge); mycelium-git's dependency follows.
+- Validated: two peers on one machine, then one on the host machine and
+  one in a container; the audit and metrics of each recorded.
 
 ### 3. mycelium-p2p: repository instances on a peer
 
@@ -76,7 +94,7 @@ to be a peer.
 
 - Multi-module packages: module instances stored once, a package a commit
   of gitlinks with one resolved dependency tree; the first package,
-  `mycelium`, then the substrate.
+  `mycelium`, then the p2p series.
 - Import at the boundary, validation by a test run (the evidence linked),
   availability; materialise for Bare from a replica.
 - A repository's `capability/default` as gitlinks to packages, with the
@@ -121,6 +139,10 @@ channels, zero knowledge, AVRO and Kafka.
 
 ## Needs the human
 
-- Repositories for new modules: `bare-for-pear/p2p-peer` (the substrate;
-  name proposed), and in `pear-full-square`: mycelium-p2p, the node
-  manager and the cluster manager. Until then they are folders here.
+- Repositories in `pear-full-square` for the p2p series (`p2p-store`,
+  `p2p-dht`, `p2p-swarm`, `p2p-channel`; names proposed), mycelium-p2p,
+  the node manager and the cluster manager; and `p2p-git` moved there from
+  `bare-for-pear`. Until then they are folders here.
+- Open in step 2: where audit goes (proposed: an append-only, signed core
+  per node, replicated to its node manager over the management plane;
+  facts only, never secrets) and how detailed it is.
