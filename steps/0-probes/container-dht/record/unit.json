@@ -1,0 +1,12 @@
+{
+  "invocation": "steps/0-probes/record.sh container-dht node-host=sh container-dht/run.sh node bare-host=sh container-dht/run.sh bare ",
+  "state": { "dev": "b98f67730da162fa1471b02d018a38347cc48608", "pendingDefault": "1d0e581" },
+  "environment": {
+    "node": "v22.22.0",
+    "bare": "v1.36.0",
+    "os": "Linux 6.18.44-fc-v185",
+    "docker": "29.9.2",
+    "modules": { "corestore": "7.16.1", "hypercore": "11.39.6", "hypercore-storage": "3.4.0", "hyperdrive": "13.3.4", "hyperswarm": "4.17.2", "hyperdht": "6.35.0" }
+  },
+  "nondeterministic": { "started": "2026-10-31T19:39:13Z", "finished": "2026-10-31T19:39:18Z" }
+}

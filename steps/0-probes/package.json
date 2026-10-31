@@ -1,0 +1,18 @@
+{
+  "name": "step-0-probes",
+  "id": "bcb21cf7-53ba-4d25-ac2c-ad94e9472380",
+  "description": "Step 0's probes: their pinned dependencies",
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "dependencies": {
+    "corestore": "7.16.1",
+    "fs": "npm:bare-node-fs@1.0.2",
+    "hypercore-crypto": "3.7.0",
+    "hyperdht": "6.35.0",
+    "hyperdrive": "13.3.4",
+    "hyperswarm": "4.17.2",
+    "path": "npm:bare-node-path@1.0.1",
+    "process": "npm:bare-node-process@1.0.1"
+  }
+}
