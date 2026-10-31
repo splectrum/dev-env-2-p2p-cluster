@@ -26,7 +26,7 @@ in `pear-full-square`; from the top down:
 |---|---|---|
 | management, on the host machine | `p2p-node-manager`, `p2p-swarm-manager` | a node; the swarm (the nodes it controls, priming, genesis): starting, provisioning, monitoring, recording |
 | the node | the node application | the node repository in operation; composes the layers below |
-| resources | the lookup, first (module open) | p2p-agnostic services for mycelium repositories, behind contracts mycelium defines |
+| resources | `p2p-rns` (the resource name service), first | rooted in p2p, delivering abstracted services (URIs and identities) to their users, mycelium among them |
 | the data fabric | mycelium (`mycelium-uri`, `-xpath`, `-git`, `-layer`, `-repo`) | repositories and their rules over contracts; p2p-git is one engine; knows nothing of p2p |
 | git on Hypercore | `p2p-git` | git objects and refs on a Hyperdrive (its `hyperdrive-fs`) |
 | the p2p series | `p2p-store`, `p2p-dht`, `p2p-connect`, `p2p-replicate`, `p2p-channel` | storage, discovery, connections, replication, messages; no git, no repositories, no management |
@@ -97,12 +97,12 @@ From zero: the swarm comes first, everything else joins it.
 - `p2p-swarm-manager` starts the master node (through a node manager, as
   every node is started): genesis from non-P2P repositories, the first
   DHT (two persistent nodes), the packages primed.
-- **The lookup, in code**, on the master node, in memory, for its lifetime
+- **The lookup, `p2p-rns`, in code**, on the master node, in memory, for its lifetime
   only: register (owners only: a node under its own name; a node's name
   checked unique when it joins), resolve a URI (`/<swarm>/<node>/<name>/...`)
-  to its internal id and key, list by URI pattern, reverse. Mycelium's
-  contract for it; registrations and lookups carried as messages
-  (`p2p-channel`), the sender's identity from the connection.
+  to its internal id and key, list by URI pattern, reverse. Its users see
+  URIs and identities only; registrations and lookups are carried as
+  messages (`p2p-channel`), the sender's identity from the connection.
 - **Packages in code first:** the master node serves the node packages as
   a resource (pinned, a multi-module package with one dependency tree).
 - The swarm's record in code first (the lookup and the managers' own
@@ -135,7 +135,7 @@ From zero: the swarm comes first, everything else joins it.
 Each replacing its in-code version behind the same contract, once enough
 is built and proven:
 
-- the lookup as a repository (inbox and intake), replacing the in-code
+- `p2p-rns` on a repository (inbox and intake), replacing the in-code
   lookup at the end of an install;
 - the inbox as writer cores (priority, internal or external), for
   repository-to-repository talk without a live connection;
@@ -164,8 +164,8 @@ channels, zero knowledge, AVRO and Kafka.
 
 - Created in `pear-full-square`: `p2p-store`, `p2p-dht`, `p2p-connect`,
   `p2p-replicate`, `p2p-channel`, `p2p-node-manager`,
-  `p2p-swarm-manager`; `p2p-git` moved there. To decide: where the lookup
-  (its contract and its in-code version) lives. `pear-full-square/p2p-swarm`
+  `p2p-swarm-manager`; `p2p-git` moved there. To create: `p2p-rns`.
+  `pear-full-square/p2p-swarm`
   was created before the connections module was renamed `p2p-connect`,
   and is unused.
 - Open in step 2: where audit goes (proposed: an append-only, signed core
