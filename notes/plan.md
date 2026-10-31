@@ -51,7 +51,10 @@ explicit keypairs work; the auxiliary swarm works.
 They decide whether "secrets in memory only" and the auxiliary swarm hold
 as designed.
 
-### 1. Mycelium back to its own concern
+### 1. Mycelium back to its own concern — done
+
+Record: `steps/1-mycelium/`. Test run r2: 507 of 507 met; the product
+repository at `pear-full-square/mycelium-git@c97f3a0`.
 
 - mycelium-git returns to the backend contract over a given filesystem:
   `openHyperdrive`, the Hyperdrive engine and the Corestore and Hyperdrive
