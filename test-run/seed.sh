@@ -3,8 +3,9 @@
 #   test-run/seed.sh <new-repo-dir> [request-dir]...
 # Run from the dev repository's root, from a committed state. Creates:
 #   main             a readme only (the instance's own data starts empty)
-#   capability/test  every module (mycelium-*) and the run machinery
-#   pending/default  a request per tests file (test/commands*.txt) of each module,
+#   capability/test  every module (mycelium-*, p2p-*) and the run machinery
+#   pending/default  a request per tests file (test/commands*.txt) of each module
+#                    (mycelium-*, p2p-*),
 #                    then the given request dirs (e.g. test-run/requests/report-runs)
 #   execute/main     from main
 # as a bare repository (no working tree), with the kick hooks/execute, which
@@ -26,7 +27,7 @@ trap 'rm -rf "$stage"' EXIT
 t=$stage/template
 mkdir -p "$t/main" "$t/pending/default/pending"
 printf '# Test-run instance\n\nSeeded from dev repository commit %s.\n' "$source_commit" > "$t/main/readme.md"
-for tests in $(cd "$src" && ls mycelium-*/test/commands*.txt); do
+for tests in $(cd "$src" && ls mycelium-*/test/commands*.txt p2p-*/test/commands*.txt 2>/dev/null); do
   module=${tests%%/*}
   variant=$(basename "$tests" .txt | sed -n 's/^commands-//p')
   name=test-$module${variant:+-$variant}
