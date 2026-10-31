@@ -92,10 +92,10 @@ async function runTests (state, work, out, testsPath, folder) {
   const r = spawnSync(runtime, [join(code, 'runner.js'), testsFile, join(code, folder),
     join(out, 'results.jsonl')], { encoding: 'utf8' })
   if (r.status !== 0) {
-    writeFileSync(join(out, 'error.txt'), r.stderr)
+    writeFileSync(join(out, 'error.txt'), String(r.stderr))
     return `The runner did not complete (exit ${r.status}); its error output is \`error.txt\`.`
   }
-  const { invocations } = JSON.parse(r.stdout.trim().split('\n').pop())
+  const { invocations } = JSON.parse(String(r.stdout).trim().split('\n').pop())
   return `Executed ${invocations} invocations; the record is \`results.jsonl\`.`
 }
 
