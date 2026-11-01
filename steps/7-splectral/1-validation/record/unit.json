@@ -1,0 +1,12 @@
+{
+  "invocation": "steps/record.sh 7-splectral 1-validation unit-mycelium-uri=sh steps/1-mycelium/validation/unit-tests.sh mycelium-uri unit-p2p-rns=sh steps/1-mycelium/validation/unit-tests.sh p2p-rns unit-p2p-mrepo=sh steps/1-mycelium/validation/unit-tests.sh p2p-mrepo unit-p2p-node=sh steps/1-mycelium/validation/unit-tests.sh p2p-node unit-p2p-node-manager=sh steps/1-mycelium/validation/unit-tests.sh p2p-node-manager unit-p2p-swarm-manager=sh steps/1-mycelium/validation/unit-tests.sh p2p-swarm-manager one-copy=grep -rln 'a-z0-9\\]+(-' --include=*.js p2p-* mycelium-* | grep -v node_modules | node -e \"let t='';process.stdin.on('data',d=>t+=d).on('end',()=>console.log(JSON.stringify({files:t.trim().split('\\\\n')})))\" ",
+  "state": { "dev": "0bf07d5969735b04c1ceb934f60f116eb78ab822", "pendingDefault": "d8cdfa0" },
+  "environment": {
+    "node": "v22.22.0",
+    "bare": "v1.36.0",
+    "git": "git version 2.43.0",
+    "os": "Linux 6.18.44-fc-v185",
+    "docker": "none"
+  },
+  "nondeterministic": { "started": "2026-11-01T19:21:42Z", "finished": "2026-11-01T19:22:09Z" }
+}
