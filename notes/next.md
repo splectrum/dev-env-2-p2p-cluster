@@ -35,13 +35,14 @@ phase's plan (steps 0 to 6) is done.
 
 ## Decisions waiting on the human
 
-1. **Repositories to create** in `pear-full-square`: `p2p-rns`,
-   `p2p-mrepo` (a proposed name). Their folders are ready to merge (split,
-   plain merge, as for the others). `p2p-node` is merged (`a554890`).
-2. **Step 6 on a real second machine**, if wanted: it was simulated on
+Every module now has its product repository in `pear-full-square`
+(`notes/products.md`).
+
+1. **Step 6 on a real second machine**, if wanted: it was simulated on
    this session's one machine (the choice made at its start, recorded in
    `steps/6-other-host/readme.md`). On real hosts the data plane needs an
-   overlay or the LAN: which one is open.
+   overlay or the LAN: which one is open
+   (`steps/6-other-host/local-machine.md`).
 
 
 ## Carried forward (open, not built)

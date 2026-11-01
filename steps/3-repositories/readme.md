@@ -1,6 +1,6 @@
 # Step 3. Repositories on the p2p layer
 
-Status: **done** (2026-10-31), except p2p-mrepo's product repository, which waits for its repository to be created. Request: `pending/phase-2/step-3-repositories/request.md`
+Status: **done** (2026-10-31); p2p-mrepo's product repository merged after step 6 (`notes/products.md`). Request: `pending/phase-2/step-3-repositories/request.md`
 on `pending/default`. Scope: `notes/plan.md`, step 3.
 
 | Part | What | Record |
