@@ -1,5 +1,24 @@
 # Rules (draft)
 
+## Single concern, first
+
+The first design rule: every rule below follows from it or gives way to
+it.
+
+- **Every part has one concern**: a module, a repository, an operator, a
+  process, a step. When a part grows a second concern, it is split by
+  concern, not by convenience.
+- **One concern, one place.** A concern is implemented once and used
+  everywhere it is needed, never copied into the parts that need it.
+- **Validation is a concern of the boundary.** Input is validated once,
+  where it enters (network handlers, command-line arguments, external
+  files and imports), by the one validator for its kind (`mycelium-uri`
+  for names and URIs). Internal traffic is valid: internal APIs trust
+  their callers and do not check again.
+- **Knowledge stays with its concern.** A part knows only what its
+  concern needs: mycelium knows no p2p, Splectral's applications know no
+  p2p, the p2p series knows no git or management.
+
 ## Branches and pending work
 
 - `main` holds settled state. It changes only by plain merges from
