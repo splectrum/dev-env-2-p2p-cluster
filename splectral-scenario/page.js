@@ -4,14 +4,19 @@ const { useState, useEffect } = window.React
 
 export default function Scenario ({ state, param, act, html }) {
   const [sc, setSc] = useState(null)
-  const [running, setRunning] = useState(false)
-  const [outcome, setOutcome] = useState(null)
+  const [error, setError] = useState(null)
   useEffect(() => { fetch(`/scenario/${param}`).then(r => r.json()).then(setSc) }, [param])
   if (!sc) return html`<p class="muted">Loading…</p>`
   const mine = state.activity.filter(e => e.scenario === param)
   const done = new Set(mine.filter(e => e.kind === 'scenarioStep').map(e => e.step))
   const says = mine.filter(e => e.kind === 'say')
-  const run = async () => { setRunning(true); setOutcome(null); const r = await act({ action: 'run-scenario', with: { id: param } }); setOutcome(r); setRunning(false) }
+  // The outcome is the world's, not this page's: it survives leaving the
+  // page and coming back, and shows in a replay.
+  const starts = mine.filter(e => e.kind === 'say' && e.step === -1).length
+  const finished = mine.filter(e => e.kind === 'say' && e.step === sc.steps.length).length
+  const running = starts > finished
+  const outcome = error ? { ok: false, error } : finished && !running ? { ok: true } : null
+  const run = async () => { setError(null); const r = await act({ action: 'run-scenario', with: { id: param } }); if (!r.ok) setError(r.error) }
   return html`
     <section data-scenario=${param}>
       <h2>${sc.title}</h2>

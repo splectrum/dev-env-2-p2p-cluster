@@ -17,11 +17,14 @@ function useModel () {
   const [state, setState] = useState(model.snapshot())
   useEffect(() => {
     let pending = false
-    return model.subscribe(() => {
+    const off = model.subscribe(() => {
       if (pending) return
       pending = true
       requestAnimationFrame(() => { pending = false; setState(model.snapshot()) })
     })
+    // What arrived before this subscription (the snapshot, often).
+    setState(model.snapshot())
+    return off
   }, [])
   return state
 }

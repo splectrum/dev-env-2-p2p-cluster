@@ -47,8 +47,8 @@ export default function Map ({ state, html }) {
               <text x=${p.x} y=${p.y + NODE_R + 18} text-anchor="middle" font-size="13" fill="var(--fg)">${n.uri}</text>
               ${res.map((r, k) => html`
                 <g data-resource=${r.uri} data-changed=${changed.has(r.uri) ? 'yes' : 'no'}>
-                  <circle cx=${p.x - 50 + k * 50} cy=${p.y + NODE_R + 44} r=${changed.has(r.uri) ? 11 : 8} fill=${changed.has(r.uri) ? 'var(--accent)' : 'var(--line)'} />
-                  <text x=${p.x - 50 + k * 50} y=${p.y + NODE_R + 66} text-anchor="middle" font-size="11" fill="var(--muted)">${r.uri.split('/').pop()}</text>
+                  <circle cx=${p.x + NODE_R + 26} cy=${p.y - 22 + k * 24} r=${changed.has(r.uri) ? 9 : 6} fill=${changed.has(r.uri) ? 'var(--accent)' : 'var(--line)'} />
+                  <text x=${p.x + NODE_R + 40} y=${p.y - 18 + k * 24} font-size="11" fill="var(--muted)">${r.uri.split('/').pop()}</text>
                 </g>`)}
             </g>`
         })}
