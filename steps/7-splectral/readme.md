@@ -9,8 +9,8 @@ Status: **in progress** (2026-11-01). Request:
 |---|---|---|
 | `1-validation/` | validation in one place: `mycelium-uri`, at the boundary | done |
 | `2-topic/` | `mycelium-topic` | done |
-| `3-managers/` | the managers on topics | |
-| `4-master-aux/` | a management channel for every node | |
+| `3-managers/` | the managers on topics | done |
+| `4-master-aux/` | a management channel for every node | done |
 | `5-observer/` | `splectral-p2p-observer` | |
 | `6-core/` | the platform's core | |
 | `7-extensions/` | replay, scenario, timeline | |
