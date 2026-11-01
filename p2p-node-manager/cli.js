@@ -3,8 +3,8 @@
 //   node cli.js run --folder=<node-folder> --vault=<vault-dir> --image=<image>
 //                   --network=<network> --ip=<ip> --swarm=<swarm> --name=<node>
 //                   [--role=master|join] [--metrics-every=<ms>]
-//   join only: --aux-network --aux-gateway --aux-port --aux-ip
-//              --master=<key> --bootstrap=<host:port> --packages-uri --packages-key --packages-commit
+//   both roles: --aux-network --aux-gateway --aux-port --aux-ip
+//   join only:  --master=<key> --bootstrap=<host:port> --packages-uri --packages-key --packages-commit
 //   node cli.js join --invitation=<file> --folder=<node-folder> --vault=<vault-dir>
 //                    --name=<node> --ip=<address on the swarm's data plane> --aux-subnet=<a.b.c>
 //   (a node on a host of its own: its auxiliary network made here, no swarm manager)
@@ -50,8 +50,8 @@ const m = op === 'join' ? await joinFromInvitation({
   swarm: flags.swarm,
   name: flags.name,
   role: flags.role || 'master',
+  aux: { network: flags['aux-network'], gateway: flags['aux-gateway'], port: Number(flags['aux-port']), ip: flags['aux-ip'] },
   ...(flags.role === 'join' ? {
-    aux: { network: flags['aux-network'], gateway: flags['aux-gateway'], port: Number(flags['aux-port']), ip: flags['aux-ip'] },
     joining: { master: flags.master, bootstrap: flags.bootstrap, packages: { uri: flags['packages-uri'], key: flags['packages-key'], commit: flags['packages-commit'] } }
   } : {}),
   metricsEvery: Number(flags['metrics-every'] || 30000)

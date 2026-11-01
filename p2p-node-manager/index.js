@@ -10,9 +10,8 @@
 // new privileges, an unprivileged user, its memory capped with no swap, no
 // core dumps, its store on a tmpfs (in RAM: the store holds the node's
 // secrets). Its secret, the node's primary key from the vault, reaches its
-// memory only: no file, no mount, no environment variable.
-//   role master: on its stdin (genesis: nobody to provision from yet).
-//   role join: through the auxiliary swarm. The manager runs a peer of its
+// memory only: no file, no mount, no environment variable. Every node
+// gets it through the auxiliary swarm (the master too, since step 7). The manager runs a peer of its
 //   own on an internal network it shares with its node only (`aux`: the
 //   network, its gateway, a DHT port, the container's address there). The
 //   container's boot program writes an ephemeral public key to its log;
@@ -106,27 +105,24 @@ export async function manageNode ({ folder, vault, image, network, ip, swarm, na
   // A joining node is provisioned through the auxiliary swarm: the
   // manager's peer, there for the node's life.
   let provision = null
-  if (role === 'join') provision = await provisioner({ aux, record, secret: () => vault.keyFor(swarm, name) })
+  provision = await provisioner({ aux, record, secret: () => vault.keyFor(swarm, name) })
 
-  let child
-  if (role === 'master') {
-    child = spawn('docker', ['run', '-i', '--name', container, '--network', network, '--ip', ip, ...hardening,
-      image, role, `--swarm=${swarm}`, `--name=${name}`, `--host=${ip}`, '--storage=/data/store', '--code=/app',
-      `--metrics-every=${metricsEvery}`], { stdio: ['pipe', 'pipe', 'pipe'] })
-    // The secret, into the node's memory, then gone from here.
-    child.stdin.end(vault.keyFor(swarm, name) + '\n')
-    record('secret-handed-over', { via: 'stdin' })
-  } else {
-    docker('create', '--name', container, '--network', aux.network, '--ip', aux.ip, ...hardening,
-      '--entrypoint', 'bare', image, '/app/p2p-node/cli.js', 'boot',
-      `--swarm=${swarm}`, `--name=${name}`, `--host=${ip}`, '--storage=/data/store', '--app=/code/app',
-      `--aux-host=${aux.ip}`, `--aux-bootstrap=${aux.gateway}:${aux.port}`, `--manager=${provision.publicKey}`,
-      `--bootstrap=${joining.bootstrap}`, `--master=${joining.master}`,
-      `--packages-key=${joining.packages.key}`, `--packages-commit=${joining.packages.commit}`, `--packages-uri=${joining.packages.uri}`,
-      `--metrics-every=${metricsEvery}`)
-    docker('network', 'connect', '--ip', ip, network, container)
-    child = spawn('docker', ['start', '-a', container], { stdio: ['ignore', 'pipe', 'pipe'] })
-  }
+  // Every node is provisioned through the auxiliary swarm (step 7: the
+  // master too): its container starts on the auxiliary network with the
+  // boot program, gets its secret from this manager on a channel, and keeps
+  // that link, the management channel, for its life. The master then runs
+  // from its image's code; a joining node from the swarm's.
+  const roleFlags = role === 'master'
+    ? ['--role=master', '--code=/app']
+    : ['--role=join', '--app=/code/app', `--bootstrap=${joining.bootstrap}`, `--master=${joining.master}`,
+        `--packages-key=${joining.packages.key}`, `--packages-commit=${joining.packages.commit}`, `--packages-uri=${joining.packages.uri}`]
+  docker('create', '--name', container, '--network', aux.network, '--ip', aux.ip, ...hardening,
+    '--entrypoint', 'bare', image, '/app/p2p-node/cli.js', 'boot',
+    `--swarm=${swarm}`, `--name=${name}`, `--host=${ip}`, '--storage=/data/store',
+    `--aux-host=${aux.ip}`, `--aux-bootstrap=${aux.gateway}:${aux.port}`, `--manager=${provision.publicKey}`,
+    ...roleFlags, `--metrics-every=${metricsEvery}`)
+  docker('network', 'connect', '--ip', ip, network, container)
+  const child = spawn('docker', ['start', '-a', container], { stdio: ['ignore', 'pipe', 'pipe'] })
 
   let readyResolve, readyReject
   const ready = new Promise((resolve, reject) => { readyResolve = resolve; readyReject = reject })

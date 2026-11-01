@@ -9,7 +9,8 @@
 //   3. The code by replication: the master's packages, opened by key from a
 //      replica on the swarm, the commit checked against the one it was told
 //      to run, the deployed tree materialised into the RAM store's folder.
-//   4. The node, started from that code with its secret on stdin; this
+//   4. The node, started from that code with its secret on stdin (the
+//      master skips 3: it runs from its image's code); this
 //      program stays, the parent: it keeps the auxiliary link (the
 //      management channel), passes SIGTERM on, and exits as the node does.
 // Every step to the log, as JSON lines; never the secret.
@@ -48,7 +49,29 @@ export async function boot (flags, log) {
   const { primaryKey } = await channel.request({ op: 'secret' })
   emit('secret-received', { bytes: primaryKey.length / 2, via: 'auxiliary swarm', ms: Date.now() - t0 })
 
-  // 3. The code: the master's packages, at the commit it was told to run.
+  const args = flags.role === 'master'
+    ? [`${flags.code}/p2p-node/cli.js`, 'master', `--swarm=${flags.swarm}`, `--name=${flags.name}`, `--host=${flags.host}`,
+        `--storage=${flags.storage}`, `--code=${flags.code}`, `--metrics-every=${flags['metrics-every'] || 30000}`]
+    : await joinCode(flags, log, emit, provisioning, t0)
+
+  // 4. The node, from its code, with its secret on stdin; this program
+  // stays, the parent: it keeps the auxiliary link (the management
+  // channel), passes SIGTERM on, and exits as the node does.
+  const child = spawn('bare', args, { stdio: ['pipe', 'inherit', 'inherit'] })
+  child.stdin.end(primaryKey + '\n')
+  emit('node-spawned', { role: flags.role || 'join', code: flags.role === 'master' ? flags.code : flags.app, ms: Date.now() - t0 })
+  process.on('SIGTERM', () => child.kill('SIGTERM'))
+  process.on('SIGINT', () => child.kill('SIGTERM'))
+  const code = await new Promise(resolve => child.on('exit', resolve))
+  emit('node-exited', { code })
+  await aux.close()
+  await auxDht.close()
+  return code
+}
+
+// 3. A joining node's code: the master's packages, at the commit it was
+// told to run, materialised from a replica; the arguments to run it with.
+async function joinCode (flags, log, emit, provisioning, t0) {
   const store = await openStore({ storage: `${flags.storage}-boot`, observer: log })
   const dht = await startDht({ host: flags.host, bootstrap: [hostPort(flags.bootstrap)], observer: log })
   const net = connect({ dht: dht.dht, keyPair: provisioning, observer: log })
@@ -72,19 +95,9 @@ export async function boot (flags, log) {
   await dht.close()
   await store.close()
 
-  // 4. The node, from the swarm's code.
   const args = [`${flags.app}/p2p-node/cli.js`, 'join', `--swarm=${flags.swarm}`, `--name=${flags.name}`, `--host=${flags.host}`,
     `--storage=${flags.storage}`, `--bootstrap=${flags.bootstrap}`, `--master=${flags.master}`,
     `--packages-key=${flags['packages-key']}`, `--packages-commit=${commit}`, `--packages-uri=${flags['packages-uri']}`,
     `--metrics-every=${flags['metrics-every'] || 30000}`]
-  const child = spawn('bare', args, { stdio: ['pipe', 'inherit', 'inherit'] })
-  child.stdin.end(primaryKey + '\n')
-  emit('node-spawned', { code: flags.app, ms: Date.now() - t0 })
-  process.on('SIGTERM', () => child.kill('SIGTERM'))
-  process.on('SIGINT', () => child.kill('SIGTERM'))
-  const code = await new Promise(resolve => child.on('exit', resolve))
-  emit('node-exited', { code })
-  await aux.close()
-  await auxDht.close()
-  return code
+  return args
 }

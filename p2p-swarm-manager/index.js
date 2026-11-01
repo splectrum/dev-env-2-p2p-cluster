@@ -77,11 +77,9 @@ async function startNodeManager (s, node, { vault, timeout = 180000 }) {
   // run's is read.
   rmSync(join(folder, 'state.json'), { force: true })
   const out = openSync(join(folder, 'manager.out'), 'a')
-  const joining = node.role === 'join' ? [
-    `--aux-network=${s.aux.network}`, `--aux-gateway=${s.aux.gateway}`, `--aux-port=${node.auxPort}`, `--aux-ip=${node.auxIp}`,
-    `--master=${s.master.key}`, `--bootstrap=${s.dht.host}:${s.dht.port}`,
-    `--packages-uri=${s.master.packages.uri}`, `--packages-key=${s.master.packages.key}`, `--packages-commit=${s.master.packages.commit}`
-  ] : []
+  const joining = [`--aux-network=${s.aux.network}`, `--aux-gateway=${s.aux.gateway}`, `--aux-port=${node.auxPort}`, `--aux-ip=${node.auxIp}`,
+    ...(node.role === 'join' ? [`--master=${s.master.key}`, `--bootstrap=${s.dht.host}:${s.dht.port}`,
+    `--packages-uri=${s.master.packages.uri}`, `--packages-key=${s.master.packages.key}`, `--packages-commit=${s.master.packages.commit}`] : [])]
   const child = spawn(process.execPath, [join(here, '..', 'p2p-node-manager', 'cli.js'), 'run',
     `--folder=${folder}`, `--vault=${vault}`, `--image=${s.image}`, `--network=${s.network}`, `--ip=${node.ip}`,
     `--swarm=${s.swarm}`, `--name=${node.name}`, `--role=${node.role}`, ...joining], { detached: true, stdio: ['ignore', out, out] })
@@ -111,7 +109,9 @@ export async function genesis ({ swarm, folder, nodes, vault, code, subnet = '17
   tryDocker('network', 'rm', aux.network)
   docker('network', 'create', '--internal', '--subnet', aux.subnet, '--gateway', aux.gateway, aux.network)
   record('network-created', { network: aux.network, subnet: aux.subnet, internal: true, plane: 'management' })
-  const master = { name: 'master', role: 'master', ip: `${subnet}.2`, folder: join(nodes, `${swarm}-master`) }
+  // The master is provisioned through the auxiliary swarm too (step 7):
+  // index 0 there, as joining nodes are 1, 2, ...
+  const master = { name: 'master', role: 'master', ip: `${subnet}.2`, auxIp: `${auxSubnet}.9`, auxPort: 49740, folder: join(nodes, `${swarm}-master`) }
   const s = { swarm, image, network, subnet, gateway: `${subnet}.1`, aux, nodes: [master], vault, dht: { host: master.ip, port: 49737 }, nodesFolder: nodes, created: new Date().toISOString() }
   write(s)
   const ready = await startNodeManager(s, master, { vault })
