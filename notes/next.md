@@ -124,26 +124,27 @@ Every module now has its product repository in `pear-full-square`
   `join --folder=... --node=node-1`, `status`, `restart`, `stop` (always
   stop: containers and networks stay otherwise).
 
-## Step 7, in progress
+## Step 7, done
 
-`steps/7-splectral/readme.md` holds the parts and their status: done so
-far, validation in one place (1), `mycelium-topic` (2), the managers on
-topics (3), a management channel for every node (4), the observer (5);
-next, Splectral's core (6), then extensions, adapters, applications,
-validation and products. Products are merged at part 10.
+`steps/7-splectral/`: validation in one place (`mycelium-uri`, at the
+boundary); `mycelium-topic` (topics of Kafka records), the managers'
+records in topics, state as their fold; every node provisioned through
+the auxiliary swarm, with an observer (`splectral-p2p-observer`) taking
+named actions from its manager; Splectral (platform in `pear-full-square`,
+applications in `splectral`) showing the step 6 scenario live and
+replayed, tested in headless Chromium. Products merged
+(`steps/7-splectral/10-validation/products.md`).
 
-## Designed
+Carried forward from step 7: the `repository` and `swarm` sources and
+the nodes' audit cores; replay to a point in time; a scenario page
+showing the pages its steps name; liveness; React and htm in the node
+image (the workspace's one tree).
 
-- **Splectral** (`notes/splectral.md`), a platform, viewer first: proposed as step 7, with the
-  master provisioned through the auxiliary swarm, an observer on every
-  node, a host-local Splectral server and the step 6 scenario as its first
-  demo. Waiting for the go; its open points are listed there.
-
-- **Data in topics** (`notes/topics.md`, rules in `rules.md`): a Kafka
-  record (for now only `value`, JSON, plus headers for metadata) as the
-  elementary data container; topics in Kafka's sense, single-partition,
-  Kafka's names; state built from topics; `mycelium-topic` (repository to
-  create).
+To see it locally: `steps/6-other-host/local-machine.md` for the
+machine, then `sh steps/7-splectral/10-validation/demo.sh <work> <record>
+<phase>` for the phases `swarm`, `config`, `serve`, and open
+`http://127.0.0.1:4400` (a local-machine section for Splectral is still
+to write).
 
 ## To continue
 
