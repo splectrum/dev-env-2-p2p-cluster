@@ -18,6 +18,9 @@ sees it and resolves it by URI; its swarm manager does not control it.
 | `validation/` | end to end, the two hosts' records apart | `validation/record/` |
 | `product/` | the product repositories | `product/readme.md`, `notes/products.md` |
 
+To repeat it on a machine of your own (local network only):
+`local-machine.md`.
+
 **How the other host is simulated.** One machine, one Docker daemon. Host
 B is its own folder, vault, node manager (a process started apart from the
 swarm manager) and auxiliary network; from host A it gets the invitation
