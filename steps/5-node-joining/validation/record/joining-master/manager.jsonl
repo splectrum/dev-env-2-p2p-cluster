@@ -1,0 +1,8 @@
+{"module":"p2p-node-manager","kind":"starting","time":1793517431954,"container":"p2p-joining-master","image":"p2p-node:6343154","network":"p2p-joining","ip":"172.34.0.2","role":"master","hardening":["read-only","cap-drop ALL","no-new-privileges","user 65534","memory 1g no swap","core 0","store tmpfs 512m noexec","tmp tmpfs 64m noexec"]}
+{"module":"p2p-node-manager","kind":"secret-handed-over","time":1793517431959,"via":"stdin"}
+{"module":"p2p-node-manager","kind":"node-ready","time":1793517442171,"uri":"/joining/master","key":"8907374a29a2e96bc7d88e3bbd5c5ff529f73f88e29c032370834c4fa0d51404","dht":"172.34.0.2:49737","ms":10244}
+{"module":"p2p-node-manager","kind":"resources","time":1793517447994,"cpu":"10.06%","memory":"258.2MiB / 1GiB","memoryPercent":"25.22%","net":"788kB / 7.15MB","pids":"16"}
+{"module":"p2p-node-manager","kind":"resources","time":1793517463008,"cpu":"1.78%","memory":"254.4MiB / 1GiB","memoryPercent":"24.84%","net":"2.48MB / 31.8MB","pids":"16"}
+{"module":"p2p-node-manager","kind":"stopping","time":1793517463795,"signal":"SIGTERM","timeout":15}
+{"module":"p2p-node-manager","kind":"container-exited","time":1793517464044,"exitCode":0,"oomKilled":false,"error":null,"ms":32117}
+{"module":"p2p-node-manager","kind":"stopped","time":1793517464044,"exitCode":0,"graceful":true}

@@ -1,0 +1,35 @@
+{
+  "swarm": "joining",
+  "name": "node-1",
+  "role": "join",
+  "container": "p2p-joining-node-1",
+  "image": "p2p-node:6343154",
+  "ip": "172.34.0.3",
+  "status": "exited",
+  "startedAt": "2026-11-01T07:17:33.236Z",
+  "materialised": {
+    "commit": "7c78068bb9030b78ccca0762c77ec6372455ea05",
+    "files": 3609,
+    "downloaded": {
+      "blocks": 4606,
+      "bytes": 14438348
+    },
+    "ms": 6209
+  },
+  "live": {
+    "uri": "/joining/node-1/node",
+    "key": "b5814ff089303c4fcc1d2e084be370142bd658e3ee9b25844a7ffea707858a9a",
+    "id": "919502a7-7151-4aba-b359-3076208cadf9",
+    "origin": {
+      "id": "3436218e-0884-4640-b7ca-11530e61914b",
+      "key": "b9f12b3da785e42f0bbdad07ab7e06cb46822ee81547e957f1a9093f538bb3e8"
+    }
+  },
+  "uri": "/joining/node-1",
+  "key": "a91ace97e8f64ad2aeb4df45b41467b84ed069951a76711459fbea519e47f446",
+  "dht": null,
+  "readyMs": 8023,
+  "exitCode": 0,
+  "oomKilled": false,
+  "exitedAt": "2026-11-01T07:17:43.610Z"
+}

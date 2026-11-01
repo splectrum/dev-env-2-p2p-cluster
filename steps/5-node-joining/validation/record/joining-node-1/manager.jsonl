@@ -1,0 +1,20 @@
+{"module":"p2p-node-manager","kind":"starting","time":1793517442835,"container":"p2p-joining-node-1","image":"p2p-node:6343154","network":"p2p-joining","ip":"172.34.0.3","role":"join","hardening":["read-only","cap-drop ALL","no-new-privileges","user 65534","memory 1g no swap","core 0","store tmpfs 512m noexec","tmp tmpfs 64m noexec","code tmpfs 256m exec"]}
+{"module":"p2p-node-manager","kind":"provisioning-ready","time":1793517442847,"gateway":"172.35.0.1","port":49741,"network":"p2p-joining-aux","publicKey":"472505e7c03309a9ea6dda0f07901396a57f2d2985418847b21cb3e5a44dd94f"}
+{"module":"p2p-node-manager","kind":"provisioning-authorised","time":1793517443794,"peer":"4b8ffbed8dfa1df4790f91ab9b9c21aeec38e9ee557ab8d191628b4a5b3621f2"}
+{"module":"p2p-node-manager","kind":"provisioning-connected","time":1793517443813,"peer":"4b8ffbed8dfa1df4790f91ab9b9c21aeec38e9ee557ab8d191628b4a5b3621f2"}
+{"module":"p2p-node-manager","kind":"secret-handed-over","time":1793517443822,"via":"auxiliary swarm","to":"4b8ffbed8dfa1df4790f91ab9b9c21aeec38e9ee557ab8d191628b4a5b3621f2"}
+{"module":"p2p-node-manager","kind":"materialised","time":1793517449879,"commit":"7c78068bb9030b78ccca0762c77ec6372455ea05","files":3609,"downloaded":{"blocks":4606,"bytes":14438359},"ms":6086}
+{"module":"p2p-node-manager","kind":"node-ready","time":1793517450667,"uri":"/joining/node-1","key":"a91ace97e8f64ad2aeb4df45b41467b84ed069951a76711459fbea519e47f446","dht":null,"ms":7859}
+{"module":"p2p-node-manager","kind":"stopping","time":1793517452637,"signal":"SIGTERM","timeout":15}
+{"module":"p2p-node-manager","kind":"container-exited","time":1793517452924,"exitCode":0,"oomKilled":false,"error":null,"ms":10116}
+{"module":"p2p-node-manager","kind":"stopped","time":1793517452924,"exitCode":0,"graceful":true}
+{"module":"p2p-node-manager","kind":"starting","time":1793517453264,"container":"p2p-joining-node-1","image":"p2p-node:6343154","network":"p2p-joining","ip":"172.34.0.3","role":"join","hardening":["read-only","cap-drop ALL","no-new-privileges","user 65534","memory 1g no swap","core 0","store tmpfs 512m noexec","tmp tmpfs 64m noexec","code tmpfs 256m exec"]}
+{"module":"p2p-node-manager","kind":"provisioning-ready","time":1793517453275,"gateway":"172.35.0.1","port":49741,"network":"p2p-joining-aux","publicKey":"862fe091351cc4581b3eadbb1b213c1d5981a1f4574ec71f4f9134953955da59"}
+{"module":"p2p-node-manager","kind":"provisioning-authorised","time":1793517454111,"peer":"52500c99ddcee7f09755c99a7c384bd002fb1ab6d392d52b90473778c50216b8"}
+{"module":"p2p-node-manager","kind":"provisioning-connected","time":1793517454132,"peer":"52500c99ddcee7f09755c99a7c384bd002fb1ab6d392d52b90473778c50216b8"}
+{"module":"p2p-node-manager","kind":"secret-handed-over","time":1793517454140,"via":"auxiliary swarm","to":"52500c99ddcee7f09755c99a7c384bd002fb1ab6d392d52b90473778c50216b8"}
+{"module":"p2p-node-manager","kind":"materialised","time":1793517460319,"commit":"7c78068bb9030b78ccca0762c77ec6372455ea05","files":3609,"downloaded":{"blocks":4606,"bytes":14438348},"ms":6209}
+{"module":"p2p-node-manager","kind":"node-ready","time":1793517461259,"uri":"/joining/node-1","key":"a91ace97e8f64ad2aeb4df45b41467b84ed069951a76711459fbea519e47f446","dht":null,"ms":8023}
+{"module":"p2p-node-manager","kind":"stopping","time":1793517463294,"signal":"SIGTERM","timeout":15}
+{"module":"p2p-node-manager","kind":"container-exited","time":1793517463610,"exitCode":0,"oomKilled":false,"error":null,"ms":10374}
+{"module":"p2p-node-manager","kind":"stopped","time":1793517463611,"exitCode":0,"graceful":true}

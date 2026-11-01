@@ -1,0 +1,12 @@
+{"module":"p2p-swarm-manager","kind":"genesis-started","time":1793517426110,"swarm":"joining"}
+{"module":"p2p-swarm-manager","kind":"image-built","time":1793517431691,"image":"p2p-node:6343154","ms":5580}
+{"module":"p2p-swarm-manager","kind":"network-created","time":1793517431756,"network":"p2p-joining","subnet":"172.34.0.0/24","internal":true}
+{"module":"p2p-swarm-manager","kind":"network-created","time":1793517431818,"network":"p2p-joining-aux","subnet":"172.35.0.0/24","internal":true,"plane":"management"}
+{"module":"p2p-swarm-manager","kind":"master-ready","time":1793517442342,"uri":"/joining/master","key":"8907374a29a2e96bc7d88e3bbd5c5ff529f73f88e29c032370834c4fa0d51404","packages":"7c78068bb9030b78ccca0762c77ec6372455ea05","ms":16232}
+{"module":"p2p-swarm-manager","kind":"join-started","time":1793517442706,"node":"node-1","ip":"172.34.0.3","auxIp":"172.35.0.10"}
+{"module":"p2p-swarm-manager","kind":"node-joined","time":1793517450726,"node":"node-1","uri":"/joining/node-1","key":"a91ace97e8f64ad2aeb4df45b41467b84ed069951a76711459fbea519e47f446","materialised":{"commit":"7c78068bb9030b78ccca0762c77ec6372455ea05","files":3609,"downloaded":{"blocks":4606,"bytes":14438359},"ms":6086},"ms":8013}
+{"module":"p2p-swarm-manager","kind":"status","time":1793517451087,"nodes":["/joining/master","/joining/node-1"],"resources":["/joining/master/boot","/joining/master/node","/joining/master/packages","/joining/node-1/node"],"ms":43}
+{"module":"p2p-swarm-manager","kind":"node-stopped","time":1793517453138,"node":"node-1","exitCode":0}
+{"module":"p2p-swarm-manager","kind":"node-restarted","time":1793517461659,"node":"node-1","key":"a91ace97e8f64ad2aeb4df45b41467b84ed069951a76711459fbea519e47f446","sameKey":true,"ms":8515}
+{"module":"p2p-swarm-manager","kind":"status","time":1793517462064,"nodes":["/joining/master","/joining/node-1"],"resources":["/joining/master/boot","/joining/master/node","/joining/master/packages","/joining/node-1/node"],"ms":37}
+{"module":"p2p-swarm-manager","kind":"swarm-stopped","time":1793517464356,"nodes":[{"name":"node-1","exitCode":0},{"name":"master","exitCode":0}]}
