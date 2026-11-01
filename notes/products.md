@@ -43,10 +43,7 @@ All in `pear-full-square` (the design: `node-pattern.md`, `plan.md`):
 | `p2p-swarm-manager` | `pear-full-square/p2p-swarm-manager` | `4e4b807` (step 4, from dev `9f67efa`); `375a95c` (step 5, from dev `2a7816d`: join); `7e6a79b` (step 6, from dev `a73df80`: invite, controlled in status) |
 | `p2p-rns` | to create | the resource name service, in code (step 4); a folder here until its repository exists |
 | `p2p-mrepo` | to create (name proposed) | mycelium repositories on the p2p layer, from step 3 (a given id since step 4); a folder here until its repository exists |
-| `p2p-node` | to create (name proposed) | the node application, from step 4 (the master role) and step 5 (join, boot, requests); a folder here until its repository exists |
-
-`pear-full-square/p2p-swarm` was created before the connections module
-was named `p2p-connect`; it is unused.
+| `p2p-node` | `pear-full-square/p2p-node` | `a554890` (from dev `0d5537d`: the node application of steps 4 to 6, its first merge, unrelated histories joined, the repository's LICENSE kept) |
 
 The five p2p modules were merged into their product repositories in step 2
 (`steps/2-p2p-series/product/`): each repository's initial commit (its
