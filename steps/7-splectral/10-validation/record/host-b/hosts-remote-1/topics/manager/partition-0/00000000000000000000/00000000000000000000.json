@@ -1,0 +1,1 @@
+{"value":{"module":"p2p-node-manager","kind":"starting","time":1793562926404,"swarm":"hosts","name":"remote-1","role":"join","container":"p2p-hosts-remote-1","image":"p2p-node:2959fde","network":"p2p-hosts","ip":"172.34.0.100","memory":"1g","storeSize":"512m"}}
