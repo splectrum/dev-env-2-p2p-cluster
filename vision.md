@@ -26,6 +26,10 @@ From the bottom:
   mycelium's p2p Kafka; state is built from topics, never written
   directly (`notes/topics.md` in `splectrum/dev-env-2-p2p-cluster`,
   `mycelium-topic`).
+- **Multi-paradigm data:** records in topics are the lower level, objects
+  (files, documents, any git object) the higher, side by side in a
+  repository; an object may be generated from a change log of records,
+  or exist in its own right. Built up as mycelium matures.
 
 `mycelium-uri` and `mycelium-xpath` are the shared vocabulary across all
 four. On top sit the **repository paradigms**: the dev env, the test-run
