@@ -59,9 +59,12 @@ be created in `pear-full-square`. The rules this note follows are in
 | `headers` | an ordered list of key–value pairs: metadata about the record | **available** for additional metadata (origin, correlation of an action and its result, format, schema reference); **the header values' schema is to be discussed** |
 | `offset` | the record's position in its partition, assigned by the partition | assigned, never written by the producer |
 
-- **Property names follow our URI naming rules** (`rules.md`): lowercase
-  `a-z`, `0-9`, `-`, in the record, in values and in headers' keys.
-  Kafka's own property names already do.
+- **Property names are data names** (`rules.md`, Data names):
+  lowerCamelCase, starting with a lowercase letter, no two capitals in a
+  row, `_` allowed, no two names differing only in case. The same name in
+  JSON, in memory and in AVRO (`publicKey`); in a URI addressing into a
+  value, its URI form (`…/value/public-key`). Kafka's own property names
+  already are data names.
 - **Never a secret**, in any property.
 
 ## Where data lives, and how it is read
@@ -178,10 +181,13 @@ Single concern: topics of Kafka records, as above, on any storage.
 - The observer's events reach its manager's topic for the node.
 - Splectral's sources consume topics from an offset and follow them; its
   model folds them.
-- **Property names**: the p2p series' events use camelCase today
-  (`publicKey`, `readyMs`); under the URI naming rules they become
-  `public-key`, `ready-ms`. They change when the modules produce through
-  `mycelium-topic` (step 7).
+- **Property names**: the p2p series' events are camelCase already
+  (`publicKey`, `readyMs`), so they stay; step 7 checks them against the
+  data names rule (no two capitals in a row).
+- **`_` in URI segments**: the segment checks in `p2p-rns`, `p2p-mrepo`,
+  `p2p-node` (requests) and `p2p-node-manager` (the vault) allow
+  `a-z`, `0-9`, `-` only; they follow the rule (with `mycelium-uri`'s, if
+  it checks) when the code next changes, in step 7.
 - Records already committed (steps 0 to 6) stay as they are: they are
   the record of those steps.
 
@@ -190,15 +196,10 @@ Single concern: topics of Kafka records, as above, on any storage.
 1. **The header values' schema**: what metadata goes in headers, under
    which keys, and how values are encoded (Kafka's header values are
    bytes; JSON for now).
-2. **AVRO names and the URI naming rules**: AVRO's names allow `A-Z`,
-   `a-z`, `0-9` and `_`, starting with a letter or `_`, so `-` is not
-   allowed in field names. Before AVRO: either property names avoid `-`
-   (lowercase `a-z`, `0-9`, `_`, starting with a letter, valid in both),
-   or `-` maps to `_` in schemas. To be settled with the rule.
-3. **Segment policy**: sizes and periods per kind of data.
-4. **Offsets on a core**: an offset equal to a block index (`vision.md`),
+2. **Segment policy**: sizes and periods per kind of data.
+3. **Offsets on a core**: an offset equal to a block index (`vision.md`),
    with segments as ranges of blocks, or segments as objects on a drive.
-5. **Batching in the active segment**: one record per object first;
+4. **Batching in the active segment**: one record per object first;
    small batches when volume asks for it.
-6. **Which record properties come next, and when**: `key` (with
+5. **Which record properties come next, and when**: `key` (with
    compaction), `timestamp`.

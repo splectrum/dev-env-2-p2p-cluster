@@ -115,8 +115,9 @@ Scope: branch names and repository folders, wherever XPath is used.
   is always a leaf.
 - Relative within a repository: `/`-separated segments; no scheme, query
   or fragment.
-- Segments, for branches and folders alike: lowercase `a-z`, `0-9`, `-`.
-  Any folder can then become a branch, and the other way round.
+- Segments, for branches and folders alike: lowercase `a-z`, `0-9`, `-`,
+  `_`. Any folder can then become a branch, and the other way round.
+  Inside a value, a segment is a data name in its URI form (Data names).
 - A file's segment includes its extension: a name as above, then
   optional `.`-separated extensions of the same characters
   (`request.md`). At this level a leaf is an object, and its storage
@@ -154,10 +155,33 @@ configuration, audit, metrics, events, state (`notes/topics.md`).
   key, value, timestamp, headers, offset, topic, partition, segment,
   producer, consumer, committed offset, retention, log compaction. Our own
   additions get names of their own and say so (archiving, sealing).
-- **Property names follow the URI naming rules** (below): lowercase
-  `a-z`, `0-9`, `-`, in records, values and header keys.
+- **Property names are data names** (below), in records, values and
+  header keys. Kafka's own property names already are.
 - **JSON first.** AVRO later, with values in the form avsc gives them now.
 - **Never a secret** in any property of any record.
+
+## Data names
+
+Scope: the names of properties in records, values and headers, and of
+anything that becomes an AVRO name (`notes/topics.md`).
+
+- **lowerCamelCase**: letters `a-z`, `A-Z`, digits `0-9` and `_`,
+  starting with a lowercase letter: `publicKey`, `readyMs`,
+  `routingTable`.
+- **No two capitals in a row**: `dhtUrl`, not `dhtURL`.
+- **Practically case-insensitive**: no two names that differ only in
+  case (`publicKey` and `publickey` never both).
+- **One form in JSON, in memory and in AVRO**: a data name is a valid
+  JSON key, JavaScript identifier, AVRO name and Kafka header key as it
+  is. No mapping between them.
+- **In a URI, its URI form**: each capital becomes `-` and the letter in
+  lowercase (`publicKey` → `public-key`); back, `-` and a letter become
+  the letter in capitals. Exact both ways under the rules above.
+- **`_` is untouched**: no mapping uses it, so it passes unchanged
+  through every form, data names and URI segments alike (`ready_ms` →
+  `ready_ms`).
+- **Other mappings later**, at the boundary, for external names that
+  break these rules.
 
 ## Open
 
@@ -165,7 +189,3 @@ configuration, audit, metrics, events, state (`notes/topics.md`).
   `execution/<target>`.
 
 - Whether history may be rewritten to remove leaked data.
-
-- Property names and AVRO: AVRO's names do not allow `-`; either property
-  names avoid it (lowercase `a-z`, `0-9`, `_`, starting with a letter), or
-  `-` maps to `_` in schemas (`notes/topics.md`, open 2).
