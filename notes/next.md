@@ -124,7 +124,15 @@ Every module now has its product repository in `pear-full-square`
   `join --folder=... --node=node-1`, `status`, `restart`, `stop` (always
   stop: containers and networks stay otherwise).
 
-## Designed, not started
+## Step 7, in progress
+
+`steps/7-splectral/readme.md` holds the parts and their status: done so
+far, validation in one place (1), `mycelium-topic` (2), the managers on
+topics (3), a management channel for every node (4), the observer (5);
+next, Splectral's core (6), then extensions, adapters, applications,
+validation and products. Products are merged at part 10.
+
+## Designed
 
 - **Splectral** (`notes/splectral.md`), a platform, viewer first: proposed as step 7, with the
   master provisioned through the auxiliary swarm, an observer on every

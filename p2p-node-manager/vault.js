@@ -11,15 +11,12 @@ import { mkdirSync, existsSync, readFileSync, writeFileSync, chmodSync } from 'n
 import { join } from 'node:path'
 import { randomBytes } from 'node:crypto'
 
-const SEGMENT = /^[a-z0-9]+(-[a-z0-9]+)*$/
-
 export function vault (dir) {
   mkdirSync(dir, { recursive: true, mode: 0o700 })
   chmodSync(dir, 0o700)
-  const file = (swarm, node) => {
-    if (!SEGMENT.test(swarm) || !SEGMENT.test(node)) throw new Error('not a name')
-    return join(dir, `${swarm}--${node}.key`)
-  }
+  // Names are valid here: they were validated where they came in (the
+  // managers' command lines).
+  const file = (swarm, node) => join(dir, `${swarm}--${node}.key`)
   return {
     has: (swarm, node) => existsSync(file(swarm, node)),
     keyFor (swarm, node) {

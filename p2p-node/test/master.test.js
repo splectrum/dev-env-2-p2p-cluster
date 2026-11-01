@@ -103,6 +103,8 @@ test('a node joins: under its name, from the boot repository; requests to it and
     assert.match(response, new RegExp(`"key": "${key}"`))
     // Taken once: the same name again is refused.
     await assert.rejects(askRequest(requests, { name: 'status-1', bundle }), /exists/)
+    // The boundary: a name that breaks the rules is refused at the handler.
+    await assert.rejects(askRequest(requests, { name: 'Not A Name', bundle }), /not a request name/)
   }
   await p.close()
   await n1.stop()

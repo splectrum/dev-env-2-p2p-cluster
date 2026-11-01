@@ -16,8 +16,8 @@
 
 import { readBundle, writeBundle, writer, openRepo } from '../mycelium-git/index.js'
 import { executeRequests } from '../mycelium-layer/index.js'
+import { validateName } from '../mycelium-uri/index.js'
 
-const SEGMENT = /^[a-z0-9]+(-[a-z0-9]+)*$/
 const author = { name: 'p2p-node', email: 'p2p-node@localhost' }
 
 export function requests ({ repo, status, observer = null }) {
@@ -25,7 +25,6 @@ export function requests ({ repo, status, observer = null }) {
   let queue = Promise.resolve()
 
   async function intake ({ name, bytes, sender }) {
-    if (!SEGMENT.test(name)) throw new Error(`not a request name: ${name}`)
     const backend = repo.backend
     const branches = Object.fromEntries(await backend.listBranches())
     if (!branches['pending/default']) throw new Error('no pending/default to take requests')
@@ -75,11 +74,13 @@ export function requests ({ repo, status, observer = null }) {
   }
 
   return {
+    // The boundary: a request's name, from a peer, is validated here, once.
     handler (sender) {
       return body => {
         if (body.op !== 'request') throw new Error(`unknown op: ${body.op}`)
+        const name = validateName(body.name, 'request name')
         const run = queue.then(async () => {
-          const taken = await intake({ name: body.name, bytes: Buffer.from(body.bundle, 'base64'), sender })
+          const taken = await intake({ name, bytes: Buffer.from(body.bundle, 'base64'), sender })
           return { taken, ...(await execute()) }
         })
         queue = run.catch(() => {})

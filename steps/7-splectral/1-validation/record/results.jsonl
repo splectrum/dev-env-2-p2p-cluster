@@ -1,0 +1,7 @@
+{"case":"unit-mycelium-uri","command":"sh steps/1-mycelium/validation/unit-tests.sh mycelium-uri","exit":0,"ms":291,"result":{"module":"mycelium-uri","pass":15,"fail":0}}
+{"case":"unit-p2p-rns","command":"sh steps/1-mycelium/validation/unit-tests.sh p2p-rns","exit":0,"ms":360,"result":{"module":"p2p-rns","pass":3,"fail":0}}
+{"case":"unit-p2p-mrepo","command":"sh steps/1-mycelium/validation/unit-tests.sh p2p-mrepo","exit":0,"ms":3986,"result":{"module":"p2p-mrepo","pass":24,"fail":0}}
+{"case":"unit-p2p-node","command":"sh steps/1-mycelium/validation/unit-tests.sh p2p-node","exit":0,"ms":15299,"result":{"module":"p2p-node","pass":2,"fail":0}}
+{"case":"unit-p2p-node-manager","command":"sh steps/1-mycelium/validation/unit-tests.sh p2p-node-manager","exit":0,"ms":432,"result":{"module":"p2p-node-manager","pass":2,"fail":0}}
+{"case":"unit-p2p-swarm-manager","command":"sh steps/1-mycelium/validation/unit-tests.sh p2p-swarm-manager","exit":0,"ms":510,"result":{"module":"p2p-swarm-manager","pass":1,"fail":0}}
+{"case":"one-copy","command":"grep -rln 'a-z0-9\\]+(-' --include=*.js p2p-* mycelium-* | grep -v node_modules | node -e \"let t='';process.stdin.on('data',d=>t+=d).on('end',()=>console.log(JSON.stringify({files:t.trim().split('\\\\n')})))\"","exit":0,"ms":32,"result":{"files":["mycelium-uri/lib/names.js"]}}

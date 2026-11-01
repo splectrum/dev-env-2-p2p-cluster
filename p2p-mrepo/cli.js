@@ -16,12 +16,15 @@ import { openStore } from 'p2p-store'
 import { writeBundle } from '../mycelium-git/index.js'
 import { extract } from '../mycelium-layer/index.js'
 import { mrepos } from './index.js'
+import { validateName } from '../mycelium-uri/index.js'
 
 const args = process.argv.slice(2)
 const [op, storage, path] = args
 const name = (op === 'extract' ? args[4] : op === 'create' ? args[2] : args[3]) || 'repo'
 let store = null
 try {
+  // The boundary: the name from the command line, validated once.
+  validateName(name, 'repository name')
   store = await openStore({ storage })
   const repos = mrepos({ store })
   let result

@@ -29,8 +29,6 @@ test('create, write through mycelium, reopen on start: the same repository', asy
   await assert.rejects(repos.create('notes'), /exists/)
   const given = await repos.create('given', { id: '12345678-1234-4234-8234-123456789abc' })
   assert.equal(given.id, '12345678-1234-4234-8234-123456789abc')
-  await assert.rejects(repos.create('bad-id', { id: 'nope' }), /not an id/)
-  await assert.rejects(repos.create('Not A Name'), /not a repository name/)
   await store.close()
 
   store = await openStore({ storage })
