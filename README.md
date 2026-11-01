@@ -16,4 +16,5 @@ Hyperdrive. Its modules are folders on `main`:
 `vision.md` holds directions that are not settled, for information.
 
 Status: design settled, implementation starting along it (2026-10-31); see
-`notes/status.md` and `notes/plan.md`. Seeded from `splectrum/roadmap-1`.
+`notes/next.md` (the handover), `notes/status.md` and `notes/plan.md`.
+Seeded from `splectrum/roadmap-1`.
