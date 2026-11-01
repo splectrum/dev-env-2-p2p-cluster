@@ -33,12 +33,14 @@ test('owners only: names are unique, a node names only its own', () => {
   assert.throws(() => rns.registerNode({ owner: B, name: 'master' }), /taken/)
   assert.throws(() => rns.registerNode({ owner: A, name: 'other' }), /already a node/)
   assert.throws(() => rns.register({ owner: B, name: 'x', id: 'i', key: 'k' }), /not a node/)
-  assert.throws(() => rns.registerNode({ owner: B, name: 'Not-Valid' }), /not a node name/)
+  // Validation is the boundary's: the handler refuses what a peer sends.
+  assert.throws(() => rns.handler(B)({ op: 'registerNode', name: 'Not-Valid' }), /not a node name/)
+  assert.throws(() => rns.handler(B)({ op: 'resolve', uri: 'no-slash' }), /not absolute/)
   rns.registerNode({ owner: A, name: 'master' }) // again: the same owner, fine
   rns.register({ owner: A, name: 'repo', id: 'i', key: 'k1' })
   const again = rns.register({ owner: A, name: 'repo', id: 'i', key: 'k2' }) // rebuilt: a new key
   assert.equal(again.key, 'k2')
-  assert.equal(events.filter(e => e.kind === 'refused').length, 4)
+  assert.equal(events.filter(e => e.kind === 'refused').length, 5)
   assert.equal(events.at(-1).replaced, 'k1')
 })
 

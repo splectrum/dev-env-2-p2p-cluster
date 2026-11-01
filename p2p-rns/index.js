@@ -20,11 +20,11 @@
 // Instrumentation (the series' contract): node-registered, registered,
 // refused (with why), and counts of lookups as metrics.
 
+import { validate, validateName } from '../mycelium-uri/index.js'
+
 const MODULE = 'p2p-rns'
-const SEGMENT = /^[a-z0-9]+(-[a-z0-9]+)*$/
 
 export function createRns ({ swarm, observer = null }) {
-  if (!SEGMENT.test(swarm)) throw new Error(`not a swarm name: ${swarm}`)
   const emit = (kind, facts) => observer && observer({ module: MODULE, kind, time: Date.now(), ...facts })
   const records = new Map() // uri -> record
   const nodes = new Map() // owner -> node name
@@ -44,7 +44,6 @@ export function createRns ({ swarm, observer = null }) {
   const rns = {
     swarm,
     registerNode ({ owner, name }) {
-      if (!SEGMENT.test(name)) refuse(owner, 'registerNode', `not a node name: ${name}`)
       const uri = `/${swarm}/${name}`
       const held = records.get(uri)
       if (held && held.owner !== owner) refuse(owner, 'registerNode', `node name taken: ${name}`)
@@ -59,7 +58,6 @@ export function createRns ({ swarm, observer = null }) {
     register ({ owner, name, id, key, type = null }) {
       const node = nodes.get(owner)
       if (!node) refuse(owner, 'register', 'not a node of this swarm')
-      if (!SEGMENT.test(name)) refuse(owner, 'register', `not a resource name: ${name}`)
       const uri = `/${swarm}/${node}/${name}`
       const before = records.get(uri)
       const record = { uri, kind: 'resource', node, name, type, id, key, owner }
@@ -89,13 +87,17 @@ export function createRns ({ swarm, observer = null }) {
       return null
     },
     // A p2p-channel's onrequest for one peer: the peer's key is the owner.
+    // The boundary: what a peer sends is validated here (mycelium-uri),
+    // once; the registry inside trusts it.
     handler (owner) {
+      const name = (n, what) => { try { return validateName(n, what) } catch (err) { refuse(owner, 'validate', err.message) } }
+      const uri = (u, star) => { try { return validate(u, { star }) } catch (err) { refuse(owner, 'validate', err.message) } }
       return body => {
         switch (body.op) {
-          case 'registerNode': return rns.registerNode({ owner, name: body.name })
-          case 'register': return rns.register({ owner, name: body.name, id: body.id, key: body.key, type: body.type })
-          case 'resolve': return rns.resolve(body.uri)
-          case 'list': return rns.list(body.pattern)
+          case 'registerNode': return rns.registerNode({ owner, name: name(body.name, 'node name') })
+          case 'register': return rns.register({ owner, name: name(body.name, 'resource name'), id: body.id, key: body.key, type: body.type })
+          case 'resolve': return rns.resolve(uri(body.uri, false))
+          case 'list': return rns.list(uri(body.pattern, true))
           case 'reverse': return rns.reverse(body.key)
           default: throw new Error(`unknown op: ${body.op}`)
         }

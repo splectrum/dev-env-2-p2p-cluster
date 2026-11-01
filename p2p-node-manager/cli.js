@@ -16,18 +16,25 @@ import { mkdirSync, writeFileSync, rmSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { manageNode, joinFromInvitation } from './index.js'
 import { vault } from './vault.js'
+import { validateName } from '../mycelium-uri/index.js'
 
 const argv = process.argv.slice(2)
 const flags = Object.fromEntries(argv.filter(a => a.startsWith('--')).map(a => { const [k, v] = a.slice(2).split('='); return [k, v] }))
 const [op] = argv.filter(a => !a.startsWith('--'))
 if (op !== 'run' && op !== 'join') { console.error('usage: cli.js run|join --folder=... (see the header)'); process.exit(2) }
 
+// The boundary: names from the command line and the invitation, validated
+// once (mycelium-uri); inside, they are trusted.
+const invitation = op === 'join' ? JSON.parse(readFileSync(flags.invitation, 'utf8')) : null
+validateName(op === 'join' ? invitation.swarm : flags.swarm, 'swarm name')
+validateName(flags.name, 'node name')
+
 mkdirSync(flags.folder, { recursive: true })
 writeFileSync(join(flags.folder, 'manager.pid'), String(process.pid) + '\n')
 // The previous run's state is the previous run's.
 rmSync(join(flags.folder, 'state.json'), { force: true })
 const m = op === 'join' ? await joinFromInvitation({
-  invitation: JSON.parse(readFileSync(flags.invitation, 'utf8')),
+  invitation,
   folder: flags.folder,
   vault: vault(flags.vault),
   name: flags.name,

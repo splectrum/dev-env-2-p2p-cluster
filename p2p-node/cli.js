@@ -17,6 +17,7 @@
 import process from 'node:process'
 import fs from 'node:fs'
 import { startNode } from './index.js'
+import { validateName } from '../mycelium-uri/index.js'
 
 const argv = process.argv.slice(2)
 const flags = Object.fromEntries(argv.filter(a => a.startsWith('--')).map(a => { const [k, v] = a.slice(2).split('='); return [k, v] }))
@@ -47,6 +48,9 @@ function readSecret () {
 const hostPort = s => { const [host, port] = s.split(':'); return { host, port: Number(port) } }
 
 try {
+  // The boundary: names from the command line, validated once.
+  validateName(flags.swarm, 'swarm name')
+  validateName(flags.name, 'node name')
   if (role === 'boot') {
     const { boot } = await import('./boot.js')
     process.exit(await boot(flags, log))

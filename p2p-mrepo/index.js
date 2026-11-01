@@ -26,7 +26,6 @@ import { createFs } from 'p2p-git/hyperdrive-fs'
 import { p2pgitBackend, nativeBackend, transfer, readBundle } from '../mycelium-git/index.js'
 
 const MODULE = 'p2p-mrepo'
-const NAME = /^[a-z0-9]+(-[a-z0-9]+)*$/
 const hex = b => b.toString('hex')
 const guid = (bytes = crypto.randomBytes(16)) => {
   const h = hex(bytes)
@@ -44,8 +43,6 @@ export function mrepos ({ store, observer = null }) {
   const readInfo = async drive => JSON.parse((await drive.get('/mrepo.json')).toString())
 
   async function create (name, { origin = null, id = null } = {}) {
-    if (id !== null && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(id)) throw new Error(`not an id: ${id}`)
-    if (!NAME.test(name)) throw new Error(`not a repository name: ${name}`)
     const r = await reg()
     if (await r.entry(`/repos/${name}.json`)) throw new Error(`exists: ${name}`)
     const drive = await store.own(`mrepo/${name}`)
