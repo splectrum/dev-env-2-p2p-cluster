@@ -197,7 +197,7 @@ one more, privileged in a narrow, defined way.
   appends the result to the node's log, correlated with the action (in
 the value, until records carry headers).
 - **The logs are the durable truth**, written whether anyone watches or
-  not; replay is reading them from an earlier offset.
+  not; replay is reading them from an earlier position.
 - **What only the manager sees comes from the manager**: container exits,
   out-of-memory kills, resource samples.
 
@@ -207,7 +207,7 @@ One per host. It is a management-plane application, outside the p2p
 layer: the modules do not know it.
 
 **Sources.** Configured, each a URI to an object or a log (`logs.md`):
-every read returns an array of records; a log is read from an offset and
+every read returns an array of records; a log is read from a position and
 followed. A source says what it holds, and announces the **topics** it
 provides. Source kinds are watcher types, generic by where data lives:
 
