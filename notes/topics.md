@@ -25,6 +25,24 @@ be created in `pear-full-square`. The rules this note follows are in
   from the ground up. Current state is never written directly: it is
   built from topics.
 
+## Two levels: records and objects
+
+- **Records are the lower level**: topics of Kafka records, as below.
+- **Objects are the higher level**: the `.md`, `.js` and other files a
+  repository holds, a JSON document, any git object. They sit alongside
+  topics in the same repository and exist in their own right, with no
+  record level under them. The record being the base data structure does
+  not make everything a record.
+- **An object may be generated from records**: a change log of records,
+  in a topic, whose fold is the object. For a git tracked file, the change
+  log's records carry its changes and the file is their fold, the same
+  mechanism that builds state. Then both levels are present: the topic is
+  the source, the object a view (committed, or built when read).
+- **Reading follows the level.** Targeting a topic gives its records;
+  targeting an object gives the object as it is, its format by extension.
+  Where an object is a JSON document holding records (an archived segment,
+  a list of records), it is read as an array of records.
+
 ## The record
 
 **Now: a partial Kafka record, the data in `value`, all JSON.**
@@ -52,11 +70,12 @@ be created in `pear-full-square`. The rules this note follows are in
   - files in folders on a host;
   - paths in a repository's layer;
   - entries on a drive, a core later.
-- **Every read returns an array of records**, as xpath does: a URI
-  resolves to zero or more records, never to a bare value. Everything
-  downstream (parsing, model, display) handles arrays only.
-- **An object holds one or more records.** A JSON object is one record;
-  a JSON array, its elements.
+- **Every read returns an array**, as xpath does: a URI resolves to
+  zero or more items, never to a bare value. Everything downstream
+  (parsing, model, display) handles arrays only. Items are records where
+  the target is at the record level, objects otherwise.
+- **An object holding records** holds one or more: a JSON object is one
+  record; a JSON array, its elements.
 - **A partition is a directory**: targeting it reads its records in
   offset order, across its segments (below). A topic, with a single
   partition, is read the same way.
