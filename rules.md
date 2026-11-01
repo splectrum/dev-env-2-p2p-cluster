@@ -129,9 +129,36 @@ Scope: branch names and repository folders, wherever XPath is used.
   boundary's process; inside, paths match exactly.
 - A name is never both a branch and a prefix.
 
+## Records and topics
+
+Scope: all data the platform produces and keeps: configuration, audit,
+metrics, events, state (`notes/topics.md`).
+
+- **The elementary data container is a Kafka record**, compatible with
+  Kafka's record. Partial for now: only the properties needed so far,
+  each added later with Kafka's name and meaning.
+- **The data is the record's `value`**; its schema is the data's schema.
+  Additional metadata goes in the record's `headers` (the header values'
+  schema is open).
+- **Data lives in topics, in Kafka's sense**, single-partition for now,
+  with Kafka's functionality built basic and evolving (towards mycelium's
+  p2p Kafka). State is never written directly: it is built from topics.
+- **Kafka's names, wherever possible**, with Kafka's meaning: record,
+  key, value, timestamp, headers, offset, topic, partition, segment,
+  producer, consumer, committed offset, retention, log compaction. Our own
+  additions get names of their own and say so (archiving, sealing).
+- **Property names follow the URI naming rules** (below): lowercase
+  `a-z`, `0-9`, `-`, in records, values and header keys.
+- **JSON first.** AVRO later, with values in the form avsc gives them now.
+- **Never a secret** in any property of any record.
+
 ## Open
 
 - Execution branch prefix: `execute/<target>` (as here) or
   `execution/<target>`.
 
 - Whether history may be rewritten to remove leaked data.
+
+- Property names and AVRO: AVRO's names do not allow `-`; either property
+  names avoid it (lowercase `a-z`, `0-9`, `_`, starting with a letter), or
+  `-` maps to `_` in schemas (`notes/topics.md`, open 2).

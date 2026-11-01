@@ -55,7 +55,7 @@ a viewer:
 
 | Stage | What it adds | Built on |
 |---|---|---|
-| viewer (step 7) | fixed pages, scenarios with messages, replay | sources, logs, topics, the model, named actions for scenarios |
+| viewer (step 7) | fixed pages, scenarios with messages, replay | sources, topics, the model, named actions for scenarios |
 | interaction | people acting: requests, repository edits, managing nodes, from the pages | identities, permissions, actions recorded per person |
 | applications | UI-based applications on the swarm, demoed and used in Splectral | the extension contract; node-side applications like the observer |
 
@@ -97,14 +97,14 @@ unchanged.
 | `splectral-transport` | the stream between server and browser: snapshot, changes, actions and their results (WebSocket first, a worklet's IPC later) |
 | `splectral-server` | the server's shell: extensions found, configuration, sources read and followed, topics announced, actions dispatched and recorded, the app served |
 | `splectral-shell` | the browser's shell: the menu from the topics, routing, applications and pages hosted, the transport's client |
-| `splectral-replay` | a generic source kind: any log read from its start at a chosen speed |
+| `splectral-replay` | a generic source kind: any topic consumed from offset 0 at a chosen speed |
 | `splectral-scenario` | the generic scenario runner: steps, actions, `await`s, `say` messages, recorded |
 | `splectral-timeline` | a generic page: every event, scrubbable |
 | `splectral-p2p-watchers` | the p2p adapter in: source kinds `repository`, `core`, `swarm` (later `docker`), and the mapping of the managers' and observers' records to the abstract world |
 | `splectral-p2p-actions` | the p2p adapter out: the abstract actions through the managers' operations, requests and the observers' named actions |
 
 On the node side, part of the platform's p2p adapter:
-**`splectral-p2p-observer`**, the privileged node application (below). The managers' logs (through `mycelium-log`) and the master's
+**`splectral-p2p-observer`**, the privileged node application (below). The managers' topics (through `mycelium-topic`) and the master's
 provisioning through the auxiliary swarm are changes to
 `p2p-node-manager`, `p2p-swarm-manager` and `p2p-node`.
 
@@ -132,7 +132,7 @@ outside application, the platform is a platform.
 ```
 node (container)                        host
 ┌──────────────────────────┐            ┌──────────────────────────────────────┐
-│ the node's modules ──events──┐        │ node manager ── logs (mycelium-log)  │
+│ the node's modules ──events──┐        │ node manager ── topics (mycelium-topic)│
 │                          │   │        │      │                               │
 │ observer (an application │◄──┘        │      └─ followed ────┐               │
 │ on the node, privileged) │◄─mgmt ch.─►│                      ▼               │
@@ -145,8 +145,8 @@ node (container)                        host
 1. **The observer**, an application on every node that runs one.
 2. **The management channel**, between the node and its own manager:
    the auxiliary link that provisioning sets up and keeps open.
-3. **The node manager's logs**, on the host: the node's and its own,
-   append-only (`logs.md`).
+3. **The node manager's topics**, on the host: the node's and its own,
+   append-only (`topics.md`).
 4. **The Splectral server**, one per host: sources in, topics out, the app
    served to browsers.
 5. **The app** in the browser: a menu of pages and scenarios.
@@ -186,18 +186,18 @@ one more, privileged in a narrow, defined way.
   since step 5. The master gets its secret on stdin and has none: the
   master is provisioned through the auxiliary swarm too (carried forward
   from step 5) before it gets an observer.
-- **Logs, not a feed.** Each node manager appends what it learns to logs
-  in the node's folder (`logs.md`, through `mycelium-log`): the node's
-  log (the observer's events) and its own. Splectral reads and follows
-  them from a position; nothing else is needed to carry them. Their state
-  files (`state.json`) become views folded from the logs.
+- **Topics, not a feed.** Each node manager produces what it learns into topics
+  in the node's folder (`topics.md`, through `mycelium-topic`): the node's
+  topic (the observer's events) and its own. Splectral consumes and
+  follows them from an offset; nothing else is needed to carry them. Their
+  state files (`state.json`) become views folded from the topics.
 - **Actions are records too.** An action for a node is appended to the
-  node's action log, which its manager follows; the manager carries it
+  node's action topic, which its manager follows; the manager carries it
   out, or passes it to the observer over the management channel, and
-  appends the result to the node's log, correlated with the action (in
-the value, until records carry headers).
-- **The logs are the durable truth**, written whether anyone watches or
-  not; replay is reading them from an earlier position.
+  produces the result into the node's topic, correlated with the action
+in a header.
+- **The topics are the durable truth**, written whether anyone watches or
+  not; replay is consuming them from an earlier offset.
 - **What only the manager sees comes from the manager**: container exits,
   out-of-memory kills, resource samples.
 
@@ -206,31 +206,31 @@ the value, until records carry headers).
 One per host. It is a management-plane application, outside the p2p
 layer: the modules do not know it.
 
-**Sources.** Configured, each a URI to an object or a log (`logs.md`):
-every read returns an array of records; a log is read from a position and
+**Sources.** Configured, each a URI to an object or a topic (`topics.md`):
+every read returns an array of records; a topic is consumed from an offset and
 followed. A source says what it holds, and announces the **topics** it
 provides. Source kinds are watcher types, generic by where data lives:
 
 | Source kind | Where the data lives | From |
 |---|---|---|
-| `file` | objects and logs in folders on the host: the managers' logs, a step's records | the platform |
-| `repository` | objects and logs in a repository's layer, by URI, from a replica | the p2p adapter |
-| `core` | logs on cores (later: the nodes' audit cores) | the p2p adapter |
+| `file` | objects and topics in folders on the host: the managers' topics, a step's records | the platform |
+| `repository` | objects and topics in a repository's layer, by URI, from a replica | the p2p adapter |
+| `core` | topics on cores (later: the nodes' audit cores) | the p2p adapter |
 | `swarm` | the name service, as a peer: who is in the swarm, their resources by URI | the p2p adapter |
 | `docker` | a swarm's containers and networks starting, stopping, dying, as records | the p2p adapter |
-| `replay` | any log read from its start at a chosen speed | the platform |
+| `replay` | any topic consumed from offset 0 at a chosen speed | the platform |
 
 **Records.** Everything is a record compatible with Kafka's, for now
-partial: the data in `value`, JSON, taken in natural order (`logs.md`),
+partial: the data in `value`, JSON, taken in offset order (`topics.md`),
 read by its shape. Scenario messages are records too (kind `say`).
 
-**The model** folds records, in natural order, into the abstract world:
+**The model** folds records, in offset order, into the abstract world:
 the fold gives the state; the records in order give the activity. It pushes a
 snapshot and then the changes to every connected browser (a WebSocket or
 Server-Sent Events). It is a Node server serving a React app; no
 server-side rendering.
 
-**Actions** are records appended to action logs, and go through the
+**Actions** are records produced into action topics, and go through the
 existing paths only:
 - the managers' operations: join, restart, stop, invite;
 - the observers' named actions, through their managers;
@@ -343,7 +343,7 @@ So the same pages serve a viewer and a future mobile node app.
 
 ## Rules
 
-- **No secret anywhere in the app**: not in the observer, the logs, the
+- **No secret anywhere in the app**: not in the observer, the topics, the
   Splectral server, the model, the pages or the records.
 - **No web server on the nodes.** The observer talks only to its manager,
   over the management channel; the node's other ways in stay p2p.
@@ -358,11 +358,11 @@ So the same pages serve a viewer and a future mobile node app.
 ## When built: the steps
 
 **Step 7, the app with live demos on one host and the simulated two:**
-- `mycelium-log` (`logs.md`): the managers' records become logs, their
+- `mycelium-topic` (`topics.md`): the managers' records become topics, their
   state files views;
 - the master provisioned through the auxiliary swarm, so every node has
   a management channel;
-- the observer on every node, its events in its manager's logs;
+- the observer on every node, its events in its manager's topics;
 - the platform's core: the contract with the abstract world, the model,
   the transport, the server, the shell, the menu;
 - the generic extensions: replay, scenario runner, timeline;
