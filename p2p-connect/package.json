@@ -1,6 +1,6 @@
 {
   "name": "p2p-connect",
-  "id": "1b2912cc-718a-4ac6-a210-f42200ba149e",
+  "id": "09c1f8ff-a122-4f91-8947-22139bb01a64",
   "description": "Connections for the p2p layer: a node's keypair on a DHT, topics, the membership hook",
   "type": "module",
   "exports": "./index.js",

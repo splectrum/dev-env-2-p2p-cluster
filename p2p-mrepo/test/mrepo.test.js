@@ -65,6 +65,8 @@ test('clone: the same history under a new key and id, its origin recorded', asyn
   const repos = mrepos({ store })
   const a = await repos.import('a', { native: nativeFixture() })
   const b = await repos.clone(a, 'b')
+  const c = await repos.clone(a, 'c', { id: '12345678-1234-4234-8234-123456789abc' })
+  assert.equal(c.id, '12345678-1234-4234-8234-123456789abc')
   assert.notEqual(b.key, a.key)
   assert.notEqual(b.id, a.id)
   assert.deepEqual(await b.backend.listBranches(), await a.backend.listBranches())

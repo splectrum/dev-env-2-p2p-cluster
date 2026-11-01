@@ -7,7 +7,7 @@
 //                                                 (id: its internal id, if it has one
 //                                                 already, e.g. rebuilt; else a new GUID)
 //   await repos.import(name, { native | bundle }) one from the boundary
-//   await repos.clone(repo, name)                 a copy under a new key, its origin recorded
+//   await repos.clone(repo, name, { id })         a copy under a new key, its origin recorded
 //   await repos.open(name)                        one of the store's own, again
 //   await repos.replica(key)                      another's, by key: read only
 //   await repos.list()                            what the store holds as its own
@@ -92,9 +92,9 @@ export function mrepos ({ store, observer = null }) {
       return { ...repo, ...counts }
     },
 
-    async clone (from, name) {
+    async clone (from, name, { id = null } = {}) {
       const branches = Object.fromEntries(await from.backend.listBranches())
-      const repo = await create(name, { origin: { kind: 'clone', id: from.id, key: from.key, branches } })
+      const repo = await create(name, { id, origin: { kind: 'clone', id: from.id, key: from.key, branches } })
       const counts = await copyBranches(from.backend, repo.backend)
       emit('repo-cloned', { name, id: repo.id, resource: repo.key, fromId: from.id, fromResource: from.key, ...counts })
       return { ...repo, ...counts }

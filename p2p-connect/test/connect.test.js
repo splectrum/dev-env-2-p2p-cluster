@@ -45,3 +45,18 @@ test('two nodes meet on a topic; a refused node does not connect', async () => {
   for (const k of ['topic-joined', 'connection-opened', 'connection-closed', 'connection-refused']) assert.ok(kinds.has(k), k)
   assert.ok(events.filter(e => e.kind === 'connection-closed').every(e => e.bytesReceived > 0))
 })
+
+test('a peer by its key: connected without a topic', async () => {
+  const events = []
+  const boot = await startBootstrap({ host: '127.0.0.1', port: 49822 })
+  const d1 = await startDht({ host: '127.0.0.1', bootstrap: boot.bootstrap })
+  const d2 = await startDht({ host: '127.0.0.1', bootstrap: boot.bootstrap })
+  const server = connect({ dht: d1.dht, keyPair: crypto.keyPair() })
+  await server.swarm.listen()
+  const client = connect({ dht: d2.dht, keyPair: crypto.keyPair(), observer: e => events.push(e) })
+  const opened = new Promise(resolve => client.onConnection((stream, peer) => resolve(peer.peer)))
+  client.connectTo(server.publicKey)
+  assert.equal(await opened, server.publicKey.toString('hex'))
+  assert.ok(events.some(e => e.kind === 'peer-joined'))
+  await client.close(); await server.close(); await d2.close(); await d1.close(); await boot.close()
+})

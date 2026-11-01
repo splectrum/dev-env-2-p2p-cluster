@@ -1,6 +1,6 @@
 {
   "name": "p2p-mrepo",
-  "id": "35a4a9ac-5939-4e39-991c-3459c54e869b",
+  "id": "81fe5e9d-e0d0-47fa-a16b-034a750c74ba",
   "description": "Mycelium repositories on the p2p layer: created, imported, cloned and opened on a p2p-store, each a mycelium backend",
   "type": "module",
   "exports": {
