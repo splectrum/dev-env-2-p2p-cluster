@@ -1,0 +1,12 @@
+{
+  "invocation": "steps/record.sh 7-splectral 5-observer unit-splectral-p2p-observer=sh steps/1-mycelium/validation/unit-tests.sh splectral-p2p-observer unit-p2p-node-manager=sh steps/1-mycelium/validation/unit-tests.sh p2p-node-manager genesis=sh steps/7-splectral/5-observer/live.sh /tmp/claude-0/-home-user/d01f3080-f030-5051-8c75-7cd188d75161/scratchpad/s7obsrec genesis join=sh steps/7-splectral/5-observer/live.sh /tmp/claude-0/-home-user/d01f3080-f030-5051-8c75-7cd188d75161/scratchpad/s7obsrec join act=sh steps/7-splectral/5-observer/live.sh /tmp/claude-0/-home-user/d01f3080-f030-5051-8c75-7cd188d75161/scratchpad/s7obsrec act results=sh steps/7-splectral/5-observer/live.sh /tmp/claude-0/-home-user/d01f3080-f030-5051-8c75-7cd188d75161/scratchpad/s7obsrec results stop=sh steps/7-splectral/5-observer/live.sh /tmp/claude-0/-home-user/d01f3080-f030-5051-8c75-7cd188d75161/scratchpad/s7obsrec stop after=sh steps/7-splectral/5-observer/live.sh /tmp/claude-0/-home-user/d01f3080-f030-5051-8c75-7cd188d75161/scratchpad/s7obsrec after ",
+  "state": { "dev": "78e4c1cad6dab3866f83785979b9ffa75dc918f8", "pendingDefault": "d8cdfa0" },
+  "environment": {
+    "node": "v22.22.0",
+    "bare": "v1.36.0",
+    "git": "git version 2.43.0",
+    "os": "Linux 6.18.44-fc-v185",
+    "docker": "29.9.2"
+  },
+  "nondeterministic": { "started": "2026-11-01T19:33:00Z", "finished": "2026-11-01T19:33:35Z" }
+}

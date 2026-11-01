@@ -11,7 +11,7 @@ Status: **in progress** (2026-11-01). Request:
 | `2-topic/` | `mycelium-topic` | done |
 | `3-managers/` | the managers on topics | done |
 | `4-master-aux/` | a management channel for every node | done |
-| `5-observer/` | `splectral-p2p-observer` | |
+| `5-observer/` | `splectral-p2p-observer` | done |
 | `6-core/` | the platform's core | |
 | `7-extensions/` | replay, scenario, timeline | |
 | `8-adapters/` | the p2p adapters | |
