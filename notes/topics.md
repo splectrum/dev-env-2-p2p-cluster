@@ -184,10 +184,14 @@ Single concern: topics of Kafka records, as above, on any storage.
 - **Property names**: the p2p series' events are camelCase already
   (`publicKey`, `readyMs`), so they stay; step 7 checks them against the
   data names rule (no two capitals in a row).
-- **`_` in URI segments**: the segment checks in `p2p-rns`, `p2p-mrepo`,
-  `p2p-node` (requests) and `p2p-node-manager` (the vault) allow
-  `a-z`, `0-9`, `-` only; they follow the rule (with `mycelium-uri`'s, if
-  it checks) when the code next changes, in step 7.
+- **Validation in one place, at the boundary** (`rules.md`, URIs): four
+  modules carry their own copies of the old segment check (`p2p-rns`,
+  `p2p-mrepo`, `p2p-node`'s requests, the vault in `p2p-node-manager`),
+  against the rule. In step 7 they go: `mycelium-uri` is the one
+  validator, its rule updated (`_`, data names in URI form), applied only
+  where input enters (network handlers for the name service and request
+  intake, command-line arguments, external files and imports); internal
+  APIs trust their callers.
 - Records already committed (steps 0 to 6) stay as they are: they are
   the record of those steps.
 
