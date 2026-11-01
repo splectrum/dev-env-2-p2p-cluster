@@ -62,6 +62,7 @@ process.on('SIGTERM', stop)
 process.on('SIGINT', stop)
 m.ready.then(s => console.log(JSON.stringify({ event: 'ready', ...s })), () => {})
 const end = await m.done
+await m.flush()
 if (stopping) await stopping
 console.log(JSON.stringify({ event: 'exited', ...end }))
 rmSync(join(flags.folder, 'manager.pid'), { force: true })

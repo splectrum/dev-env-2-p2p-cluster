@@ -28,15 +28,19 @@
 // with this host's vault. No swarm manager is involved: the swarm sees the
 // node, this manager controls it.
 //
-// Records, in the node's folder (one per node, side by side; nothing
-// secret): node.json (what the node is), manager.jsonl (what the manager
-// did and saw: started, ready, resources sampled, exited, stopped),
-// node.jsonl (the node's log as it wrote it: every module's audit and
-// metrics), node.stderr, state.json (the latest state).
+// Topics, in the node's folder (one per node, side by side; nothing
+// secret), of Kafka records (mycelium-topic, notes/topics.md):
+//   topics/manager   what the manager did and saw: described, started,
+//                    ready, resources sampled, exited, stopped
+//   topics/node      the node's log as it wrote it, a record per line:
+//                    every module's audit and metrics
+// The node's state is a view: the fold of topics/manager (nodeState),
+// state.json its cache. node.stderr stays a text file.
 
 import { spawn, execFileSync } from 'node:child_process'
-import { mkdirSync, writeFileSync, appendFileSync, createWriteStream } from 'node:fs'
+import { mkdirSync, writeFileSync, createWriteStream } from 'node:fs'
 import { join } from 'node:path'
+import { openTopic, folderStorage } from '../mycelium-topic/index.js'
 import crypto from 'hypercore-crypto'
 import { startBootstrap } from 'p2p-dht'
 import { connect } from 'p2p-connect'
@@ -45,16 +49,48 @@ import { openChannel } from 'p2p-channel'
 const docker = (...args) => execFileSync('docker', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
 const tryDocker = (...args) => { try { return docker(...args) } catch { return null } }
 
-export async function manageNode ({ folder, vault, image, network, ip, swarm, name, role, aux = null, joining = null, memory = '1g', storeSize = '512m', codeSize = '256m', metricsEvery = 30000, sampleEvery = 15000 }) {
+const topicOf = (folder, name) => openTopic({ storage: folderStorage(join(folder, 'topics', name)) })
+
+// The node's state from its manager's records, in offset order. A run
+// starts at `starting`: what came before belongs to earlier runs.
+export function reduceNodeState (state, v) {
+  switch (v.kind) {
+    case 'starting': return { swarm: v.swarm, name: v.name, role: v.role, container: v.container, image: v.image, ip: v.ip, status: 'starting', startedAt: new Date(v.time).toISOString() }
+    case 'materialised': return { ...state, materialised: { commit: v.commit, files: v.files, downloaded: v.downloaded, ms: v.ms } }
+    case 'node-genesis': return { ...state, genesis: { packages: v.packages, boot: v.boot } }
+    case 'node-live': return { ...state, live: { uri: v.uri, key: v.key, id: v.id, origin: v.origin } }
+    case 'node-ready': return { ...state, status: 'running', uri: v.uri, key: v.key, dht: v.dht, readyMs: v.ms }
+    case 'stopping': return { ...state, status: 'stopping' }
+    case 'container-exited': return { ...state, status: 'exited', exitCode: v.exitCode, oomKilled: v.oomKilled, exitedAt: new Date(v.time).toISOString() }
+    default: return state
+  }
+}
+
+// The view, for whoever reads a node's state: the fold of its manager's topic.
+export async function nodeState (folder) {
+  const t = await topicOf(folder, 'manager')
+  return t.fold((s, r) => reduceNodeState(s, r.value), null)
+}
+
+export async function manageNode ({ folder, vault, image, network, ip, swarm, name, role, aux = null, joining = null, origin = null, memory = '1g', storeSize = '512m', codeSize = '256m', metricsEvery = 30000, sampleEvery = 15000 }) {
   mkdirSync(folder, { recursive: true })
   const container = `p2p-${swarm}-${name}`
   const t0 = Date.now()
-  const state = { swarm, name, role, container, image, ip, status: 'starting', startedAt: new Date().toISOString() }
-  const record = (kind, facts = {}) => {
-    appendFileSync(join(folder, 'manager.jsonl'), JSON.stringify({ module: 'p2p-node-manager', kind, time: Date.now(), ...facts }) + '\n')
-  }
+  const topics = { manager: await topicOf(folder, 'manager'), node: await topicOf(folder, 'node') }
+  // Every fact goes into the manager's topic; the state is the same
+  // reducer's fold, kept as it goes and cached in state.json.
+  let state = null
+  let produced = Promise.resolve()
   const saveState = () => writeFileSync(join(folder, 'state.json'), JSON.stringify(state, null, 2) + '\n')
-  writeFileSync(join(folder, 'node.json'), JSON.stringify({ swarm, name, role, image, network, ip, container, memory, storeSize }, null, 2) + '\n')
+  const record = (kind, facts = {}) => {
+    const value = { module: 'p2p-node-manager', kind, time: Date.now(), ...facts }
+    state = reduceNodeState(state, value)
+    produced = topics.manager.produce({ value })
+    saveState()
+  }
+  const flush = () => produced
+  record('starting', { swarm, name, role, container, image, network, ip, memory, storeSize })
+  if (origin) record(origin.kind, origin.facts)
 
   tryDocker('rm', '-f', container)
   // The store's tmpfs is noexec (Docker's default). A joining node runs code
@@ -65,7 +101,7 @@ export async function manageNode ({ folder, vault, image, network, ip, swarm, na
     '--memory', memory, '--memory-swap', memory, '--ulimit', 'core=0', '--tmpfs', `/data:rw,noexec,nosuid,size=${storeSize},mode=1777`,
     '--tmpfs', '/tmp:rw,noexec,nosuid,size=64m,mode=1777',
     ...(role === 'join' ? ['--tmpfs', `/code:rw,exec,nosuid,size=${codeSize},mode=1777`] : [])]
-  record('starting', { container, image, network, ip, role, hardening: ['read-only', 'cap-drop ALL', 'no-new-privileges', 'user 65534', `memory ${memory} no swap`, 'core 0', `store tmpfs ${storeSize} noexec`, 'tmp tmpfs 64m noexec', ...(role === 'join' ? [`code tmpfs ${codeSize} exec`] : [])] })
+  record('hardened', { hardening: ['read-only', 'cap-drop ALL', 'no-new-privileges', 'user 65534', `memory ${memory} no swap`, 'core 0', `store tmpfs ${storeSize} noexec`, 'tmp tmpfs 64m noexec', ...(role === 'join' ? [`code tmpfs ${codeSize} exec`] : [])] })
 
   // A joining node is provisioned through the auxiliary swarm: the
   // manager's peer, there for the node's life.
@@ -95,35 +131,29 @@ export async function manageNode ({ folder, vault, image, network, ip, swarm, na
   let readyResolve, readyReject
   const ready = new Promise((resolve, reject) => { readyResolve = resolve; readyReject = reject })
   ready.catch(() => {})
-  const log = createWriteStream(join(folder, 'node.jsonl'), { flags: 'a' })
   child.stderr.pipe(createWriteStream(join(folder, 'node.stderr'), { flags: 'a' }))
   let rest = ''
   child.stdout.on('data', chunk => {
-    log.write(chunk)
     rest += chunk.toString()
     let i
     while ((i = rest.indexOf('\n')) !== -1) {
       const line = rest.slice(0, i)
       rest = rest.slice(i + 1)
+      if (!line) continue
       let e
-      try { e = JSON.parse(line) } catch { continue }
+      try { e = JSON.parse(line) } catch { produced = topics.node.produce({ value: { text: line } }); continue }
+      produced = topics.node.produce({ value: e })
       if (e.module === 'p2p-node' && e.kind === 'provisioning-key' && provision) {
         provision.authorise(e.publicKey)
       } else if (e.module === 'p2p-node' && e.kind === 'materialised') {
-        state.materialised = { commit: e.commit, files: e.files, downloaded: e.downloaded, ms: e.ms }
-        saveState()
-        record('materialised', state.materialised)
+        record('materialised', { commit: e.commit, files: e.files, downloaded: e.downloaded, ms: e.ms })
       } else if (e.module === 'p2p-node' && e.kind === 'node-started') {
-        Object.assign(state, { status: 'running', uri: e.uri, key: e.owner, dht: e.dht, readyMs: Date.now() - t0 })
-        saveState()
         record('node-ready', { uri: e.uri, key: e.owner, dht: e.dht, ms: Date.now() - t0 })
         readyResolve(state)
       } else if (e.module === 'p2p-node' && e.kind === 'genesis') {
-        state.genesis = { packages: e.packages, boot: e.boot }
-        saveState()
+        record('node-genesis', { packages: e.packages, boot: e.boot })
       } else if (e.module === 'p2p-node' && e.kind === 'live') {
-        state.live = { uri: e.uri, key: e.key, id: e.id, origin: e.origin }
-        saveState()
+        record('node-live', { uri: e.uri, key: e.key, id: e.id, origin: e.origin })
       } else if (e.module === 'p2p-node' && e.kind === 'failed') {
         record('node-failed', { error: e.error })
       }
@@ -142,27 +172,24 @@ export async function manageNode ({ folder, vault, image, network, ip, swarm, na
     const inspected = tryDocker('inspect', '--format', '{{json .State}}', container)
     const s = inspected ? JSON.parse(inspected) : {}
     tryDocker('rm', container)
-    Object.assign(state, { status: 'exited', exitCode: s.ExitCode ?? code, oomKilled: !!s.OOMKilled, exitedAt: new Date().toISOString() })
-    saveState()
     record('container-exited', { exitCode: s.ExitCode ?? code, oomKilled: !!s.OOMKilled, error: s.Error || null, ms: Date.now() - t0 })
     readyReject(new Error('the node exited before it was ready'))
-    log.end()
+    await flush()
     resolve(state)
   }))
-  saveState()
 
   return {
     container,
-    state,
+    get state () { return state },
     ready,
     done,
+    flush,
     async stop (timeout = 15) {
       record('stopping', { signal: 'SIGTERM', timeout })
-      state.status = 'stopping'
-      saveState()
       tryDocker('stop', '-t', String(timeout), container)
       const end = await done
       record('stopped', { exitCode: end.exitCode, graceful: end.exitCode === 0 })
+      await flush()
       return end
     }
   }
@@ -172,9 +199,8 @@ export async function joinFromInvitation ({ invitation: inv, folder, vault, name
   const aux = { network: `p2p-${inv.swarm}-${name}-aux`, gateway: `${auxSubnet}.1`, port: 49740, ip: `${auxSubnet}.2` }
   tryDocker('network', 'rm', aux.network)
   docker('network', 'create', '--internal', '--subnet', `${auxSubnet}.0/24`, '--gateway', aux.gateway, aux.network)
-  mkdirSync(folder, { recursive: true })
-  appendFileSync(join(folder, 'manager.jsonl'), JSON.stringify({ module: 'p2p-node-manager', kind: 'aux-network-created', time: Date.now(), network: aux.network, subnet: `${auxSubnet}.0/24`, from: 'invitation', swarm: inv.swarm, master: inv.master }) + '\n')
   const m = await manageNode({
+    origin: { kind: 'aux-network-created', facts: { network: aux.network, subnet: `${auxSubnet}.0/24`, from: 'invitation', swarm: inv.swarm, master: inv.master } },
     folder, vault, image: inv.image, network: inv.network.name, ip, swarm: inv.swarm, name, role: 'join', aux,
     joining: { master: inv.master, bootstrap: inv.bootstrap, packages: inv.packages }, ...rest
   })

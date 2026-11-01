@@ -7,7 +7,7 @@
 //   node cli.js stop    --folder=<swarm-folder>
 //   node cli.js invite  --folder=<swarm-folder>     (the invitation, for another host)
 
-import { genesis, joinNode, status, restart, stop, invite } from './index.js'
+import { genesis, joinNode, status, restart, stop, invite, settled } from './index.js'
 import { validateName } from '../mycelium-uri/index.js'
 
 const argv = process.argv.slice(2)
@@ -20,6 +20,7 @@ try {
   if (op === 'genesis') validateName(flags.swarm, 'swarm name')
   if (op === 'join' || op === 'restart') validateName(flags.node, 'node name')
   const result = await ops[op](flags)
+  await settled()
   console.log(JSON.stringify({ result }))
   process.exit(0)
 } catch (err) {
