@@ -24,7 +24,7 @@ import { rnsClient } from 'p2p-rns'
 import { swarmTopic } from 'p2p-node'
 
 const here = dirname(fileURLToPath(import.meta.url))
-const docker = (...args) => execFileSync('docker', args, { encoding: 'utf8' }).trim()
+const docker = (...args) => execFileSync('docker', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
 const tryDocker = (...args) => { try { return docker(...args) } catch { return null } }
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 

@@ -22,7 +22,7 @@ import { spawn, execFileSync } from 'node:child_process'
 import { mkdirSync, writeFileSync, appendFileSync, createWriteStream } from 'node:fs'
 import { join } from 'node:path'
 
-const docker = (...args) => execFileSync('docker', args, { encoding: 'utf8' }).trim()
+const docker = (...args) => execFileSync('docker', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
 const tryDocker = (...args) => { try { return docker(...args) } catch { return null } }
 
 export function manageNode ({ folder, vault, image, network, ip, swarm, name, role, memory = '768m', storeSize = '512m', metricsEvery = 30000, sampleEvery = 15000 }) {
