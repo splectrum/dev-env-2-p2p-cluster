@@ -7,7 +7,7 @@
 // gracefully, then the manager exits. Prints one JSON line when the node
 // is ready, and one when it has exited.
 
-import { writeFileSync, rmSync } from 'node:fs'
+import { mkdirSync, writeFileSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
 import { manageNode } from './index.js'
 import { vault } from './vault.js'
@@ -17,6 +17,7 @@ const flags = Object.fromEntries(argv.filter(a => a.startsWith('--')).map(a => {
 const [op] = argv.filter(a => !a.startsWith('--'))
 if (op !== 'run') { console.error('usage: cli.js run --folder=... --vault=... --image=... --network=... --ip=... --swarm=... --name=...'); process.exit(2) }
 
+mkdirSync(flags.folder, { recursive: true })
 writeFileSync(join(flags.folder, 'manager.pid'), String(process.pid) + '\n')
 const m = manageNode({
   folder: flags.folder,
@@ -29,12 +30,13 @@ const m = manageNode({
   role: flags.role || 'master',
   metricsEvery: Number(flags['metrics-every'] || 30000)
 })
-let stopping = false
-const stop = async () => { if (stopping) return; stopping = true; await m.stop() }
+let stopping = null
+const stop = () => { stopping ??= m.stop() }
 process.on('SIGTERM', stop)
 process.on('SIGINT', stop)
 m.ready.then(s => console.log(JSON.stringify({ event: 'ready', ...s })), () => {})
 const end = await m.done
+if (stopping) await stopping
 console.log(JSON.stringify({ event: 'exited', ...end }))
 rmSync(join(flags.folder, 'manager.pid'), { force: true })
 process.exit(end.exitCode === 0 ? 0 : 1)
