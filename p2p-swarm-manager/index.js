@@ -82,7 +82,7 @@ async function startNodeManager (s, node, { vault, timeout = 180000 }) {
     `--packages-uri=${s.master.packages.uri}`, `--packages-key=${s.master.packages.key}`, `--packages-commit=${s.master.packages.commit}`] : [])]
   const child = spawn(process.execPath, [join(here, '..', 'p2p-node-manager', 'cli.js'), 'run',
     `--folder=${folder}`, `--vault=${vault}`, `--image=${s.image}`, `--network=${s.network}`, `--ip=${node.ip}`,
-    `--swarm=${s.swarm}`, `--name=${node.name}`, `--role=${node.role}`, ...joining], { detached: true, stdio: ['ignore', out, out] })
+    `--swarm=${s.swarm}`, `--name=${node.name}`, `--role=${node.role}`, '--observer=true', ...joining], { detached: true, stdio: ['ignore', out, out] })
   child.unref()
   const t0 = Date.now()
   while (Date.now() - t0 < timeout) {

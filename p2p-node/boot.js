@@ -28,6 +28,8 @@ import { extract } from '../mycelium-layer/index.js'
 
 const hostPort = s => { const [host, port] = s.split(':'); return { host, port: Number(port) } }
 
+let toNode = null
+
 export async function boot (flags, log) {
   const t0 = Date.now()
   const emit = (kind, facts = {}) => log({ module: 'p2p-node', kind, time: Date.now(), role: 'boot', ...facts })
@@ -41,7 +43,20 @@ export async function boot (flags, log) {
   const manager = Buffer.from(flags.manager, 'hex')
   const aux = connect({ dht: auxDht.dht, keyPair: provisioning, admit: key => key.equals(manager), observer: log })
   const provisionChannel = new Promise(resolve => aux.onConnection((stream, peer) => {
-    if (peer.peer === flags.manager) resolve(openChannel(stream, { name: 'p2p-provision', peer: peer.peer, observer: log }))
+    if (peer.peer === flags.manager) {
+      resolve(openChannel(stream, {
+        name: 'p2p-provision',
+        peer: peer.peer,
+        observer: log,
+        // The management channel, from the manager: actions for the
+        // observer, passed to the node's process on its stdin.
+        onrequest: body => {
+          if (body.op !== 'action' || !toNode) throw new Error(`not taken: ${body.op}`)
+          toNode.write(JSON.stringify(body.action) + '\n')
+          return { passed: true }
+        }
+      }))
+    }
   }))
   aux.connectTo(manager)
   const channel = await provisionChannel
@@ -57,8 +72,10 @@ export async function boot (flags, log) {
   // 4. The node, from its code, with its secret on stdin; this program
   // stays, the parent: it keeps the auxiliary link (the management
   // channel), passes SIGTERM on, and exits as the node does.
-  const child = spawn('bare', args, { stdio: ['pipe', 'inherit', 'inherit'] })
-  child.stdin.end(primaryKey + '\n')
+  const observer = flags.observer === 'true'
+  const child = spawn('bare', observer ? [...args, '--observer=true'] : args, { stdio: ['pipe', 'inherit', 'inherit'] })
+  // The secret first; with an observer, stdin stays open for its actions.
+  if (observer) { child.stdin.write(primaryKey + '\n'); toNode = child.stdin } else child.stdin.end(primaryKey + '\n')
   emit('node-spawned', { role: flags.role || 'join', code: flags.role === 'master' ? flags.code : flags.app, ms: Date.now() - t0 })
   process.on('SIGTERM', () => child.kill('SIGTERM'))
   process.on('SIGINT', () => child.kill('SIGTERM'))

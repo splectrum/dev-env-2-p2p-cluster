@@ -21,7 +21,7 @@ mkdir "$work/base" && cp "$here/base.Dockerfile" "$work/base/Dockerfile" && cp "
 docker image inspect "bare-base:$version" >/dev/null 2>&1 || docker build -q -t "bare-base:$version" "$work/base" >/dev/null
 app=$work/node/app
 mkdir -p "$app"
-git -C "$src" archive HEAD $(cd "$src" && ls -d mycelium-* p2p-* package.json package-lock.json) | tar -x -C "$app"
+git -C "$src" archive HEAD $(cd "$src" && ls -d mycelium-* p2p-* splectral-* package.json package-lock.json) | tar -x -C "$app"
 for m in "$app"/mycelium-*; do
   [ -d "$src/$(basename "$m")/node_modules" ] && cp -a "$src/$(basename "$m")/node_modules" "$m/"
   [ -d "$m/node_modules" ] && (cd "$m" && npm prune -q --omit=dev --offline --no-audit --no-fund >/dev/null)

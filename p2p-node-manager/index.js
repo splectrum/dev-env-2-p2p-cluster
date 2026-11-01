@@ -39,7 +39,7 @@
 import { spawn, execFileSync } from 'node:child_process'
 import { mkdirSync, writeFileSync, createWriteStream } from 'node:fs'
 import { join } from 'node:path'
-import { openTopic, folderStorage } from '../mycelium-topic/index.js'
+import { openTopic, folderStorage, committedOffsets } from '../mycelium-topic/index.js'
 import crypto from 'hypercore-crypto'
 import { startBootstrap } from 'p2p-dht'
 import { connect } from 'p2p-connect'
@@ -71,7 +71,7 @@ export async function nodeState (folder) {
   return t.fold((s, r) => reduceNodeState(s, r.value), null)
 }
 
-export async function manageNode ({ folder, vault, image, network, ip, swarm, name, role, aux = null, joining = null, origin = null, memory = '1g', storeSize = '512m', codeSize = '256m', metricsEvery = 30000, sampleEvery = 15000 }) {
+export async function manageNode ({ folder, vault, image, network, ip, swarm, name, role, aux = null, joining = null, origin = null, observer = false, memory = '1g', storeSize = '512m', codeSize = '256m', metricsEvery = 30000, sampleEvery = 15000 }) {
   mkdirSync(folder, { recursive: true })
   const container = `p2p-${swarm}-${name}`
   const t0 = Date.now()
@@ -120,7 +120,7 @@ export async function manageNode ({ folder, vault, image, network, ip, swarm, na
     '--entrypoint', 'bare', image, '/app/p2p-node/cli.js', 'boot',
     `--swarm=${swarm}`, `--name=${name}`, `--host=${ip}`, '--storage=/data/store',
     `--aux-host=${aux.ip}`, `--aux-bootstrap=${aux.gateway}:${aux.port}`, `--manager=${provision.publicKey}`,
-    ...roleFlags, `--metrics-every=${metricsEvery}`)
+    ...roleFlags, ...(observer ? ['--observer=true'] : []), `--metrics-every=${metricsEvery}`)
   docker('network', 'connect', '--ip', ip, network, container)
   const child = spawn('docker', ['start', '-a', container], { stdio: ['ignore', 'pipe', 'pipe'] })
 
@@ -138,7 +138,9 @@ export async function manageNode ({ folder, vault, image, network, ip, swarm, na
       if (!line) continue
       let e
       try { e = JSON.parse(line) } catch { produced = topics.node.produce({ value: { text: line } }); continue }
-      produced = topics.node.produce({ value: e })
+      // An observer's result carries its action's correlation in a header.
+      const headers = e.module === 'splectral-p2p-observer' && e.kind === 'action-result' ? [{ key: 'correlation', value: String(e.id) }] : undefined
+      produced = topics.node.produce({ value: e, headers })
       if (e.module === 'p2p-node' && e.kind === 'provisioning-key' && provision) {
         provision.authorise(e.publicKey)
       } else if (e.module === 'p2p-node' && e.kind === 'materialised') {
@@ -146,6 +148,8 @@ export async function manageNode ({ folder, vault, image, network, ip, swarm, na
       } else if (e.module === 'p2p-node' && e.kind === 'node-started') {
         record('node-ready', { uri: e.uri, key: e.owner, dht: e.dht, ms: Date.now() - t0 })
         readyResolve(state)
+      } else if (e.module === 'splectral-p2p-observer' && e.kind === 'observer-attached') {
+        followActions()
       } else if (e.module === 'p2p-node' && e.kind === 'genesis') {
         record('node-genesis', { packages: e.packages, boot: e.boot })
       } else if (e.module === 'p2p-node' && e.kind === 'live') {
@@ -156,6 +160,34 @@ export async function manageNode ({ folder, vault, image, network, ip, swarm, na
     }
   })
 
+  // Actions for the node's observer: records produced into the node's
+  // action topic (`topics/actions`, by whoever may act on this host); the
+  // manager follows it from its committed offset and passes each over the
+  // management channel. The result comes back on the node's log.
+  let stopActions = null
+  async function followActions () {
+    if (stopActions) return
+    const actionTopic = await topicOf(folder, 'actions')
+    const offsets = await committedOffsets({ storage: folderStorage(join(folder, 'topics', 'actions-offsets')) })
+    const from = ((await offsets.committed()) ?? -1) + 1
+    let chain = Promise.resolve()
+    stopActions = actionTopic.follow(from, rs => {
+      for (const r of rs) {
+        chain = chain.then(async () => {
+          const action = { id: r.offset, action: r.value.action, with: r.value.with }
+          try {
+            await provision.send(action)
+            record('action-passed', { id: r.offset, action: r.value.action })
+          } catch (err) {
+            record('action-failed', { id: r.offset, action: r.value.action, error: err.message })
+          }
+          await offsets.commit(r.offset)
+        })
+      }
+      return chain
+    })
+  }
+
   // Resources, from outside: what only the container runtime sees.
   const sampler = setInterval(() => {
     const s = tryDocker('stats', '--no-stream', '--format', '{{json .}}', container)
@@ -164,6 +196,7 @@ export async function manageNode ({ folder, vault, image, network, ip, swarm, na
 
   const done = new Promise(resolve => child.once('exit', async code => {
     clearInterval(sampler)
+    if (stopActions) stopActions()
     if (provision) await provision.close()
     const inspected = tryDocker('inspect', '--format', '{{json .State}}', container)
     const s = inspected ? JSON.parse(inspected) : {}
@@ -214,9 +247,10 @@ async function provisioner ({ aux, record, secret }) {
   let given = false
   const net = connect({ dht: dht.nodes[0], keyPair, admit: key => authorised !== null && key.toString('hex') === authorised })
   await net.swarm.listen()
+  let toNode = null
   net.onConnection((stream, peer) => {
     record('provisioning-connected', { peer: peer.peer })
-    openChannel(stream, {
+    const ch = openChannel(stream, {
       name: 'p2p-provision',
       peer: peer.peer,
       onrequest: body => {
@@ -227,11 +261,19 @@ async function provisioner ({ aux, record, secret }) {
         return { primaryKey: secret() }
       }
     })
+    // The management channel: kept, to the authorised node only.
+    if (peer.peer === authorised) toNode = ch
   })
   record('provisioning-ready', { gateway: aux.gateway, port: aux.port, network: aux.network, publicKey: keyPair.publicKey.toString('hex') })
   return {
     publicKey: keyPair.publicKey.toString('hex'),
     authorise (key) { authorised = key; record('provisioning-authorised', { peer: key }) },
+    // An action for the node's observer, over the management channel.
+    async send (action) {
+      if (!toNode) throw new Error('no management channel yet')
+      await toNode.opened
+      return toNode.request({ op: 'action', action })
+    },
     async close () { await net.close(); await dht.close() }
   }
 }

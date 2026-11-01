@@ -75,6 +75,13 @@ try {
     metricsEvery: Number(flags['metrics-every'] || 30000)
   })
   primaryKey.fill(0)
+  // The observer, when the node's manager grants it: actions come on
+  // stdin after the secret (from the boot program, the management
+  // channel's end), results go to the log.
+  if (flags.observer === 'true') {
+    const { attachObserver } = await import('splectral-p2p-observer')
+    attachObserver({ node, input: process.stdin, log })
+  }
   let stopped = false
   const stop = async signal => {
     if (stopped) return
