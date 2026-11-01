@@ -163,12 +163,12 @@ address). Found: nothing tells the swarm a node has gone (liveness, open).
 - A node on another host joining under its own node manager: the general
   pattern (a swarm manager manages only the nodes it controls).
 
-### 7. The view app (proposed, not started)
+### 7. Splectral (proposed, not started)
 
-Design: `view-app.md`. A browser app showing swarm and node activity live,
+Design: `splectral.md`. A platform, its first use a viewer: a browser app showing swarm and node activity live,
 for demos and explainers alongside the closed-box tests: an observer
 application on every node, piping through the management channel to its
-manager and on to a host-local view server; watchers mapping to topics,
+manager and on to a host-local Splectral server; watchers mapping to topics,
 pages and scenarios as extensions, the menu following what is available.
 Its request is written when the step starts.
 
