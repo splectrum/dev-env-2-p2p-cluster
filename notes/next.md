@@ -1,16 +1,14 @@
 # Handover: where the phase stands, and how to continue
 
-Written 2026-11-01, for the next session (or after compaction); updated
-after step 6. Read this
-first, then `notes/plan.md`. Everything below is on `main`.
+Written 2026-11-01 after step 7, for the next session (or after
+compaction). Read this first, then `rules.md` (single concern first), then
+`notes/plan.md`. Everything below is on `main`.
 
 ## Where it stands
 
 Phase 2, the P2P swarm (the request: `pending/phase-2/request.md` on
-`pending/default`). Design: `notes/node-pattern.md` (settled, with open
-points), `notes/multi-swarm.md` (vision only). Plan: `notes/plan.md`.
-Steps, each with its request, parts and records: `steps/` (index:
-`steps/readme.md`).
+`pending/default`). Steps, each with its request, parts and records:
+`steps/` (index: `steps/readme.md`).
 
 | Step | Status | Record |
 |---|---|---|
@@ -21,80 +19,159 @@ Steps, each with its request, parts and records: `steps/` (index:
 | 4. The swarm: genesis | done | `steps/4-genesis/` |
 | 5. A node joining | done | `steps/5-node-joining/` |
 | 6. A node on another host | done (simulated on one machine) | `steps/6-other-host/` |
+| 7. Splectral and data in topics | done | `steps/7-splectral/` |
 
-What runs today: a swarm manager on the host does genesis (a master node
-in a hardened container: the swarm's DHT, p2p-rns in code, the packages
-and boot repositories) and adds joining nodes, each provisioned by its own
-node manager through the auxiliary swarm and run from the master's
-packages by replication; requests in code are answered by every node;
-everything by URI (`/<swarm>/<node>/<name>`). A node on another host joins
-from an invitation (public facts only) under its own node manager, vault
-and auxiliary network, on the one data plane all nodes reach (a DHT node
-has one address); the swarm manager sees it and does not control it. The
-phase's plan (steps 0 to 6) is done.
+**What runs today.**
+- A swarm manager on the host does genesis and adds nodes. Every node,
+  the master included, is a hardened container provisioned by its own node
+  manager through the auxiliary swarm (its secret into memory only), and
+  keeps that link as its management channel.
+- Joining nodes run the master's packages by replication. Requests in code
+  are answered by every node. Everything is reached by URI
+  (`/<swarm>/<node>/<name>`).
+- A node on another host joins from an invitation (public facts only)
+  under its own manager, vault and auxiliary network, on the one data plane
+  all nodes reach. The swarm manager sees it but does not control it.
+- **Data in topics**: the managers' records are Kafka records in topics
+  (`mycelium-topic`); state is their fold.
+- **An observer on every node** (`splectral-p2p-observer`) takes named
+  actions from its manager, through the node's action topic and the
+  management channel.
+- **Splectral**: a browser platform showing hosts, nodes, resources and
+  activity live, with the step 6 scenario as a demo, live and replayed,
+  tested in headless Chromium. To run it locally:
+  `steps/7-splectral/local-machine.md` (with a prompt for Claude Code).
+
+## The design, where it is written
+
+- **`rules.md`**: single concern first (one concern, one place;
+  validation at the boundary; knowledge stays with its concern); branches
+  and process; records and topics (Kafka records, Kafka's names); URIs;
+  data names (lowerCamelCase, URI form with hyphens, `_` reserved).
+- **`notes/node-pattern.md`**: the node, its provisioning, the host side,
+  one data plane.
+- **`notes/topics.md`**: data in topics: the record (partial Kafka record,
+  data in `value`, metadata in `headers`), partitions, segments archived
+  and sealed, the fold; records and objects as two levels.
+- **`notes/splectral.md`**: Splectral as a platform (viewer first, then
+  interaction, then applications); extensions; the abstract world;
+  applications agnostic of p2p.
+- **`vision.md`**: the directions. The organisations: `pear-full-square`
+  is infrastructure (including Splectral's platform), `splectral` holds
+  applications on it (named `<package>-<kind>-<name>`), and `splectrum` is
+  the language medium (URI capabilities and AVRO as a DSL platform).
+  Multi-paradigm data.
+- **`notes/multi-swarm.md`**: vision only.
+
+## Products
+
+Every module has its product repository; every validated change is merged
+(`notes/products.md`, step 7's table in
+`steps/7-splectral/10-validation/products.md`).
+- **`pear-full-square`**: the mycelium modules (`mycelium-uri`,
+  `mycelium-git`, `mycelium-topic`, ...), the p2p series, `p2p-git`,
+  `p2p-mrepo`, `p2p-rns`, `p2p-node`, the two managers, and the Splectral
+  platform (`splectral-contract`, `-model`, `-transport`, `-server`,
+  `-shell`, `-replay`, `-scenario`, `-timeline`, `-p2p-watchers`,
+  `-p2p-actions`, `-p2p-observer`).
+- **`splectral`**: `base-view-map`, `base-demo-other-host`.
 
 ## Decisions waiting on the human
 
-Every module now has its product repository in `pear-full-square`
-(`notes/products.md`).
-
-1. **Step 6 on a real second machine**, if wanted: it was simulated on
-   this session's one machine (the choice made at its start, recorded in
-   `steps/6-other-host/readme.md`). On real hosts the data plane needs an
-   overlay or the LAN: which one is open
-   (`steps/6-other-host/local-machine.md`).
-
+1. **What comes next.** The plan's steps are done. Candidates, from what
+   is carried forward:
+   - liveness;
+   - the nodes' audit cores (with Splectral's `repository` and `swarm`
+     sources), so Splectral works across real machines;
+   - interaction in Splectral;
+   - the repository-based versions;
+   - a real second machine.
+2. **Step 6 on a real second machine**, if wanted: the data plane needs an
+   overlay or the LAN (`steps/6-other-host/local-machine.md`).
+3. **The human runs Splectral locally** (`steps/7-splectral/local-machine.md`):
+   what they find may set the next step.
 
 ## Carried forward (open, not built)
 
-- Rebuilding a node's repositories from checkpoints: a restarted node keeps
-  its identity, keys and ids, but loses what its repositories took in
-  since it started (found in step 5).
-- The image holds all the code; an image with the join closure only.
-- The master gets its secret on stdin; to be provisioned through the
-  auxiliary swarm as joining nodes are.
-- Admitting request writers (intake records the sender, admits everyone).
-- The vault is a stand-in (an owner-only file, not encrypted); release or
-  sign.
-- Replication policy (which resources to which peers); dedicated channels.
-- The repository-based versions (roadmap): p2p-rns on a repository, the
-  inbox as writer cores, the capability store with gitlinks, the swarm's
-  record as a deployment repository.
-- Code loaded by replication runs from an exec tmpfs (a recorded
-  trade-off).
-- Liveness: p2p-rns in code keeps a gone node's registration and peers
-  wait on its address (step 6); a registration held while connected, or a
-  lease, and leaving on a graceful stop.
-- The invitation: how it travels, signed by the master, address
+- **Liveness**: p2p-rns in code keeps a gone node's registration, and
+  peers wait on its address (step 6). To build: a registration held while
+  connected (or a lease), and leaving on a graceful stop.
+- **The nodes' audit cores**, and Splectral's `repository` and `swarm`
+  sources: other hosts' nodes seen through the swarm (step 7).
+- **Splectral**:
+  - replay to a point in time (step 7's one wrong check compared
+    different moments);
+  - a scenario page showing the pages its steps name (`show`);
+  - interaction with identities and permissions (designed in
+    `notes/splectral.md`).
+- **The node image**: it holds all the code, and since step 7 React and
+  htm too (the workspace's one tree); an image with the join closure only.
+- **Rebuilding a node's repositories from checkpoints**: a restart keeps
+  identity, keys and ids, but loses what its repositories took in.
+- **Admitting request writers** (intake records the sender, admits
+  everyone).
+- **The vault** is a stand-in (an owner-only file, not encrypted); release
+  or sign.
+- **Replication policy**; dedicated channels.
+- **The invitation**: how it travels, signed by the master, address
   allocation on a shared data plane.
+- **Topics** (`notes/topics.md`, open):
+  - the header values' schema;
+  - the segment policy;
+  - offsets on a core;
+  - batching;
+  - which record properties come next (`key`, `timestamp`).
+- **The repository-based versions** (roadmap):
+  - p2p-rns on a repository;
+  - the inbox as writer cores;
+  - the capability store with gitlinks;
+  - the swarm's record as a deployment repository.
+- **Code loaded by replication runs from an exec tmpfs** (a recorded
+  trade-off).
 
 ## How to work here
 
-- **Rules**: `rules.md`, `CLAUDE.md`. Design first, discuss, write what
-  settles; the rules follow the design. `main` changes only by plain merges
-  from `execute/main`; never force-push; requests (only requests) on
-  `pending/default`; outcomes and notes are data on `main`.
-- **A step's cycle**: (1) its request on `pending/default`
-  (`pending/phase-2/step-<n>-<name>/request.md`, written in a worktree of
-  `pending/default`); (2) the work on `execute/main`; (3) unit tests and
-  the step's validation, recorded with `steps/record.sh <step> <part>
-  <case>=<command> ...` (run from the root, committed first: the unit names
-  the dev commit; never touch the tree while a recorded run is going);
-  (4) findings in the part's readme, the step's outcome, the plan's and
-  `steps/readme.md`'s status, `notes/node-pattern.md` where the design
-  learns; (5) a validated module gets a new id (`package.json`), and its
-  product repository is updated: `git subtree split --prefix=<module>`,
-  plain merge into the product's `main` (first time:
-  `--allow-unrelated-histories`, the product's LICENSE stays), pushed;
-  recorded in `notes/products.md`; (6) merge `execute/main` into `main`,
-  push both.
+- **Rules**: `rules.md`, `CLAUDE.md`. Single concern first. Design first:
+  discuss, then write what settles; the rules follow the design.
+  - `main` changes only by plain merges from `execute/main`.
+  - Never force-push.
+  - Requests, and only requests, go on `pending/default`; outcomes and
+    notes are data on `main`.
+- **A step's cycle**:
+  1. Its request on `pending/default`
+     (`pending/phase-2/step-<n>-<name>/request.md`), written in a
+     worktree of `pending/default` that is removed afterwards.
+  2. The work on `execute/main`, part by part (`steps/<step>/<n-part>/`),
+     committed as it goes.
+  3. Unit tests and the step's validation, recorded with `steps/record.sh
+     <step> <part> <case>=<command> ...`, or a `run.sh` that calls it.
+     Run from the root, committed first (the unit names the dev commit).
+     Never touch the tree while a recorded run is going: draft in the
+     scratchpad.
+  4. Findings in the part's readme, honestly, including what failed and
+     why. Then the step's outcome, the plan's and `steps/readme.md`'s
+     status, and the design notes where the design learns.
+  5. Validated modules get new ids (`package.json`) and their product
+     repositories are updated:
+     - attach the repository (`add_repo`, push) and clone it;
+     - `git subtree split --prefix=<module>`;
+     - plain merge into the product's `main`. The first time,
+       `--allow-unrelated-histories`, and the product's LICENSE stays.
+       For a product with an older history, take the folder's files.
+     - push, verify against the remote, record in `notes/products.md`.
+  6. Merge `execute/main` into `main`, and push `main`, `execute/main` and
+     the session branch.
 - **Commit messages**: first line the change; body why; `Request:
   <pending/default commit>:pending/phase-2/<step>/request.md`.
-- **Modules**: folders on `main`. The p2p series and the node and managers
-  are npm workspaces at the root (one dependency tree; the root
-  `package.json` carries Bare's `bare-node-*` aliases). The mycelium
-  modules keep their own `node_modules` and import siblings by relative
-  path.
+- **Modules**: folders on `main`.
+  - The p2p series, the node, the managers and the Splectral modules are
+    npm workspaces at the root: one dependency tree, with the root
+    `package.json` carrying Bare's `bare-node-*` aliases.
+  - The mycelium modules (and `mycelium-topic`, which has no dependencies)
+    are imported by relative path.
+  - Applications (`base-*`) are folders with a `splectral.json`.
+- **Validation**: only where input enters, with `mycelium-uri`. Internal
+  APIs trust their callers.
 
 ## Practical, in this cloud session
 
@@ -103,49 +180,39 @@ Every module now has its product repository in `pear-full-square`
 - The Docker daemon is not running at start, and stops now and then:
   `(dockerd > /home/user/runs/dockerd.log 2>&1 &)`, then wait for
   `docker info`.
-- Bare: `bare` on the PATH is npm's wrapper, which suppresses signals; for
+- Bare: `bare` on the PATH is npm's wrapper, which suppresses signals. For
   long-running processes on the host use the binary,
   `$(npm root -g)/bare/node_modules/bare-runtime-linux-x64/bin/bare`.
   Inside containers (`bare-base`) the binary is the runtime.
-- Bare differences met: no global `process` (import it); `spawnSync` gives
-  bytes; `util` lacks `isDeepStrictEqual`; asynchronous stdout loses a line
-  written just before `process.exit` (write logs with `fs.writeSync`).
-- Containers: native addons need an exec mount; Docker's `--tmpfs` is
-  noexec by default; the root is read-only, so `/tmp` is a tmpfs.
-- Don't `pkill -f` with a pattern that appears in the same command line
-  (it kills the shell); kill by pid files. Don't `rm` globs in shared
+- Bare differences met:
+  - no global `process` (import it);
+  - `spawnSync` gives bytes;
+  - `util` lacks `isDeepStrictEqual`;
+  - asynchronous stdout loses a line written just before `process.exit`
+    (write logs with `fs.writeSync`).
+- Containers: native addons need an exec mount, and Docker's `--tmpfs` is
+  noexec by default. The root is read-only, so `/tmp` is a tmpfs.
+- Kill by pid files. Never `pkill -f` with a pattern that appears in the
+  same command line: it kills the shell. Don't `rm` globs in shared
   folders (`/dev/shm`): use exact paths.
+- Node's `http` server: `server.close()` waits for keep-alive connections
+  (as `fetch` leaves them). Call `closeAllConnections()` too.
+- Playwright and Chromium are preinstalled: `NODE_PATH=$(npm root -g)
+  node <script>.cjs`. Screenshots can be shown to the human with
+  SendUserFile.
+- Long runs go in the background (`run_in_background`), followed with a
+  Monitor on the record's `results.jsonl`, not with `sleep`.
 - Scratch work goes in the session's scratchpad (outside the repository);
   records go into `steps/<step>/<part>/record/`.
-- Images: `p2p-node-manager/image/build.sh .` builds `bare-base:1.36.0` and
-  `p2p-node:<commit>` from a committed tree.
+- Images: `p2p-node-manager/image/build.sh .` builds `bare-base:1.36.0`
+  and `p2p-node:<commit>` from a committed tree.
 - Swarms for a try: `node p2p-swarm-manager/cli.js genesis --swarm=demo
-  --folder=<w>/demo-swarm --nodes=<w> --vault=<w>-vault --code=.`, then
-  `join --folder=... --node=node-1`, `status`, `restart`, `stop` (always
-  stop: containers and networks stay otherwise).
-
-## Step 7, done
-
-`steps/7-splectral/`: validation in one place (`mycelium-uri`, at the
-boundary); `mycelium-topic` (topics of Kafka records), the managers'
-records in topics, state as their fold; every node provisioned through
-the auxiliary swarm, with an observer (`splectral-p2p-observer`) taking
-named actions from its manager; Splectral (platform in `pear-full-square`,
-applications in `splectral`) showing the step 6 scenario live and
-replayed, tested in headless Chromium. Products merged
-(`steps/7-splectral/10-validation/products.md`).
-
-Carried forward from step 7: the `repository` and `swarm` sources and
-the nodes' audit cores; replay to a point in time; a scenario page
-showing the pages its steps name; liveness; React and htm in the node
-image (the workspace's one tree).
-
-To see it locally: `steps/7-splectral/local-machine.md` (the machine,
-the demo watched in a browser, the replay, the recorded run, a prompt for
-Claude Code running locally).
+  --folder=<w>/demo-swarm --nodes=<w> --vault=<w>/vault --code=.`, then
+  `join --folder=... --node=node-1`, `status`, `invite`, `stop`. Always
+  stop: containers and networks stay otherwise. Splectral on a running
+  swarm: `steps/7-splectral/10-validation/demo.sh` (phases in its header).
 
 ## To continue
 
-The plan's steps are done. Next is the human's call: what comes after
-the plan (the items carried forward, the roadmap's repository-based
-versions, the request's remaining done items), and the decisions above.
+"Read `notes/next.md` and continue." The next step is the human's call
+(decisions above). Once chosen, write its request and follow the cycle.
