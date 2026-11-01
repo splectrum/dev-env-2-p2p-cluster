@@ -39,10 +39,11 @@ All in `pear-full-square` (the design: `node-pattern.md`, `plan.md`):
 | `p2p-replicate` | `pear-full-square/p2p-replicate` | `0b46561` (step 2, from dev `adbbc29`) |
 | `p2p-channel` | `pear-full-square/p2p-channel` | `c4fb7c7` (step 2, from dev `adbbc29`) |
 | `p2p-git` | `pear-full-square/p2p-git` | moved from `bare-for-pear/p2p-git`, `main` at `d7d154d`; mycelium-git's dependency names it since step 1 |
-| `p2p-node-manager` | `pear-full-square/p2p-node-manager` | created, empty |
-| `p2p-swarm-manager` | `pear-full-square/p2p-swarm-manager` | created, empty |
-| `p2p-rns` | to create | the resource name service |
-| `p2p-mrepo` | to create (name proposed) | mycelium repositories on the p2p layer, from step 3; a folder here until its repository exists |
+| `p2p-node-manager` | `pear-full-square/p2p-node-manager` | `63d9628` (step 4, from dev `9f67efa`) |
+| `p2p-swarm-manager` | `pear-full-square/p2p-swarm-manager` | `4e4b807` (step 4, from dev `9f67efa`) |
+| `p2p-rns` | to create | the resource name service, in code (step 4); a folder here until its repository exists |
+| `p2p-mrepo` | to create (name proposed) | mycelium repositories on the p2p layer, from step 3 (a given id since step 4); a folder here until its repository exists |
+| `p2p-node` | to create (name proposed) | the node application, from step 4 (the master role); a folder here until its repository exists |
 
 `pear-full-square/p2p-swarm` was created before the connections module
 was named `p2p-connect`; it is unused.

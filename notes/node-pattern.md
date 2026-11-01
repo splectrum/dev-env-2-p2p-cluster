@@ -319,6 +319,13 @@ frequency (streaming) comes later, through dedicated channels.
   Bare handles SIGTERM through `process.on`; npm's `bare` wrapper on a
   host suppresses signals, so long-running Bare processes on a host start
   with the runtime's binary, as containers do.
+- **Genesis** (`steps/4-genesis`): the swarm manager starts the master
+  through its node manager, in a hardened container with its store in
+  RAM and its secret on stdin; the master starts the swarm's DHT, serves
+  p2p-rns, and primes its packages from its image, reproducibly (its
+  repositories' internal ids derived from its identity, so a rebuild keeps
+  keys, commits and ids). From the host, its resources resolve by URI and
+  read lazily. The vault is still a stand-in.
 - **Repositories on Hypercore, as mycelium sees them** (`steps/3-repositories`):
   p2p-mrepo gives mycelium repositories on a p2p-store as mycelium
   backends; mycelium-git's contract suite and command sets pass on them;
