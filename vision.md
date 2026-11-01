@@ -61,3 +61,13 @@ rerun on its own. The test-run instance was the first.
 Bundles are the transport between repositories outside replication:
 self-contained, immutable, verifiable, shared by hash. Loose objects stay
 the working store; deltas are an optimisation for later.
+
+## Organisations: infrastructure and language
+
+- **`pear-full-square`: the p2p infrastructure.** The p2p series, p2p-git,
+  mycelium on the p2p layer, the node and its managers, and Splectral
+  (the platform for seeing and working with the swarm).
+- **`splectrum`: the language medium**, for building real applications on
+  the mycelium p2p platform. What exists now as URI-expressed capabilities,
+  together with AVRO (typed values named by URI), becomes a DSL platform:
+  that is where splectrum lives.
