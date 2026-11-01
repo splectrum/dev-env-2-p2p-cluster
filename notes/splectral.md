@@ -189,12 +189,13 @@ one more, privileged in a narrow, defined way.
 - **Logs, not a feed.** Each node manager appends what it learns to logs
   in the node's folder (`logs.md`, through `mycelium-log`): the node's
   log (the observer's events) and its own. Splectral reads and follows
-  them from an offset; nothing else is needed to carry them. Their state
+  them from a position; nothing else is needed to carry them. Their state
   files (`state.json`) become views folded from the logs.
 - **Actions are records too.** An action for a node is appended to the
   node's action log, which its manager follows; the manager carries it
   out, or passes it to the observer over the management channel, and
-  appends the result, correlated, to the node's log.
+  appends the result to the node's log, correlated with the action (in
+the value, until records carry headers).
 - **The logs are the durable truth**, written whether anyone watches or
   not; replay is reading them from an earlier offset.
 - **What only the manager sees comes from the manager**: container exits,
@@ -219,12 +220,12 @@ provides. Source kinds are watcher types, generic by where data lives:
 | `docker` | a swarm's containers and networks starting, stopping, dying, as records | the p2p adapter |
 | `replay` | any log read from its start at a chosen speed | the platform |
 
-**Records.** Everything is a record in Kafka's shape (`key`, `value`,
-`time`, `headers`, `offset`: `logs.md`), JSON first, read by its shape.
-Scenario messages are records too (kind `say`).
+**Records.** Everything is a record compatible with Kafka's, for now
+partial: the data in `value`, JSON, taken in natural order (`logs.md`),
+read by its shape. Scenario messages are records too (kind `say`).
 
-**The model** folds records into the abstract world: the latest per key
-gives the state; the records in order give the activity. It pushes a
+**The model** folds records, in natural order, into the abstract world:
+the fold gives the state; the records in order give the activity. It pushes a
 snapshot and then the changes to every connected browser (a WebSocket or
 Server-Sent Events). It is a Node server serving a React app; no
 server-side rendering.
