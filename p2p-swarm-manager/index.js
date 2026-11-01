@@ -13,7 +13,7 @@
 // from the host, on the swarm's internal network.
 
 import { spawn, execFileSync } from 'node:child_process'
-import { mkdirSync, writeFileSync, appendFileSync, readFileSync, existsSync, openSync } from 'node:fs'
+import { mkdirSync, writeFileSync, appendFileSync, readFileSync, existsSync, openSync, rmSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import crypto from 'hypercore-crypto'
@@ -39,6 +39,9 @@ function swarmRecord (folder) {
 async function startNodeManager (s, node, { vault, timeout = 180000 }) {
   const folder = node.folder
   mkdirSync(folder, { recursive: true })
+  // The previous run's state is the previous run's: cleared, so only this
+  // run's is read.
+  rmSync(join(folder, 'state.json'), { force: true })
   const out = openSync(join(folder, 'manager.out'), 'a')
   const child = spawn(process.execPath, [join(here, '..', 'p2p-node-manager', 'cli.js'), 'run',
     `--folder=${folder}`, `--vault=${vault}`, `--image=${s.image}`, `--network=${s.network}`, `--ip=${node.ip}`,
