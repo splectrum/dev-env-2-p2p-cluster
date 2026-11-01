@@ -18,6 +18,9 @@ Status: **done** (2026-11-01). Request:
 | `9-applications/` | `base-view-map`, `base-demo-other-host` | done |
 | `10-validation/` | end to end, recorded; the products | done |
 
+To run it on a machine of your own (local network only), and to watch
+Splectral in a browser: `local-machine.md`.
+
 **Outcome.** The platform's foundations and Splectral as a viewer with its
 first demo, end to end: validation in one place; data in topics of Kafka
 records (`mycelium-topic`), the managers' records among them, state as

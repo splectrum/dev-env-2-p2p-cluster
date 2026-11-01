@@ -140,11 +140,9 @@ the nodes' audit cores; replay to a point in time; a scenario page
 showing the pages its steps name; liveness; React and htm in the node
 image (the workspace's one tree).
 
-To see it locally: `steps/6-other-host/local-machine.md` for the
-machine, then `sh steps/7-splectral/10-validation/demo.sh <work> <record>
-<phase>` for the phases `swarm`, `config`, `serve`, and open
-`http://127.0.0.1:4400` (a local-machine section for Splectral is still
-to write).
+To see it locally: `steps/7-splectral/local-machine.md` (the machine,
+the demo watched in a browser, the replay, the recorded run, a prompt for
+Claude Code running locally).
 
 ## To continue
 
