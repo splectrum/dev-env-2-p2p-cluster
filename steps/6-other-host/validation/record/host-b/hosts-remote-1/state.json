@@ -1,0 +1,35 @@
+{
+  "swarm": "hosts",
+  "name": "remote-1",
+  "role": "join",
+  "container": "p2p-hosts-remote-1",
+  "image": "p2p-node:28642a8",
+  "ip": "172.34.0.100",
+  "status": "exited",
+  "startedAt": "2026-11-01T07:49:21.447Z",
+  "materialised": {
+    "commit": "bfccac2bf1045c854c3ebd12faebd6674fe9b80b",
+    "files": 3609,
+    "downloaded": {
+      "blocks": 4605,
+      "bytes": 14437148
+    },
+    "ms": 6116
+  },
+  "live": {
+    "uri": "/hosts/remote-1/node",
+    "key": "b1cbcecee120a8ae7a3f5fae6465e580beeaabfff12fa00c994e93089074f4c5",
+    "id": "11b2d2d4-c5b8-47fe-8e3a-c670e7291f6a",
+    "origin": {
+      "id": "7e103249-0264-4e3a-bb1d-6ca03e2c5242",
+      "key": "0813e006e76c27e6c3c338749f55326ddda62e1ec5a101bd0a0092931b69e281"
+    }
+  },
+  "uri": "/hosts/remote-1",
+  "key": "f6ebabaa9e59cddf2e50a015f85ea3bf90f117b8019717b167da0af86d74387a",
+  "dht": null,
+  "readyMs": 8086,
+  "exitCode": 0,
+  "oomKilled": false,
+  "exitedAt": "2026-11-01T07:49:31.591Z"
+}

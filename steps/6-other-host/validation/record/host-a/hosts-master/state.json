@@ -1,0 +1,38 @@
+{
+  "swarm": "hosts",
+  "name": "master",
+  "role": "master",
+  "container": "p2p-hosts-master",
+  "image": "p2p-node:28642a8",
+  "ip": "172.34.0.2",
+  "status": "exited",
+  "startedAt": "2026-11-01T07:48:50.895Z",
+  "genesis": {
+    "packages": {
+      "key": "a5d79b4ff85f50deed956a05c8c37b40a8becc4caa5b1164ce013a241c418be8",
+      "id": "7f719706-df10-487f-85e0-35f508fee892",
+      "commit": "bfccac2bf1045c854c3ebd12faebd6674fe9b80b",
+      "files": 3609
+    },
+    "boot": {
+      "key": "0813e006e76c27e6c3c338749f55326ddda62e1ec5a101bd0a0092931b69e281",
+      "id": "7e103249-0264-4e3a-bb1d-6ca03e2c5242"
+    }
+  },
+  "live": {
+    "uri": "/hosts/master/node",
+    "key": "41cbb7d8722da8c0a1004fe8beaf36096d868a2f0308d19552339abb96309ee9",
+    "id": "2a29e644-018a-4aa4-aa4d-677e43f87aae",
+    "origin": {
+      "id": "7e103249-0264-4e3a-bb1d-6ca03e2c5242",
+      "key": "0813e006e76c27e6c3c338749f55326ddda62e1ec5a101bd0a0092931b69e281"
+    }
+  },
+  "uri": "/hosts/master",
+  "key": "f32ceb25ff0a99df1d3628775be81a5025c0921171f13dededa48d243d4c1907",
+  "dht": "172.34.0.2:49737",
+  "readyMs": 9277,
+  "exitCode": 0,
+  "oomKilled": false,
+  "exitedAt": "2026-11-01T07:49:46.199Z"
+}

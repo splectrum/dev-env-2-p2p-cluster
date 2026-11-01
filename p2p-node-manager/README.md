@@ -7,7 +7,16 @@ and stops it. One per node, each in the node's own folder.
 ```sh
 node cli.js run --folder=<node-folder> --vault=<vault-dir> --image=<image> \
   --network=<network> --ip=<ip> --swarm=<swarm> --name=<node> [--role=master]
+node cli.js join --invitation=<file> --folder=<node-folder> --vault=<vault-dir> \
+  --name=<node> --ip=<address on the data plane> --aux-subnet=<a.b.c>
 ```
+
+- **Joining from an invitation** (`join`, step 6): a node on a host of its
+  own, no swarm manager there. The manager makes the node's auxiliary
+  network on its host (removed when the node has exited), provisions the
+  node from this host's vault, and attaches it to the swarm's data plane
+  at the given address. The invitation (from the swarm manager's `invite`)
+  holds public facts only.
 
 - **The container is hardened**: read-only root, every capability dropped,
   no new privileges, user 65534, memory capped with no swap, no core

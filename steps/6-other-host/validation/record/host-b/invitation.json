@@ -1,0 +1,16 @@
+{
+  "swarm": "hosts",
+  "network": {
+    "name": "p2p-hosts",
+    "subnet": "172.34.0.0/24",
+    "gateway": "172.34.0.1"
+  },
+  "bootstrap": "172.34.0.2:49737",
+  "master": "f32ceb25ff0a99df1d3628775be81a5025c0921171f13dededa48d243d4c1907",
+  "packages": {
+    "uri": "/hosts/master/packages",
+    "key": "a5d79b4ff85f50deed956a05c8c37b40a8becc4caa5b1164ce013a241c418be8",
+    "commit": "bfccac2bf1045c854c3ebd12faebd6674fe9b80b"
+  },
+  "image": "p2p-node:28642a8"
+}

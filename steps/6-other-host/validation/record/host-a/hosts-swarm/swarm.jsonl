@@ -1,0 +1,12 @@
+{"module":"p2p-swarm-manager","kind":"genesis-started","time":1793519325035,"swarm":"hosts"}
+{"module":"p2p-swarm-manager","kind":"image-built","time":1793519330640,"image":"p2p-node:28642a8","ms":5605}
+{"module":"p2p-swarm-manager","kind":"network-created","time":1793519330714,"network":"p2p-hosts","subnet":"172.34.0.0/24","internal":true}
+{"module":"p2p-swarm-manager","kind":"network-created","time":1793519330787,"network":"p2p-hosts-aux","subnet":"172.35.0.0/24","internal":true,"plane":"management"}
+{"module":"p2p-swarm-manager","kind":"master-ready","time":1793519340312,"uri":"/hosts/master","key":"f32ceb25ff0a99df1d3628775be81a5025c0921171f13dededa48d243d4c1907","packages":"bfccac2bf1045c854c3ebd12faebd6674fe9b80b","ms":15277}
+{"module":"p2p-swarm-manager","kind":"join-started","time":1793519340586,"node":"node-1","ip":"172.34.0.3","auxIp":"172.35.0.10"}
+{"module":"p2p-swarm-manager","kind":"node-joined","time":1793519348604,"node":"node-1","uri":"/hosts/node-1","key":"dfabb742b664f8b9647afdf4ae41c60bb84c496befc4e0bf95bc6d7e90a92706","materialised":{"commit":"bfccac2bf1045c854c3ebd12faebd6674fe9b80b","files":3609,"downloaded":{"blocks":4605,"bytes":14437148},"ms":6033},"ms":8013}
+{"module":"p2p-swarm-manager","kind":"invited","time":1793519348910,"swarm":"hosts","master":"f32ceb25ff0a99df1d3628775be81a5025c0921171f13dededa48d243d4c1907","packages":"bfccac2bf1045c854c3ebd12faebd6674fe9b80b"}
+{"module":"p2p-swarm-manager","kind":"status","time":1793519358901,"nodes":["/hosts/master","/hosts/node-1","/hosts/remote-1"],"controlled":["/hosts/master","/hosts/node-1"],"resources":["/hosts/master/boot","/hosts/master/node","/hosts/master/packages","/hosts/node-1/node","/hosts/remote-1/node"],"ms":44}
+{"module":"p2p-swarm-manager","kind":"status","time":1793519370232,"nodes":["/hosts/master","/hosts/node-1","/hosts/remote-1"],"controlled":["/hosts/master","/hosts/node-1"],"resources":["/hosts/master/boot","/hosts/master/node","/hosts/master/packages","/hosts/node-1/node","/hosts/remote-1/node"],"ms":31}
+{"module":"p2p-swarm-manager","kind":"status","time":1793519378120,"nodes":["/hosts/master","/hosts/node-1","/hosts/remote-1"],"controlled":["/hosts/master","/hosts/node-1"],"resources":["/hosts/master/boot","/hosts/master/node","/hosts/master/packages","/hosts/node-1/node","/hosts/remote-1/node"],"ms":6031}
+{"module":"p2p-swarm-manager","kind":"swarm-stopped","time":1793519386467,"nodes":[{"name":"node-1","exitCode":0},{"name":"master","exitCode":0}]}

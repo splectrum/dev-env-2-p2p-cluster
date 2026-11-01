@@ -10,6 +10,7 @@ node cli.js join    --folder=<swarm-folder> --node=<name>
 node cli.js status  --folder=<swarm-folder>
 node cli.js restart --folder=<swarm-folder> --node=<name>
 node cli.js stop    --folder=<swarm-folder>
+node cli.js invite  --folder=<swarm-folder>
 ```
 
 - **Genesis**: the images, the swarm's internal network, the master's node
@@ -26,4 +27,15 @@ node cli.js stop    --folder=<swarm-folder>
   (its data plane and the auxiliary one, where its manager provisions it),
   run from the master's packages at the commit the swarm records.
 
-Nodes on other hosts come with step 6.
+- **Status** lists the swarm's nodes as p2p-rns knows them, each marked
+  `controlled` (started by this manager) or not (joined from elsewhere,
+  under a manager of its own).
+- **Invite** (step 6): what another host is given to join, public facts
+  only: the swarm, its data plane (network, subnet), its bootstrap, the
+  master's key, the packages' URI, key and commit, the image. That host's
+  node manager joins its node from it (`p2p-node-manager`'s `join`).
+- **One data plane.** A DHT node has one address: across hosts the
+  swarm's network is one every node reaches (an overlay or the hosts'
+  LAN); each host's management plane is its own.
+
+`npm test`: 1 test (the invitation).
