@@ -18,6 +18,10 @@ From the bottom:
 - **Kafka:** streaming and high-volume data: records and topics. On
   Hypercore, a partition is a core, an offset a block index; no central
   broker, its functions taken on by peers.
+- **Logs from the ground up:** all configuration, audit and metrics data
+  is appended to logs of Kafka-shaped records, and current state is built
+  from them (the latest per key), never written directly (`notes/logs.md`
+  in `splectrum/dev-env-2-p2p-cluster`, `mycelium-log`).
 
 `mycelium-uri` and `mycelium-xpath` are the shared vocabulary across all
 four. On top sit the **repository paradigms**: the dev env, the test-run
