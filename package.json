@@ -11,7 +11,8 @@
     "p2p-channel",
     "p2p-mrepo",
     "p2p-rns",
-    "p2p-node"
+    "p2p-node",
+    "p2p-node-manager"
   ],
   "dependencies": {
     "child_process": "npm:bare-node-child-process@1.0.1",
