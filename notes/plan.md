@@ -129,7 +129,14 @@ From zero: the swarm comes first, everything else joins it.
 - The swarm's record in code first (the lookup and the managers' own
   records), reached through requests.
 
-### 5. A node joining
+### 5. A node joining — done
+
+Record: `steps/5-node-joining/`. A node provisioned through the auxiliary
+swarm, run from the master's packages by replication, live from the boot
+repository under its name; requests in code answered; restarted with the
+same identity. Not yet: an image with the join closure only, the master
+provisioned the same way, admitting request writers, rebuilding a node's
+repositories from checkpoints.
 
 - `p2p-node-manager` on the host machine starts the node: containerised
   and hardened, from the plain base with the join closure only; provisions

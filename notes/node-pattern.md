@@ -319,6 +319,15 @@ frequency (streaming) comes later, through dedicated channels.
   Bare handles SIGTERM through `process.on`; npm's `bare` wrapper on a
   host suppresses signals, so long-running Bare processes on a host start
   with the runtime's binary, as containers do.
+- **A node joining** (`steps/5-node-joining`): provisioned through the
+  auxiliary swarm as designed (the manager authorises the ephemeral key the
+  container logs; the secret on a channel, once), run from the master's
+  packages by replication at a pinned commit, live from the boot
+  repository. Code loaded by replication needs an exec tmpfs of its own
+  (native addons do not load from Docker's default noexec tmpfs): the store
+  stays noexec, the code's mount is exec, a trade-off recorded. A restart
+  rebuilds the node with the same identity, but what its repositories took
+  in since start is lost until checkpoints are built.
 - **Genesis** (`steps/4-genesis`): the swarm manager starts the master
   through its node manager, in a hardened container with its store in
   RAM and its secret on stdin; the master starts the swarm's DHT, serves
