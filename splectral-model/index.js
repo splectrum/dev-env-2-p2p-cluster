@@ -32,7 +32,7 @@ export function createModel ({ keep = 500 } = {}) {
         if (e.key) { n.key = e.key; byKey[e.key] = e.uri }
         break
       }
-      case 'gone': if (nodes[e.uri]) nodes[e.uri].status = 'gone'; for (const l of Object.values(links)) if (l.from === e.uri || l.to === e.uri) l.open = false; break
+      case 'gone': if (nodes[e.uri]) { nodes[e.uri].status = 'gone'; if (e.controlled !== undefined) nodes[e.uri].controlled = e.controlled } for (const l of Object.values(links)) if (l.from === e.uri || l.to === e.uri) l.open = false; break
       case 'resource': resources[e.uri] = { ...(resources[e.uri] || { changes: 0 }), uri: e.uri, node: e.node, type: e.type }; break
       case 'connected': { const l = linkOf(e.from, e.toKey); l.open = true; l.opened++; break }
       case 'disconnected': { const l = linkOf(e.from, e.toKey); l.open = false; l.bytes += e.bytes || 0; break }

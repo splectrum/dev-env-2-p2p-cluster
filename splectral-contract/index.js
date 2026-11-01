@@ -20,7 +20,8 @@ export const world = {
     actionResult: 'an action came back { id, action, ok }',
     say: 'a message for the people watching { text }'
   },
-  actions: ['state', 'write', 'sendRequest', 'stopNode', 'invite', 'startNodeFromInvitation']
+  // Action ids are names (rules.md): what scenarios and pages ask for.
+  actions: ['state', 'write', 'send-request', 'stop-node', 'invite', 'start-node-from-invitation']
 }
 
 const KINDS = ['source', 'mapper', 'page', 'scenario', 'action']

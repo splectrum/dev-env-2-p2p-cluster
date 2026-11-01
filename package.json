@@ -22,7 +22,9 @@
     "splectral-shell",
     "splectral-replay",
     "splectral-scenario",
-    "splectral-timeline"
+    "splectral-timeline",
+    "splectral-p2p-watchers",
+    "splectral-p2p-actions"
   ],
   "dependencies": {
     "child_process": "npm:bare-node-child-process@1.0.1",

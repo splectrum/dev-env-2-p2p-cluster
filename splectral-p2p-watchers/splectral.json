@@ -1,0 +1,4 @@
+{ "name": "splectral-p2p-watchers", "contract": "0.1", "provides": [
+  { "kind": "source", "id": "p2p-host", "module": "host.js" },
+  { "kind": "mapper", "id": "p2p", "holds": "p2p-*", "module": "mapper.js" }
+] }
