@@ -104,7 +104,14 @@ the machinery pinned at `dba3214e`.
 - **Test-run instances on Hypercore**, executed under Bare: this completes
   the request's first done item as intended.
 
-### 4. The swarm: genesis
+### 4. The swarm: genesis — done
+
+Record: `steps/4-genesis/`. p2p-rns in code, p2p-node (master), the
+image, minimal node and swarm managers; a swarm from zero, its master's
+resources resolved by URI from the host, read lazily, restarted with the
+same identity, stopped gracefully. The master's code comes in its image
+and its secret on stdin from a vault stand-in (an owner-only file, not yet
+encrypted).
 
 From zero: the swarm comes first, everything else joins it.
 
