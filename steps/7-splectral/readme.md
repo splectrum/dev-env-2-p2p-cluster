@@ -8,7 +8,7 @@ Status: **in progress** (2026-11-01). Request:
 | Part | What | Status |
 |---|---|---|
 | `1-validation/` | validation in one place: `mycelium-uri`, at the boundary | done |
-| `2-topic/` | `mycelium-topic` | |
+| `2-topic/` | `mycelium-topic` | done |
 | `3-managers/` | the managers on topics | |
 | `4-master-aux/` | a management channel for every node | |
 | `5-observer/` | `splectral-p2p-observer` | |
