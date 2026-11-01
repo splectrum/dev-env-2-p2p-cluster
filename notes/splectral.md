@@ -59,33 +59,66 @@ a viewer:
 | interaction | people acting: requests, repository edits, managing nodes, from the pages | identities, permissions, actions recorded per person |
 | applications | UI-based applications on the swarm, demoed and used in Splectral | the extension contract; node-side applications like the observer |
 
-## Modules
+## Where it lives, and the boundary
 
-Single concern each, `splectral-*` in `pear-full-square`, one dependency
-tree (npm workspaces, as the p2p series). The core knows no page and no
-p2p; everything about the swarm is in the `splectral-p2p-*` extensions.
+- **The platform** is infrastructure, in `pear-full-square`: modules
+  named `splectral-*`, single concern each, one dependency tree (npm
+  workspaces, as the p2p series).
+- **Applications on the platform** live in the **SPLectral**
+  organisation: what people open and use, each application its own
+  repository.
+- **Applications are completely agnostic of p2p**, as mycelium is. They
+  know an abstract world (below), never Hypercore, DHTs, keys or
+  containers. All knowledge of p2p is in the platform's p2p adapters and
+  in `p2p-observer` on the node. A test enforces it: no application
+  imports from `p2p-*`.
 
-| Module | Concern | Side |
-|---|---|---|
-| `splectral-contract` | the extension contract, versioned: manifests (watcher type, page, scenario, action), the event shape, topic names, action declarations and results | shared |
-| `splectral-model` | events folded into a model; snapshots and changes; the same code in the server and the browser | shared |
-| `splectral-transport` | the stream between server and browser: snapshot, changes, actions and their results (WebSocket first, a worklet's IPC later) | shared |
-| `splectral-server` | the server's shell: extensions found, configuration, watchers run, topics announced, actions dispatched and recorded, the app served | server |
-| `splectral-shell` | the browser's shell: the menu from the topics, routing, pages hosted, the transport's client | browser |
-| `splectral-replay` | a watcher type: a recorded run played back at a chosen speed | server, generic |
-| `splectral-scenario` | scenarios run: steps, actions, `await`s, `say` messages, recorded | server, generic |
-| `splectral-timeline` | a page: every event, scrubbable | browser, generic |
-| `splectral-p2p-watchers` | watcher types `manager`, `records`, `swarm` (later `resource`, `docker`) | server, p2p |
-| `splectral-p2p-actions` | actions: the managers' operations (join, restart, stop, invite), requests, the observers' named actions | server, p2p |
-| `splectral-p2p-pages` | pages: the swarm map, a node's events, a node manager's events, metrics | browser, p2p |
+### The abstract world (in the contract)
 
-And on the node side, in the p2p series: **`p2p-observer`**, the
-privileged node application (below). The managers' local feed and the
-master's provisioning through the auxiliary swarm are changes to
+| | Vocabulary |
+|---|---|
+| **entities** | hosts, nodes, resources (by URI), links between them |
+| **events** | joined, gone, connected, disconnected, transferred (bytes), request sent, request answered, changed (a resource), say |
+| **actions** | start a node, stop a node, restart a node, invite, send a request to a URI, write to a resource |
+| **facts** | per entity: its URI, kind, state, who controls it (managed here or elsewhere), metrics |
+
+The p2p adapters translate the observers', managers' and name service's
+events into this vocabulary, and carry out its actions through managers,
+observers and peers, as p2p-rns abstracts the swarm for mycelium. Another
+adapter, for another kind of system, would show in the same applications
+unchanged.
+
+### Platform modules (`pear-full-square`)
+
+| Module | Concern |
+|---|---|
+| `splectral-contract` | the extension contract, versioned: manifests (watcher type, page, scenario, action, application), the abstract world, topic names, action declarations and results |
+| `splectral-model` | events folded into a model of the abstract world; snapshots and changes; the same code in the server and the browser |
+| `splectral-transport` | the stream between server and browser: snapshot, changes, actions and their results (WebSocket first, a worklet's IPC later) |
+| `splectral-server` | the server's shell: extensions found, configuration, watchers run, topics announced, actions dispatched and recorded, the app served |
+| `splectral-shell` | the browser's shell: the menu from the topics, routing, applications and pages hosted, the transport's client |
+| `splectral-replay` | a generic watcher type: a recorded run played back at a chosen speed |
+| `splectral-scenario` | the generic scenario runner: steps, actions, `await`s, `say` messages, recorded |
+| `splectral-timeline` | a generic page: every event, scrubbable |
+| `splectral-p2p-watchers` | the p2p adapter in: watcher types `manager`, `records`, `swarm` (later `resource`, `docker`), mapping to the abstract world |
+| `splectral-p2p-actions` | the p2p adapter out: the abstract actions through the managers' operations, requests and the observers' named actions |
+
+On the node side, in the p2p series: **`p2p-observer`**, the privileged
+node application (below). The managers' local feed and the master's
+provisioning through the auxiliary swarm are changes to
 `p2p-node-manager`, `p2p-swarm-manager` and `p2p-node`.
 
-Scenarios themselves (the step 6 demo) are content, not modules: they
-live with what they demonstrate, here first.
+### Applications (SPLectral)
+
+| Application | What |
+|---|---|
+| `swarm-view` (name proposed) | the map of hosts, nodes and resources with activity drawn live; a node's events, a manager's events, metrics |
+| `demo-other-host` (name proposed) | step 6 as a scenario in the abstract vocabulary: a node on another host joins, a request crosses, the node stops while the swarm runs on; with its messages |
+
+The swarm map is an application, not platform: one way of presenting the
+abstract world; others can be built on the same watchers and actions.
+Built outside the platform, it also tests the contract: if it works as an
+outside application, the platform is a platform.
 
 ## The parts, end to end
 
@@ -301,8 +334,10 @@ So the same pages serve a viewer and a future mobile node app.
 - **Observing and driving only through existing paths**: managers,
   observers' named actions, peers.
 - **The records stay the truth**: the app reads them, never replaces them.
-- **Outside the p2p layer.** The app is in `pear-full-square` as a
-  management-plane application; the observer is a node application.
+- **Outside the p2p layer.** The platform is in `pear-full-square` as
+  management-plane infrastructure; the observer is a node application.
+- **Applications know no p2p.** They work in the abstract world only; no
+  application imports from `p2p-*` (a test checks it).
 
 ## When built: the steps
 
@@ -310,12 +345,13 @@ So the same pages serve a viewer and a future mobile node app.
 - the master provisioned through the auxiliary swarm, so every node has
   a management channel;
 - the observer on every node, and the managers' local feeds;
-- the Splectral server's core: extensions, configuration, the model, the
-  stream to browsers, the menu;
-- watchers `manager`, `records`, `replay`, `swarm`;
-- the fixed pages: swarm map, node events, manager events, timeline;
-- the step 6 scenario, live and replayed, with its actions (join from an
-  invitation, request, stop).
+- the platform's core: the contract with the abstract world, the model,
+  the transport, the server, the shell, the menu;
+- the generic extensions: replay, scenario runner, timeline;
+- the p2p adapters: watchers `manager`, `records`, `swarm` and the
+  abstract actions (start, stop, invite, request);
+- the applications `swarm-view` and `demo-other-host` (step 6 as a
+  scenario), live and replayed, agnostic of p2p.
 
 Validated by:
 1. replaying step 6's record and checking the drawn state against it;
@@ -329,6 +365,9 @@ Validated by:
 - liveness in the name service, which the swarm map will make visible.
 
 ## Open
+
+0. **The SPLectral organisation's exact name on GitHub**, checked when its
+   first repositories are made.
 
 1. **Names**: the observer's (`p2p-observer` proposed).
 2. **The feed's form** on the host: a socket per node folder, or the view
