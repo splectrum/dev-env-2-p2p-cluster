@@ -9,7 +9,9 @@
     "p2p-connect",
     "p2p-replicate",
     "p2p-channel",
-    "p2p-mrepo"
+    "p2p-mrepo",
+    "p2p-rns",
+    "p2p-node"
   ],
   "dependencies": {
     "child_process": "npm:bare-node-child-process@1.0.1",

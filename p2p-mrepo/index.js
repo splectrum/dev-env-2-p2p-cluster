@@ -3,7 +3,9 @@
 // (mycelium-git's backend contract): mycelium works with it and knows
 // nothing of p2p.
 //   const repos = mrepos({ store, observer })     store: p2p-store's
-//   await repos.create(name)                      a new repository, the store's own
+//   await repos.create(name, { id })              a new repository, the store's own
+//                                                 (id: its internal id, if it has one
+//                                                 already, e.g. rebuilt; else a new GUID)
 //   await repos.import(name, { native | bundle }) one from the boundary
 //   await repos.clone(repo, name)                 a copy under a new key, its origin recorded
 //   await repos.open(name)                        one of the store's own, again
@@ -26,8 +28,8 @@ import { p2pgitBackend, nativeBackend, transfer, readBundle } from '../mycelium-
 const MODULE = 'p2p-mrepo'
 const NAME = /^[a-z0-9]+(-[a-z0-9]+)*$/
 const hex = b => b.toString('hex')
-const guid = () => {
-  const h = hex(crypto.randomBytes(16))
+const guid = (bytes = crypto.randomBytes(16)) => {
+  const h = hex(bytes)
   return `${h.slice(0, 8)}-${h.slice(8, 12)}-4${h.slice(13, 16)}-${'89ab'[parseInt(h[16], 16) % 4]}${h.slice(17, 20)}-${h.slice(20, 32)}`
 }
 
@@ -41,14 +43,15 @@ export function mrepos ({ store, observer = null }) {
   const backendOf = drive => p2pgitBackend('/', { fs: createFs(drive) })
   const readInfo = async drive => JSON.parse((await drive.get('/mrepo.json')).toString())
 
-  async function create (name, { origin = null } = {}) {
+  async function create (name, { origin = null, id = null } = {}) {
+    if (id !== null && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(id)) throw new Error(`not an id: ${id}`)
     if (!NAME.test(name)) throw new Error(`not a repository name: ${name}`)
     const r = await reg()
     if (await r.entry(`/repos/${name}.json`)) throw new Error(`exists: ${name}`)
     const drive = await store.own(`mrepo/${name}`)
     const backend = backendOf(drive)
     await backend.init()
-    const info = { name, id: guid(), key: hex(drive.key), origin }
+    const info = { name, id: id || guid(), key: hex(drive.key), origin }
     await drive.put('/mrepo.json', Buffer.from(JSON.stringify(info, null, 2) + '\n'))
     await r.put(`/repos/${name}.json`, Buffer.from(JSON.stringify(info) + '\n'))
     emit('repo-created', { name, id: info.id, resource: info.key, origin: origin && origin.kind })
@@ -69,7 +72,7 @@ export function mrepos ({ store, observer = null }) {
   }
 
   return {
-    create: name => create(name),
+    create: (name, { id = null } = {}) => create(name, { id }),
 
     async import (name, { native = null, bundle = null }) {
       if (!native === !bundle) throw new Error('import takes a native repository or a bundle')
@@ -124,4 +127,10 @@ export function mrepos ({ store, observer = null }) {
       return found.sort((a, b) => a.name.localeCompare(b.name))
     }
   }
+}
+
+// A stable id from bytes (16 or more): for a repository whose identity
+// follows from something permanent, e.g. its owner's key and its name.
+export function idFrom (bytes) {
+  return guid(bytes.subarray(0, 16))
 }
