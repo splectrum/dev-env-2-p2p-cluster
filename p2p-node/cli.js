@@ -2,8 +2,15 @@
 // The node application, from the command line (its container's command).
 //   bare cli.js master --swarm=<name> --name=<node> --host=<ip> --storage=<dir>
 //                      --code=<folder> [--dht-port=49737]
-// The node's primary key comes first on stdin, as hex, from its node
-// manager: never from a file the node keeps. Everything the node does goes
+//   bare cli.js boot   --swarm --name --host --storage --app --aux-host
+//                      --aux-bootstrap=<host:port> --manager=<key> --bootstrap=<host:port>
+//                      --master=<key> --packages-key --packages-commit --packages-uri
+//                      (a joining node: provisioned, then run from the swarm's code)
+//   bare cli.js join   --swarm --name --host --storage --bootstrap --master
+//                      --packages-key --packages-commit --packages-uri
+// For master and join, the node's primary key comes first on stdin, as hex,
+// from its node manager (or, for join, its boot program): never from a file
+// the node keeps. Everything the node does goes
 // to stdout as JSON lines (its log: the audit and metrics of every module),
 // which the node manager follows. SIGTERM stops it gracefully.
 
@@ -34,7 +41,13 @@ function readSecret () {
   })
 }
 
+const hostPort = s => { const [host, port] = s.split(':'); return { host, port: Number(port) } }
+
 try {
+  if (role === 'boot') {
+    const { boot } = await import('./boot.js')
+    process.exit(await boot(flags, log))
+  }
   const primaryKey = await readSecret()
   log({ module: 'p2p-node', kind: 'secret-received', time: Date.now(), bytes: primaryKey.length })
   const node = await startNode({
@@ -46,6 +59,11 @@ try {
     host: flags.host,
     dhtPort: Number(flags['dht-port'] || 49737),
     code: flags.code,
+    ...(role === 'join' ? {
+      bootstrap: [hostPort(flags.bootstrap)],
+      master: flags.master,
+      packages: { uri: flags['packages-uri'], key: flags['packages-key'], commit: flags['packages-commit'] }
+    } : {}),
     observer: log,
     metricsEvery: Number(flags['metrics-every'] || 30000)
   })

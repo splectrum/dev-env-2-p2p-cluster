@@ -10,5 +10,11 @@
   "scripts": {
     "test": "node --test test/*.test.js"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "hypercore-crypto": "3.7.0",
+    "p2p-channel": "*",
+    "p2p-connect": "*",
+    "p2p-dht": "*"
+  }
 }

@@ -2,6 +2,7 @@
 // the nodes it controls (a swarm manager may control one node only, the
 // master), through their node managers, and keeps the swarm's record.
 //   await genesis({ swarm, folder, nodes, vault, code })   the swarm from zero
+//   await joinNode({ folder, node })                       a node joining it
 //   await status({ folder })                               the swarm as p2p-rns sees it
 //   await restart({ folder, node }), await stop({ folder })
 //
@@ -11,6 +12,10 @@
 // a process of its own, detached: it keeps its node running when the swarm
 // manager is not. The swarm manager asks p2p-rns as a peer of the swarm,
 // from the host, on the swarm's internal network.
+//
+// Two internal networks per swarm: the swarm's own (the data plane) and an
+// auxiliary one (the management plane), where each joining node's manager
+// provisions it; the host is the gateway of both.
 
 import { spawn, execFileSync } from 'node:child_process'
 import { mkdirSync, writeFileSync, appendFileSync, readFileSync, existsSync, openSync, rmSync } from 'node:fs'
@@ -43,9 +48,14 @@ async function startNodeManager (s, node, { vault, timeout = 180000 }) {
   // run's is read.
   rmSync(join(folder, 'state.json'), { force: true })
   const out = openSync(join(folder, 'manager.out'), 'a')
+  const joining = node.role === 'join' ? [
+    `--aux-network=${s.aux.network}`, `--aux-gateway=${s.aux.gateway}`, `--aux-port=${node.auxPort}`, `--aux-ip=${node.auxIp}`,
+    `--master=${s.master.key}`, `--bootstrap=${s.dht.host}:${s.dht.port}`,
+    `--packages-uri=${s.master.packages.uri}`, `--packages-key=${s.master.packages.key}`, `--packages-commit=${s.master.packages.commit}`
+  ] : []
   const child = spawn(process.execPath, [join(here, '..', 'p2p-node-manager', 'cli.js'), 'run',
     `--folder=${folder}`, `--vault=${vault}`, `--image=${s.image}`, `--network=${s.network}`, `--ip=${node.ip}`,
-    `--swarm=${s.swarm}`, `--name=${node.name}`, `--role=${node.role}`], { detached: true, stdio: ['ignore', out, out] })
+    `--swarm=${s.swarm}`, `--name=${node.name}`, `--role=${node.role}`, ...joining], { detached: true, stdio: ['ignore', out, out] })
   child.unref()
   const t0 = Date.now()
   while (Date.now() - t0 < timeout) {
@@ -57,7 +67,7 @@ async function startNodeManager (s, node, { vault, timeout = 180000 }) {
   throw new Error(`${node.name}: not ready within ${timeout} ms`)
 }
 
-export async function genesis ({ swarm, folder, nodes, vault, code, subnet = '172.34.0' }) {
+export async function genesis ({ swarm, folder, nodes, vault, code, subnet = '172.34.0', auxSubnet = '172.35.0' }) {
   mkdirSync(folder, { recursive: true })
   const { record, write } = swarmRecord(folder)
   const t0 = Date.now()
@@ -68,15 +78,38 @@ export async function genesis ({ swarm, folder, nodes, vault, code, subnet = '17
   tryDocker('network', 'rm', network)
   docker('network', 'create', '--internal', '--subnet', `${subnet}.0/24`, '--gateway', `${subnet}.1`, network)
   record('network-created', { network, subnet: `${subnet}.0/24`, internal: true })
+  const aux = { network: `p2p-${swarm}-aux`, subnet: `${auxSubnet}.0/24`, gateway: `${auxSubnet}.1` }
+  tryDocker('network', 'rm', aux.network)
+  docker('network', 'create', '--internal', '--subnet', aux.subnet, '--gateway', aux.gateway, aux.network)
+  record('network-created', { network: aux.network, subnet: aux.subnet, internal: true, plane: 'management' })
   const master = { name: 'master', role: 'master', ip: `${subnet}.2`, folder: join(nodes, `${swarm}-master`) }
-  const s = { swarm, image, network, subnet, gateway: `${subnet}.1`, vault, dht: { host: master.ip, port: 49737 }, nodes: [master], created: new Date().toISOString() }
+  const s = { swarm, image, network, subnet, gateway: `${subnet}.1`, aux, nodes: [master], vault, dht: { host: master.ip, port: 49737 }, nodesFolder: nodes, created: new Date().toISOString() }
   write(s)
   const ready = await startNodeManager(s, master, { vault })
   s.nodes[0] = { ...master, uri: ready.uri, key: ready.key, managerPid: ready.managerPid }
-  s.master = { uri: ready.uri, key: ready.key, packages: ready.genesis?.packages, nodeRepo: ready.genesis?.nodeRepo }
+  s.master = { uri: ready.uri, key: ready.key, packages: { uri: `/${swarm}/master/packages`, ...ready.genesis?.packages }, boot: ready.genesis?.boot }
   write(s)
   record('master-ready', { uri: ready.uri, key: ready.key, packages: ready.genesis?.packages?.commit, ms: Date.now() - t0 })
   return s
+}
+
+// A node joining: its node manager provisions it through the auxiliary
+// network; the node runs from the master's packages.
+export async function joinNode ({ folder, node: name }) {
+  const { record, read, write } = swarmRecord(folder)
+  const s = read()
+  if (s.nodes.some(n => n.name === name)) throw new Error(`already a node: ${name}`)
+  const i = s.nodes.length
+  const subnet = s.subnet
+  const node = { name, role: 'join', ip: `${subnet}.${2 + i}`, auxIp: `${s.aux.gateway.replace(/\.1$/, '')}.${9 + i}`, auxPort: 49740 + i, folder: join(s.nodesFolder, `${s.swarm}-${name}`) }
+  s.nodes.push(node)
+  write(s)
+  record('join-started', { node: name, ip: node.ip, auxIp: node.auxIp })
+  const ready = await startNodeManager(s, node, { vault: s.vault })
+  s.nodes[i] = { ...node, uri: ready.uri, key: ready.key, managerPid: ready.managerPid, materialised: ready.materialised }
+  write(s)
+  record('node-joined', { node: name, uri: ready.uri, key: ready.key, materialised: ready.materialised, ms: ready.ms })
+  return s.nodes[i]
 }
 
 // The swarm as p2p-rns sees it: asked from the host, as a peer of the
@@ -132,8 +165,9 @@ export async function stop ({ folder }) {
   const { record, read } = swarmRecord(folder)
   const s = read()
   const ended = []
-  for (const n of s.nodes) ended.push(await stopNodeManager(n))
+  for (const n of [...s.nodes].reverse()) ended.push(await stopNodeManager(n))
   tryDocker('network', 'rm', s.network)
+  if (s.aux) tryDocker('network', 'rm', s.aux.network)
   record('swarm-stopped', { nodes: ended.map(e => e && { name: e.name, exitCode: e.exitCode }) })
   return ended
 }

@@ -2,26 +2,35 @@
 // p2p series (store, DHT, connections, replication, channels), its
 // repositories (p2p-mrepo, with mycelium) and the resource name service
 // (p2p-rns). The application composes them; none knows another.
-//   const node = await startNode({ role: 'master', swarm, name, storage,
-//     primaryKey, host, dhtPort, code, observer })
-//   node.uri, node.key, node.metrics(), await node.stop()
+//   const node = await startNode({ role, swarm, name, storage, primaryKey, host, ... })
+//   node.uri, node.key, node.repos, node.metrics(), await node.stop()
 //
 // Role master: the swarm's first node, from zero (genesis). It starts the
 // swarm's DHT (two persistent nodes at host:dhtPort), runs p2p-rns in
-// memory, and creates its repositories from what it was given: `node`, its
-// own record, and `packages`, the node's code (the folder `code`, as
-// deployed) imported once at the boundary; both reproducibly (fixed author
-// and time: the same primary key and code give the same keys and commits).
-// It registers itself and them, announces them, and serves p2p-rns on a
-// channel to every peer that connects (found on the swarm's topic).
+// memory, and makes the swarm's first repositories from what it was given:
+// `packages` (the node's code, the folder `code`, deployed, imported once
+// at the boundary) and `boot` (the template every node's repository is
+// cloned from). Options: dhtPort, code.
+//
+// Role join: a node joining that swarm. It takes part in its DHT (from
+// `bootstrap`), connects to the master (`master`, its key) for p2p-rns,
+// and joins under its name. Options: bootstrap, master, packages (the
+// packages it runs: { key, commit }).
+//
+// Both go live the same way: the swarm's boot repository cloned into the
+// node's own `node` repository, under its own key (its origin recorded),
+// its record (node.json) and its capability (capability/default: a link to
+// the packages it runs) committed; registered in p2p-rns, announced, and
+// served, with requests to it taken on a channel (requests.js). Everything
+// is reproducible: fixed author and time, ids derived from the node's
+// identity and the names, so a rebuilt node has the same keys, commits and
+// ids.
 //
 // The store is meant for RAM (a tmpfs): it holds the node's secrets
 // (step 0). `primaryKey` comes from the node manager, never from a file the
-// node keeps.
-//
-// Instrumentation: every module's events go to the observer (the node's
-// log); the node adds node-started, genesis, metrics (every interval) and
-// node-stopped.
+// node keeps. Instrumentation: every module's events go to the observer
+// (the node's log); the node adds node-started, genesis, live, metrics
+// (every interval), request-taken, requests-executed and node-stopped.
 
 import crypto from 'hypercore-crypto'
 import { openStore } from 'p2p-store'
@@ -29,95 +38,176 @@ import { startBootstrap, startDht } from 'p2p-dht'
 import { connect } from 'p2p-connect'
 import { replicator } from 'p2p-replicate'
 import { openChannel } from 'p2p-channel'
-import { createRns } from 'p2p-rns'
+import { createRns, rnsClient } from 'p2p-rns'
 import { mrepos, idFrom } from 'p2p-mrepo'
 import { writer, openRepo } from '../mycelium-git/index.js'
 import { deploy } from '../mycelium-layer/index.js'
+import { requests } from './requests.js'
+
+export { askRequest, requestBundle } from './requests.js'
 
 const MODULE = 'p2p-node'
 const hex = b => b.toString('hex')
 const author = { name: 'p2p-node', email: 'p2p-node@localhost' }
 const time = '2026-01-01T00:00:00Z' // fixed: the same input, the same commits
 
-// A swarm's topic: where its nodes find the master (and, later, each other).
+// A swarm's topic: where its nodes find the master.
 export const swarmTopic = swarm => crypto.hash(Buffer.from(`p2p-swarm:${swarm}`))
 
-export async function startNode ({ role, swarm, name, storage, primaryKey, host, dhtPort = 49737, code, observer = null, metricsEvery = 30000 }) {
-  if (role !== 'master') throw new Error(`unknown role: ${role}`)
+export async function startNode (opts) {
+  const { role } = opts
+  if (role !== 'master' && role !== 'join') throw new Error(`unknown role: ${role}`)
+  // What a start opens is closed again if the start fails (a name refused,
+  // the master unreachable): nothing is left running.
+  const opened = []
+  try {
+    return await start(opts, opened)
+  } catch (err) {
+    for (const close of opened.reverse()) await close().catch(() => {})
+    opts.observer?.({ module: MODULE, kind: 'start-failed', time: Date.now(), error: err.message })
+    throw err
+  }
+}
+
+async function start (opts, opened) {
+  const { role, swarm, name, storage, primaryKey, host, observer = null, metricsEvery = 30000 } = opts
   const t0 = Date.now()
   const emit = (kind, facts) => observer && observer({ module: MODULE, kind, time: Date.now(), ...facts })
 
   const store = await openStore({ storage, primaryKey, observer })
+  opened.push(() => store.close())
   const keyPair = await store.corestore.createKeyPair('p2p-node/identity')
   const owner = hex(keyPair.publicKey)
-  const boot = await startBootstrap({ host, port: dhtPort, observer })
-  const dht = await startDht({ host, bootstrap: boot.bootstrap, observer })
-  const net = connect({ dht: dht.dht, keyPair, observer })
+  const idOf = repo => idFrom(crypto.hash(Buffer.from(`${owner}/${repo}`)))
+  const repos = mrepos({ store, observer })
   const rep = replicator({ store, observer })
-  const rns = createRns({ swarm, observer })
-  rns.registerNode({ owner, name })
+
+  let boot = null
+  let dht
+  if (role === 'master') {
+    boot = await startBootstrap({ host, port: opts.dhtPort ?? 49737, observer })
+    opened.push(() => boot.close())
+    dht = await startDht({ host, bootstrap: boot.bootstrap, observer })
+  } else {
+    dht = await startDht({ host, bootstrap: opts.bootstrap, persistent: true, observer })
+  }
+  opened.push(() => dht.close())
+  const net = connect({ dht: dht.dht, keyPair, observer })
+  opened.push(() => net.close())
+
+  // The name service: the master runs it; a joining node asks the master.
+  let rns, rnsLocal = null
+  const services = []
+  if (role === 'master') {
+    rnsLocal = createRns({ swarm, observer })
+    rnsLocal.registerNode({ owner, name })
+    const local = rnsLocal
+    rns = {
+      register: r => local.register({ owner, ...r }),
+      resolve: uri => local.resolve(uri)
+    }
+  }
+  let resolveMaster
+  const masterChannel = role === 'join' ? new Promise(resolve => { resolveMaster = resolve }) : null
 
   net.onConnection((stream, peer) => {
     rep.replicate(stream, { peer: peer.peer })
-    openChannel(stream, { name: 'p2p-rns', peer: peer.peer, observer, onrequest: rns.handler(peer.peer) })
+    if (rnsLocal) openChannel(stream, { name: 'p2p-rns', peer: peer.peer, observer, onrequest: rnsLocal.handler(peer.peer) })
+    else if (peer.peer === opts.master) resolveMaster(openChannel(stream, { name: 'p2p-rns', peer: peer.peer, observer }))
+    for (const s of services) serveRequests(stream, s, peer.peer)
   })
+  const serving = new WeakSet()
+  function serveRequests (stream, service, peer) {
+    if (serving.has(stream)) return
+    serving.add(stream)
+    openChannel(stream, { name: 'p2p-request', peer, observer, onrequest: service.handler(peer) })
+  }
 
-  // Genesis: the node's repositories, from what it was given.
-  const repos = mrepos({ store, observer })
-  const own = new Set((await repos.list()).map(r => r.name))
-  // A repository's internal id is permanent: derived from the node's
-  // identity and the repository's name, a rebuilt node's are the same.
-  const idOf = repo => idFrom(crypto.hash(Buffer.from(`${owner}/${repo}`)))
-  const node = own.has('node') ? await repos.open('node') : await repos.create('node', { id: idOf('node') })
-  if (!own.has('node')) {
-    const w = writer(node.backend)
+  // Genesis (master): the packages and the boot repository.
+  let packages = opts.packages || null
+  if (role === 'master') {
+    const pk = await repos.create('packages', { id: idOf('packages') })
+    const r = await deploy({ backend: pk.backend, layer: 'capability/default', folder: opts.code, message: 'The node packages, as deployed\n', author, time })
+    const bt = await repos.create('boot', { id: idOf('boot') })
+    const w = writer(bt.backend)
     await w.createLayer('main', 'Create main', { author, time })
-    const c = await w.change('main')
-    await c.put('/node.json', JSON.stringify({ swarm, name, role, key: owner }, null, 2) + '\n')
-    await c.commit(`Node ${name} of swarm ${swarm}`, { author, time })
+    let c = await w.change('main')
+    await c.put('/readme.md', `# A node's repository\n\nCloned from the swarm ${swarm}'s boot repository; the node's own record\n(node.json) and its capability (capability/default) are its own.\n`)
+    await c.commit('The boot repository', { author, time })
+    await w.createLayer('pending/default', 'Create pending/default', { author, time })
+    c = await w.change('pending/default')
+    await c.put('/readme.md', 'Requests to this node, one folder each: pending/<name>/request.md.\n')
+    await c.commit('Where requests come', { author, time })
+    await w.createExecution('main')
+    packages = { uri: `/${swarm}/${name}/packages`, key: pk.key, commit: r.commit }
+    for (const [repo, type] of [[pk, 'packages'], [bt, 'boot']]) {
+      rns.register({ name: repo.name, id: repo.id, key: repo.key, type })
+      rep.track(repo.drive)
+      await net.join(repo.drive.discoveryKey, { server: true, client: false })
+    }
+    await net.join(swarmTopic(swarm), { server: true, client: false })
+    emit('genesis', { swarm, node: name, owner, packages: { key: pk.key, id: pk.id, commit: r.commit, files: r.files }, boot: { key: bt.key, id: bt.id }, ms: Date.now() - t0 })
+  } else {
+    // Joining: to the master, then the name service on that connection.
+    net.connectTo(Buffer.from(opts.master, 'hex'))
+    const ch = await masterChannel
+    await ch.opened
+    const client = rnsClient(ch)
+    await client.registerNode(name)
+    rns = { register: r => client.register(r), resolve: uri => client.resolve(uri) }
   }
-  const packages = own.has('packages') ? await repos.open('packages') : await repos.create('packages', { id: idOf('packages') })
-  let deployed = Object.fromEntries(await packages.backend.listBranches())['capability/default']
-  let files = null
-  if (!deployed) {
-    const r = await deploy({ backend: packages.backend, layer: 'capability/default', folder: code, message: 'The node packages, as deployed\n', author, time })
-    deployed = r.commit
-    files = r.files
-  }
-  for (const [repo, type] of [[node, 'node'], [packages, 'packages']]) {
-    rns.register({ owner, name: repo.name, id: repo.id, key: repo.key, type })
-    rep.track(repo.drive)
-    await net.join(repo.drive.discoveryKey, { server: true, client: false })
-  }
-  await net.join(swarmTopic(swarm), { server: true, client: false })
-  emit('genesis', { swarm, node: name, owner, packages: { key: packages.key, id: packages.id, commit: deployed, files }, nodeRepo: { key: node.key, id: node.id }, ms: Date.now() - t0 })
+
+  // Live: the boot repository cloned into the node's own `node` repository.
+  const bootRecord = await rns.resolve(`/${swarm}/master/boot`)
+  const bootRepo = role === 'master' ? await repos.open('boot') : await repos.replica(bootRecord.key)
+  if (role === 'join') { rep.track(bootRepo.drive); await bootRepo.drive.update({ wait: true }); bootRepo.id = bootRecord.id }
+  const node = await repos.clone(bootRepo, 'node', { id: idOf('node') })
+  const w = writer(node.backend)
+  let c = await w.change('main')
+  await c.put('/node.json', JSON.stringify({ swarm, name, role, key: owner }, null, 2) + '\n')
+  await c.commit(`Node ${name} of swarm ${swarm}`, { author, time })
+  await w.createLayer('capability/default', 'Create capability/default', { author, time })
+  c = await w.change('capability/default')
+  await c.put('/packages.json', JSON.stringify(packages, null, 2) + '\n')
+  await c.commit('The packages this node runs', { author, time })
+  await rns.register({ name: 'node', id: node.id, key: node.key, type: 'node' })
+  rep.track(node.drive)
+  await net.join(node.drive.discoveryKey, { server: true, client: false })
+  emit('live', { uri: `/${swarm}/${name}/node`, key: node.key, id: node.id, origin: { id: bootRecord.id, key: bootRecord.key }, packages, ms: Date.now() - t0 })
 
   const metrics = () => ({
     store: store.resources(),
     replicate: rep.metrics(),
     connect: net.metrics(),
     dht: dht.metrics(),
-    bootstrap: boot.metrics(),
-    rns: rns.metrics()
+    ...(boot ? { bootstrap: boot.metrics() } : {}),
+    ...(rnsLocal ? { rns: rnsLocal.metrics() } : {})
   })
+  const status = () => ({ uri: `/${swarm}/${name}`, role, key: owner, packages, connections: net.connections().length, resources: store.resources().length, uptimeMs: Date.now() - t0 })
+  services.push(requests({ repo: node, status, observer }))
+  // Connections opened before the service existed get its channel now.
+  for (const s of net.swarm.connections) serveRequests(s, services[0], hex(s.remotePublicKey))
+
   const timer = setInterval(() => emit('metrics', metrics()), metricsEvery)
-  emit('node-started', { role, swarm, node: name, uri: `/${swarm}/${name}`, owner, dht: `${host}:${dhtPort}`, ms: Date.now() - t0 })
+  emit('node-started', { role, swarm, node: name, uri: `/${swarm}/${name}`, owner, dht: role === 'master' ? `${host}:${opts.dhtPort ?? 49737}` : null, ms: Date.now() - t0 })
 
   let stopping = null
   return {
     uri: `/${swarm}/${name}`,
     key: owner,
-    rns,
-    repos: { node, packages },
-    packagesCommit: deployed,
+    rns: rnsLocal,
+    repos: { node, ...(role === 'master' ? { packages: await repos.open('packages'), boot: await repos.open('boot') } : {}) },
+    packages,
+    packagesCommit: packages?.commit,
     metrics,
+    status,
     stop () {
       stopping ??= (async () => {
         clearInterval(timer)
         emit('metrics', metrics())
         await net.close()
         await dht.close()
-        await boot.close()
+        if (boot) await boot.close()
         await store.close()
         emit('node-stopped', { uri: `/${swarm}/${name}`, ms: Date.now() - t0 })
       })()
