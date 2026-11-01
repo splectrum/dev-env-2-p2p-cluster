@@ -14,5 +14,7 @@ its first test). From dev `a73df80`, each a plain merge pushed to `main`
 merge, from dev `0d5537d`, split head `1a9977e`, product commit `a554890`
 (unrelated histories joined, the repository's LICENSE kept).
 
-Still waiting for their repositories: `p2p-rns`, `p2p-mrepo`. Recorded in
-`notes/products.md`.
+`p2p-rns` and `p2p-mrepo` (unchanged in this step, their repositories
+newly made): first merges from dev `596e314`, split heads `f9b1984` and
+`7a42c53`, product commits `30d9186` and `a5b8ba1`. Every module now has its
+product repository. Recorded in `notes/products.md`.

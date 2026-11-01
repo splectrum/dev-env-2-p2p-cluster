@@ -197,8 +197,8 @@ channels, zero knowledge, AVRO and Kafka.
 
 - Created in `pear-full-square`: `p2p-store`, `p2p-dht`, `p2p-connect`,
   `p2p-replicate`, `p2p-channel`, `p2p-node-manager`,
-  `p2p-swarm-manager`, `p2p-node`; `p2p-git` moved there. To create:
-  `p2p-rns`, `p2p-mrepo`.
+  `p2p-swarm-manager`, `p2p-node`, `p2p-rns`, `p2p-mrepo`; `p2p-git`
+  moved there.
 - Open in step 2: where audit goes (proposed: an append-only, signed core
   per node, replicated to its node manager over the management plane;
   facts only, never secrets) and how detailed it is.

@@ -1,7 +1,7 @@
 # Step 5. A node joining
 
-Status: **done** (2026-11-01), except the product repositories of
-`p2p-node`, `p2p-rns` and `p2p-mrepo`, which wait for their repositories.
+Status: **done** (2026-11-01); the product repositories of `p2p-node`,
+`p2p-rns` and `p2p-mrepo` merged after step 6 (`notes/products.md`).
 Request: `pending/phase-2/step-5-node-joining/request.md` on
 `pending/default`. Scope: `notes/plan.md`, step 5.
 

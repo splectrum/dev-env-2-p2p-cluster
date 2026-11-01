@@ -1,8 +1,8 @@
 # Step 6. A node on another host
 
 Status: **done** (2026-11-01), with the other host simulated on this
-session's one machine. `p2p-node` merged into its repository with this
-step; waiting: `p2p-rns` and `p2p-mrepo` (unchanged in this step). Request:
+session's one machine. `p2p-node`, `p2p-rns` and `p2p-mrepo` (unchanged
+in this step) merged into their new repositories after it. Request:
 `pending/phase-2/step-6-other-host/request.md` on `pending/default`
 (`997f17e`). Scope: `notes/plan.md`, step 6.
 
