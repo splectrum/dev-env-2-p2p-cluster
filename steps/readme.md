@@ -28,5 +28,5 @@ done with them.
 | 2. The p2p series, minimal and instrumented | `2-p2p-series/` | done |
 | 3. Repositories on the p2p layer | `3-repositories/` | done (p2p-mrepo's product repository to create) |
 | 4. The swarm: genesis | `4-genesis/` | done (p2p-rns's and p2p-node's product repositories to create) |
-| 5. A node joining | `5-node-joining/` | pending |
+| 5. A node joining | `5-node-joining/` | done (p2p-node's, p2p-rns's and p2p-mrepo's product repositories to create) |
 | 6. A node on another host | `6-other-host/` | pending |

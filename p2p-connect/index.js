@@ -3,6 +3,8 @@
 //   net.onConnection((stream, peer) => ...)   an encrypted stream per peer
 //   await net.join(topic, { server, client })  announce, look up, or both
 //   await net.leave(topic)
+//   net.connectTo(publicKey)                   a peer by its key, kept connected
+//   net.disconnectFrom(publicKey)
 //   net.connections(), net.metrics(), await net.close()
 //
 // `dht` is a DHT node (p2p-dht's startDht().dht). `keyPair` is the node's
@@ -12,8 +14,8 @@
 //
 // Instrumentation: { module, kind, time, ...facts } to the observer:
 // connection-opened, connection-refused, connection-closed (with the bytes
-// carried), topic-joined, topic-left; metrics: per connection and the
-// swarm's counters.
+// carried), topic-joined, topic-left, peer-joined, peer-left; metrics: per
+// connection and the swarm's counters.
 
 import Hyperswarm from 'hyperswarm'
 
@@ -62,6 +64,14 @@ export function connect ({ dht, keyPair, admit = () => true, observer = null }) 
     async leave (topic) {
       await swarm.leave(topic)
       emit('topic-left', { topic: hex(topic) })
+    },
+    connectTo (publicKey) {
+      swarm.joinPeer(publicKey)
+      emit('peer-joined', { peer: hex(publicKey) })
+    },
+    disconnectFrom (publicKey) {
+      swarm.leavePeer(publicKey)
+      emit('peer-left', { peer: hex(publicKey) })
     },
     connections: () => [...live].map(([stream, c]) => ({ peer: c.peer, ...bytes(stream) })),
     metrics: () => ({

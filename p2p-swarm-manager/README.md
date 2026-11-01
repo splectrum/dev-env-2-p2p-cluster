@@ -6,6 +6,7 @@ swarm's record.
 
 ```sh
 node cli.js genesis --swarm=<name> --folder=<swarm-folder> --nodes=<parent> --vault=<dir> --code=<dev-repo>
+node cli.js join    --folder=<swarm-folder> --node=<name>
 node cli.js status  --folder=<swarm-folder>
 node cli.js restart --folder=<swarm-folder> --node=<name>
 node cli.js stop    --folder=<swarm-folder>
@@ -21,4 +22,8 @@ node cli.js stop    --folder=<swarm-folder>
 - **Status** asks p2p-rns as a peer of the swarm, from the host, on the
   swarm's internal network (the host's address there is the gateway).
 
-Nodes joining come with step 5; nodes on other hosts with step 6.
+- **Join** (step 5): a node added on both of the swarm's internal networks
+  (its data plane and the auxiliary one, where its manager provisions it),
+  run from the master's packages at the commit the swarm records.
+
+Nodes on other hosts come with step 6.

@@ -1,0 +1,11 @@
+{
+  "swarm": "joining",
+  "name": "master",
+  "role": "master",
+  "image": "p2p-node:6343154",
+  "network": "p2p-joining",
+  "ip": "172.34.0.2",
+  "container": "p2p-joining-master",
+  "memory": "1g",
+  "storeSize": "512m"
+}
