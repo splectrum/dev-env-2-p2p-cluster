@@ -4,6 +4,9 @@
   "description": "A swarm's manager on the host: genesis, the nodes it controls through their node managers, the swarm's record",
   "type": "module",
   "exports": "./index.js",
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
   "license": "MIT",
   "dependencies": {
     "hypercore-crypto": "3.7.0",

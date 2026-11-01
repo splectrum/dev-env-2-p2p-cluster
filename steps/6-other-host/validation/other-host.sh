@@ -25,6 +25,8 @@ remote_ip=172.34.0.100 b_requester=172.34.0.101 b_aux=172.36.0
 # Host B's node manager, detached (it outlives this script), ready when its
 # state says running.
 remote_start () {
+  # The previous run's state is the previous run's.
+  rm -f "$remote/state.json"
   setsid node $nm join --invitation="$b/invitation.json" --folder="$remote" --vault="$b-vault" \
     --name=remote-1 --ip=$remote_ip --aux-subnet=$b_aux >> "$remote/manager.out" 2>&1 < /dev/null &
   t0=$(date +%s%3N)
