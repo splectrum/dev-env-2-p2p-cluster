@@ -53,10 +53,15 @@ export async function boot (flags, log) {
   const dht = await startDht({ host: flags.host, bootstrap: [hostPort(flags.bootstrap)], observer: log })
   const net = connect({ dht: dht.dht, keyPair: provisioning, observer: log })
   const rep = replicator({ store, observer: log })
-  net.onConnection((stream, peer) => rep.replicate(stream, { peer: peer.peer }))
-  net.connectTo(Buffer.from(flags.master, 'hex'))
+  const toMaster = new Promise(resolve => net.onConnection((stream, peer) => {
+    rep.replicate(stream, { peer: peer.peer })
+    if (peer.peer === flags.master) resolve()
+  }))
   const packages = await mrepos({ store, observer: log }).replica(flags['packages-key'])
   rep.track(packages.drive)
+  net.connectTo(Buffer.from(flags.master, 'hex'))
+  // An update before the master is connected finds nothing to wait for.
+  await toMaster
   await packages.drive.update({ wait: true })
   const commit = Object.fromEntries(await packages.backend.listBranches())['capability/default']
   if (commit !== flags['packages-commit']) throw new Error(`the packages are at ${commit}, not ${flags['packages-commit']}`)
