@@ -18,13 +18,14 @@ From the bottom:
 - **Kafka:** streaming and high-volume data: records and topics. On
   Hypercore, a partition is a core, an offset a block index; no central
   broker, its functions taken on by peers.
-- **Logs from the ground up:** a record compatible with Kafka's is the
-  elementary data container (the data in its `value`, whose schema is the
-  data's schema; only the properties needed so far, nothing else of the
-  Kafka ecosystem). All configuration, audit and metrics data is appended
-  to logs of such records, and current state is built from them, never
-  written directly (`notes/logs.md`
-  in `splectrum/dev-env-2-p2p-cluster`, `mycelium-log`).
+- **Topics from the ground up:** a Kafka record is the elementary data
+  container (the data in its `value`, whose schema is the data's schema;
+  metadata in its `headers`; only the properties needed so far). Data
+  lives in topics in Kafka's sense, single-partition to start, with
+  Kafka's functionality and names, built basic and evolving into
+  mycelium's p2p Kafka; state is built from topics, never written
+  directly (`notes/topics.md` in `splectrum/dev-env-2-p2p-cluster`,
+  `mycelium-topic`).
 
 `mycelium-uri` and `mycelium-xpath` are the shared vocabulary across all
 four. On top sit the **repository paradigms**: the dev env, the test-run

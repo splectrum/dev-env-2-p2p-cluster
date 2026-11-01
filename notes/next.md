@@ -131,10 +131,11 @@ Every module now has its product repository in `pear-full-square`
   node, a host-local Splectral server and the step 6 scenario as its first
   demo. Waiting for the go; its open points are listed there.
 
-- **Data in logs** (`notes/logs.md`): a Kafka-compatible record (for now
-  only `value`, JSON, natural order) as the elementary data container;
-  configuration, audit and metrics appended to logs of them, state built
-  from them; `mycelium-log` (repository to create).
+- **Data in topics** (`notes/topics.md`, rules in `rules.md`): a Kafka
+  record (for now only `value`, JSON, plus headers for metadata) as the
+  elementary data container; topics in Kafka's sense, single-partition,
+  Kafka's names; state built from topics; `mycelium-topic` (repository to
+  create).
 
 ## To continue
 
