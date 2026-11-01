@@ -14,7 +14,17 @@
     "p2p-node",
     "p2p-node-manager",
     "p2p-swarm-manager",
-    "splectral-p2p-observer"
+    "splectral-p2p-observer",
+    "splectral-contract",
+    "splectral-model",
+    "splectral-transport",
+    "splectral-server",
+    "splectral-shell",
+    "splectral-replay",
+    "splectral-scenario",
+    "splectral-timeline",
+    "splectral-p2p-watchers",
+    "splectral-p2p-actions"
   ],
   "dependencies": {
     "child_process": "npm:bare-node-child-process@1.0.1",

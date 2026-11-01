@@ -1,6 +1,6 @@
 {
   "name": "p2p-rns",
-  "id": "de8dd664-f5e1-465b-81ad-d666498e21cd",
+  "id": "62d182ed-6c4e-44df-a1de-34e874825edc",
   "description": "The resource name service: URIs for a swarm's nodes and resources, rooted in p2p, abstracted for its users",
   "type": "module",
   "exports": "./index.js",

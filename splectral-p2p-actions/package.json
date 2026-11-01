@@ -1,0 +1,18 @@
+{
+  "name": "splectral-p2p-actions",
+  "id": "075a1233-8258-4716-8ca5-48ebad18fbfe",
+  "description": "Splectral's p2p adapter out: abstract actions carried out through managers, observers and peers",
+  "type": "module",
+  "license": "MIT",
+  "dependencies": {
+    "hypercore-crypto": "3.7.0",
+    "p2p-store": "*",
+    "p2p-dht": "*",
+    "p2p-connect": "*",
+    "p2p-replicate": "*",
+    "p2p-channel": "*",
+    "p2p-rns": "*",
+    "p2p-mrepo": "*",
+    "p2p-node": "*"
+  }
+}

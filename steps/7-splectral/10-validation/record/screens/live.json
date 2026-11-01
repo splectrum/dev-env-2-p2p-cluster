@@ -1,0 +1,100 @@
+{
+  "mode": "live",
+  "menu": [
+    "A node on another host",
+    "Timeline",
+    "Map",
+    "Node: /hosts/master",
+    "Node: /hosts/node-1"
+  ],
+  "before": [
+    {
+      "uri": "/hosts/master",
+      "status": "running",
+      "controlled": "yes"
+    },
+    {
+      "uri": "/hosts/node-1",
+      "status": "running",
+      "controlled": "yes"
+    }
+  ],
+  "joined": [
+    {
+      "uri": "/hosts/master",
+      "status": "running",
+      "controlled": "yes"
+    },
+    {
+      "uri": "/hosts/node-1",
+      "status": "running",
+      "controlled": "yes"
+    },
+    {
+      "uri": "/hosts/remote-1",
+      "status": "running",
+      "controlled": "no"
+    }
+  ],
+  "joinedSay": "Host B's own manager starts its node from the invitation, provisions it from host B's vault, on host B's own management network.",
+  "sawChangeOrGone": "yes",
+  "outcome": "ok",
+  "stepsDone": [
+    "yes",
+    "yes",
+    "yes",
+    "yes",
+    "yes",
+    "yes",
+    "yes",
+    "yes"
+  ],
+  "says": [
+    "Scenario: A node on another host",
+    "Host A runs the swarm: the master and node-1, both controlled by host A's manager.",
+    "Host A gives host B an invitation: public facts only, no secret.",
+    "Host B's own manager starts its node from the invitation, provisions it from host B's vault, on host B's own management network.",
+    "remote-1 is part of the swarm, reached by name, but host A does not control it: it is outlined on the map.",
+    "A request from host A crosses to remote-1's repository: in as a bundle, out on its main.",
+    "remote-1 writes a note in its own repository: activity its replicas see.",
+    "Host B's manager stops remote-1, gracefully.",
+    "The swarm runs on: a request from host A to node-1 is still answered.",
+    "Scenario finished."
+  ],
+  "after": [
+    {
+      "uri": "/hosts/master",
+      "status": "running",
+      "controlled": "yes"
+    },
+    {
+      "uri": "/hosts/node-1",
+      "status": "running",
+      "controlled": "yes"
+    },
+    {
+      "uri": "/hosts/remote-1",
+      "status": "gone",
+      "controlled": "no"
+    }
+  ],
+  "timelineKinds": [
+    "actionResult",
+    "changed",
+    "connected",
+    "disconnected",
+    "gone",
+    "joined",
+    "nodeStarting",
+    "requestAnswered",
+    "requestSent",
+    "resource",
+    "say",
+    "scenarioStep"
+  ],
+  "remotePage": {
+    "status": "gone",
+    "events": 15
+  },
+  "phoneScrollsSideways": false
+}

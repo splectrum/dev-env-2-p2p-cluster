@@ -21,7 +21,8 @@ the product repository's main. Recorded per update.
   entries in git's order on every engine; id
   `7cadb8e9-88c5-4b56-8baf-5988072a0cc8`.
 - `mycelium-uri`, `mycelium-xpath`: unchanged since phase 1
-  (`dev-env-1-mycelium-git@33634de`); nothing to merge.
+  (`dev-env-1-mycelium-git@33634de`) until step 7, when `mycelium-uri`
+  changed and was merged (below).
 - `mycelium-node`: the first build's module, removed in step 1; it never
   had a product repository.
 - `p2p-git`: used at `d7d154d`, which carries this phase's fixes; now
@@ -66,3 +67,14 @@ only until the module is validated and merged.
 | `splectral-replay`, `-scenario`, `-timeline` | `pear-full-square/<module>` |
 | `splectral-p2p-watchers`, `-actions`, `-observer` | `pear-full-square/<module>` |
 | `base-view-map`, `base-demo-other-host` | `splectral/<module>` |
+
+## Step 7 (2026-11-01): data in topics and Splectral
+
+From dev `ab76875`; every row in `steps/7-splectral/10-validation/products.md`.
+Changed: `mycelium-uri` (its first merge from this phase), `p2p-rns`,
+`p2p-mrepo`, `p2p-node`, `p2p-node-manager`, `p2p-swarm-manager`. New, first
+merges: `mycelium-topic`, the Splectral platform (`splectral-contract`,
+`-model`, `-transport`, `-server`, `-shell`, `-replay`, `-scenario`,
+`-timeline`, `-p2p-watchers`, `-p2p-actions`, `-p2p-observer`) in
+`pear-full-square`, the applications `base-view-map` and
+`base-demo-other-host` in `splectral`.

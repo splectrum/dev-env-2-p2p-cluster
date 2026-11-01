@@ -163,9 +163,14 @@ address). Found: nothing tells the swarm a node has gone (liveness, open).
 - A node on another host joining under its own node manager: the general
   pattern (a swarm manager manages only the nodes it controls).
 
-### 7. Splectral (proposed, not started)
+### 7. Splectral and data in topics — done
 
-Design: `splectral.md`. A platform, its first use a viewer: a browser app showing swarm and node activity live,
+Record: `steps/7-splectral/`. Validation in one place; `mycelium-topic`
+and the managers on topics; a management channel and an observer on every
+node; the Splectral platform, its p2p adapters and two applications; the
+step 6 scenario watched live in a browser, recorded and replayed.
+
+Design: `splectral.md`, `topics.md`. A platform, its first use a viewer: a browser app showing swarm and node activity live,
 for demos and explainers alongside the closed-box tests: an observer
 application on every node, piping through the management channel to its
 manager and on to a host-local Splectral server; watchers mapping to topics,

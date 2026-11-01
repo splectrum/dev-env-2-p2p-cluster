@@ -1,0 +1,11 @@
+{
+  "name": "splectral-p2p-watchers",
+  "id": "69378208-9edd-400a-b4b3-803eb0859589",
+  "description": "Splectral's p2p adapter in: managers, node observers and the swarm, mapped to the abstract world",
+  "type": "module",
+  "exports": "./mapper.js",
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "license": "MIT"
+}

@@ -1,0 +1,11 @@
+{
+  "name": "splectral-model",
+  "id": "edae91bf-56a1-402d-b576-6209afa88441",
+  "description": "Splectral's model: events folded into the abstract world, as snapshots and changes, shared by server and browser",
+  "type": "module",
+  "exports": "./index.js",
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "license": "MIT"
+}

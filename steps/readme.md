@@ -30,3 +30,4 @@ done with them.
 | 4. The swarm: genesis | `4-genesis/` | done |
 | 5. A node joining | `5-node-joining/` | done |
 | 6. A node on another host | `6-other-host/` | done (the other host simulated) |
+| 7. Splectral and data in topics | `7-splectral/` | done |
