@@ -54,3 +54,15 @@ another of the series (`p2p-dht` for `p2p-connect`'s test, `p2p-store` for
 `p2p-replicate`'s) name it by package name, which only the workspace
 resolves. Publishing the series as a package (the capability store) will
 settle how they resolve elsewhere.
+
+## Splectral (2026-11-01, created, empty until their first merge)
+
+Designed in `splectral.md`, not started. Each repository holds its LICENSE
+only until the module is validated and merged.
+
+| Module | Repository |
+|---|---|
+| `splectral-contract`, `-model`, `-transport`, `-server`, `-shell` | `pear-full-square/<module>` |
+| `splectral-replay`, `-scenario`, `-timeline` | `pear-full-square/<module>` |
+| `splectral-p2p-watchers`, `-actions`, `-observer` | `pear-full-square/<module>` |
+| `base-view-map`, `base-demo-other-host` | `splectral/<module>` |

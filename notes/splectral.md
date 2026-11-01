@@ -64,13 +64,13 @@ a viewer:
 - **The platform** is infrastructure, in `pear-full-square`: modules
   named `splectral-*`, single concern each, one dependency tree (npm
   workspaces, as the p2p series).
-- **Applications on the platform** live in the **SPLectral**
+- **Applications on the platform** live in the **`splectral`**
   organisation: what people open and use, each application its own
   repository.
 - **Applications are completely agnostic of p2p**, as mycelium is. They
   know an abstract world (below), never Hypercore, DHTs, keys or
   containers. All knowledge of p2p is in the platform's p2p adapters and
-  in `p2p-observer` on the node. A test enforces it: no application
+  in `splectral-p2p-observer` on the node. A test enforces it: no application
   imports from `p2p-*`.
 
 ### The abstract world (in the contract)
@@ -103,17 +103,24 @@ unchanged.
 | `splectral-p2p-watchers` | the p2p adapter in: watcher types `manager`, `records`, `swarm` (later `resource`, `docker`), mapping to the abstract world |
 | `splectral-p2p-actions` | the p2p adapter out: the abstract actions through the managers' operations, requests and the observers' named actions |
 
-On the node side, in the p2p series: **`p2p-observer`**, the privileged
-node application (below). The managers' local feed and the master's
+On the node side, part of the platform's p2p adapter:
+**`splectral-p2p-observer`**, the privileged node application (below). The managers' local feed and the master's
 provisioning through the auxiliary swarm are changes to
 `p2p-node-manager`, `p2p-swarm-manager` and `p2p-node`.
 
-### Applications (SPLectral)
+### Applications (`splectral`)
+
+Named **package, kind, name**: `<package>-<kind>-<name>`, the package a
+consistent set shipped, validated and loaded as a whole; kinds `view`
+(views of the abstract world) and `demo` (scenarios with their messages).
+`base` is the package that comes with the platform. Later, in the same
+way: `base-view-node`, `base-demo-provisioning`; other packages under
+prefixes of their own. No p2p word in application names (not "swarm").
 
 | Application | What |
 |---|---|
-| `swarm-view` (name proposed) | the map of hosts, nodes and resources with activity drawn live; a node's events, a manager's events, metrics |
-| `demo-other-host` (name proposed) | step 6 as a scenario in the abstract vocabulary: a node on another host joins, a request crosses, the node stops while the swarm runs on; with its messages |
+| `base-view-map` | the map of hosts, nodes and resources with activity drawn live; a node's events, a manager's events, metrics |
+| `base-demo-other-host` | step 6 as a scenario in the abstract vocabulary: a node on another host joins, a request crosses, the node stops while the swarm runs on; with its messages |
 
 The swarm map is an application, not platform: one way of presenting the
 abstract world; others can be built on the same watchers and actions.
@@ -350,7 +357,7 @@ So the same pages serve a viewer and a future mobile node app.
 - the generic extensions: replay, scenario runner, timeline;
 - the p2p adapters: watchers `manager`, `records`, `swarm` and the
   abstract actions (start, stop, invite, request);
-- the applications `swarm-view` and `demo-other-host` (step 6 as a
+- the applications `base-view-map` and `base-demo-other-host` (step 6 as a
   scenario), live and replayed, agnostic of p2p.
 
 Validated by:
@@ -366,15 +373,12 @@ Validated by:
 
 ## Open
 
-0. **The SPLectral organisation's exact name on GitHub**, checked when its
-   first repositories are made.
 
-1. **Names**: the observer's (`p2p-observer` proposed).
-2. **The feed's form** on the host: a socket per node folder, or the view
+1. **The feed's form** on the host: a socket per node folder, or the view
    server as a peer of each node's auxiliary network.
-3. **The observer's named actions**: which ones step 7 needs, and how
+2. **The observer's named actions**: which ones step 7 needs, and how
    each is declared and recorded.
-4. **The audit core**: its format, signing, and what goes in it (all
+3. **The audit core**: its format, signing, and what goes in it (all
    events, or audit only, with metrics summarised).
-5. **The extension contract**: its first version, and how it is
+4. **The extension contract**: its first version, and how it is
    versioned as interaction and applications arrive.

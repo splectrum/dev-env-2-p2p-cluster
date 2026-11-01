@@ -68,7 +68,7 @@ the working store; deltas are an optimisation for later.
   mycelium on the p2p layer, the node and its managers, and the Splectral
   platform (for seeing and working with running systems, the swarm
   first).
-- **SPLectral: applications on the Splectral platform**, completely
+- **`splectral`: applications on the Splectral platform**, completely
   agnostic of p2p: they work in the platform's abstract world (hosts,
   nodes, resources by URI, activity), as mycelium works with the p2p
   layer's abstractions.
