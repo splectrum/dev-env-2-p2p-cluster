@@ -56,8 +56,9 @@ export async function manageNode ({ folder, vault, image, network, ip, swarm, na
   // exec, and nothing else does.
   const hardening = ['--read-only', '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges', '--user', '65534:65534',
     '--memory', memory, '--memory-swap', memory, '--ulimit', 'core=0', '--tmpfs', `/data:rw,noexec,nosuid,size=${storeSize},mode=1777`,
+    '--tmpfs', '/tmp:rw,noexec,nosuid,size=64m,mode=1777',
     ...(role === 'join' ? ['--tmpfs', `/code:rw,exec,nosuid,size=${codeSize},mode=1777`] : [])]
-  record('starting', { container, image, network, ip, role, hardening: ['read-only', 'cap-drop ALL', 'no-new-privileges', 'user 65534', `memory ${memory} no swap`, 'core 0', `store tmpfs ${storeSize} noexec`, ...(role === 'join' ? [`code tmpfs ${codeSize} exec`] : [])] })
+  record('starting', { container, image, network, ip, role, hardening: ['read-only', 'cap-drop ALL', 'no-new-privileges', 'user 65534', `memory ${memory} no swap`, 'core 0', `store tmpfs ${storeSize} noexec`, 'tmp tmpfs 64m noexec', ...(role === 'join' ? [`code tmpfs ${codeSize} exec`] : [])] })
 
   // A joining node is provisioned through the auxiliary swarm: the
   // manager's peer, there for the node's life.
