@@ -38,7 +38,7 @@ import { openChannel } from 'p2p-channel'
 const docker = (...args) => execFileSync('docker', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
 const tryDocker = (...args) => { try { return docker(...args) } catch { return null } }
 
-export async function manageNode ({ folder, vault, image, network, ip, swarm, name, role, aux = null, joining = null, memory = '1g', storeSize = '768m', metricsEvery = 30000, sampleEvery = 15000 }) {
+export async function manageNode ({ folder, vault, image, network, ip, swarm, name, role, aux = null, joining = null, memory = '1g', storeSize = '512m', codeSize = '256m', metricsEvery = 30000, sampleEvery = 15000 }) {
   mkdirSync(folder, { recursive: true })
   const container = `p2p-${swarm}-${name}`
   const t0 = Date.now()
@@ -50,9 +50,14 @@ export async function manageNode ({ folder, vault, image, network, ip, swarm, na
   writeFileSync(join(folder, 'node.json'), JSON.stringify({ swarm, name, role, image, network, ip, container, memory, storeSize }, null, 2) + '\n')
 
   tryDocker('rm', '-f', container)
+  // The store's tmpfs is noexec (Docker's default). A joining node runs code
+  // it loads by replication, native addons among them, which load only from
+  // a filesystem that allows execution: that code gets a tmpfs of its own,
+  // exec, and nothing else does.
   const hardening = ['--read-only', '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges', '--user', '65534:65534',
-    '--memory', memory, '--memory-swap', memory, '--ulimit', 'core=0', '--tmpfs', `/data:rw,size=${storeSize},mode=1777`]
-  record('starting', { container, image, network, ip, role, hardening: ['read-only', 'cap-drop ALL', 'no-new-privileges', 'user 65534', `memory ${memory} no swap`, 'core 0', `store tmpfs ${storeSize}`] })
+    '--memory', memory, '--memory-swap', memory, '--ulimit', 'core=0', '--tmpfs', `/data:rw,noexec,nosuid,size=${storeSize},mode=1777`,
+    ...(role === 'join' ? ['--tmpfs', `/code:rw,exec,nosuid,size=${codeSize},mode=1777`] : [])]
+  record('starting', { container, image, network, ip, role, hardening: ['read-only', 'cap-drop ALL', 'no-new-privileges', 'user 65534', `memory ${memory} no swap`, 'core 0', `store tmpfs ${storeSize} noexec`, ...(role === 'join' ? [`code tmpfs ${codeSize} exec`] : [])] })
 
   // A joining node is provisioned through the auxiliary swarm: the
   // manager's peer, there for the node's life.
@@ -70,7 +75,7 @@ export async function manageNode ({ folder, vault, image, network, ip, swarm, na
   } else {
     docker('create', '--name', container, '--network', aux.network, '--ip', aux.ip, ...hardening,
       '--entrypoint', 'bare', image, '/app/p2p-node/cli.js', 'boot',
-      `--swarm=${swarm}`, `--name=${name}`, `--host=${ip}`, '--storage=/data/store', '--app=/data/app',
+      `--swarm=${swarm}`, `--name=${name}`, `--host=${ip}`, '--storage=/data/store', '--app=/code/app',
       `--aux-host=${aux.ip}`, `--aux-bootstrap=${aux.gateway}:${aux.port}`, `--manager=${provision.publicKey}`,
       `--bootstrap=${joining.bootstrap}`, `--master=${joining.master}`,
       `--packages-key=${joining.packages.key}`, `--packages-commit=${joining.packages.commit}`, `--packages-uri=${joining.packages.uri}`,
