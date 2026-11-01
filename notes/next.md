@@ -131,6 +131,10 @@ Every module now has its product repository in `pear-full-square`
   node, a host-local Splectral server and the step 6 scenario as its first
   demo. Waiting for the go; its open points are listed there.
 
+- **Data in logs** (`notes/logs.md`): configuration, audit and metrics
+  appended to logs of Kafka-shaped records, state built from them;
+  `mycelium-log` (repository to create). Kafka streaming to discuss.
+
 ## To continue
 
 The plan's steps are done. Next is the human's call: what comes after

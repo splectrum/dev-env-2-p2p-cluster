@@ -30,7 +30,7 @@ The core is a shell that knows nothing of any page; everything a user
 sees or does comes from extensions. What makes it a platform rather than
 a viewer:
 
-- **A contract for extensions**, versioned: what a watcher type, page,
+- **A contract for extensions**, versioned: what a source kind, page,
   scenario, action (and later an application) declares and may call.
   Extensions are written against the contract, never against the core's
   insides, so the core can change under them.
@@ -55,7 +55,7 @@ a viewer:
 
 | Stage | What it adds | Built on |
 |---|---|---|
-| viewer (step 7) | fixed pages, scenarios with messages, replay | watchers, topics, the model, named actions for scenarios |
+| viewer (step 7) | fixed pages, scenarios with messages, replay | sources, logs, topics, the model, named actions for scenarios |
 | interaction | people acting: requests, repository edits, managing nodes, from the pages | identities, permissions, actions recorded per person |
 | applications | UI-based applications on the swarm, demoed and used in Splectral | the extension contract; node-side applications like the observer |
 
@@ -92,19 +92,19 @@ unchanged.
 
 | Module | Concern |
 |---|---|
-| `splectral-contract` | the extension contract, versioned: manifests (watcher type, page, scenario, action, application), the abstract world, topic names, action declarations and results |
+| `splectral-contract` | the extension contract, versioned: manifests (source kind, page, scenario, action, application), the abstract world, topic names, action declarations and results |
 | `splectral-model` | events folded into a model of the abstract world; snapshots and changes; the same code in the server and the browser |
 | `splectral-transport` | the stream between server and browser: snapshot, changes, actions and their results (WebSocket first, a worklet's IPC later) |
-| `splectral-server` | the server's shell: extensions found, configuration, watchers run, topics announced, actions dispatched and recorded, the app served |
+| `splectral-server` | the server's shell: extensions found, configuration, sources read and followed, topics announced, actions dispatched and recorded, the app served |
 | `splectral-shell` | the browser's shell: the menu from the topics, routing, applications and pages hosted, the transport's client |
-| `splectral-replay` | a generic watcher type: a recorded run played back at a chosen speed |
+| `splectral-replay` | a generic source kind: any log read from its start at a chosen speed |
 | `splectral-scenario` | the generic scenario runner: steps, actions, `await`s, `say` messages, recorded |
 | `splectral-timeline` | a generic page: every event, scrubbable |
-| `splectral-p2p-watchers` | the p2p adapter in: watcher types `manager`, `records`, `swarm` (later `resource`, `docker`), mapping to the abstract world |
+| `splectral-p2p-watchers` | the p2p adapter in: source kinds `repository`, `core`, `swarm` (later `docker`), and the mapping of the managers' and observers' records to the abstract world |
 | `splectral-p2p-actions` | the p2p adapter out: the abstract actions through the managers' operations, requests and the observers' named actions |
 
 On the node side, part of the platform's p2p adapter:
-**`splectral-p2p-observer`**, the privileged node application (below). The managers' local feed and the master's
+**`splectral-p2p-observer`**, the privileged node application (below). The managers' logs (through `mycelium-log`) and the master's
 provisioning through the auxiliary swarm are changes to
 `p2p-node-manager`, `p2p-swarm-manager` and `p2p-node`.
 
@@ -123,7 +123,7 @@ prefixes of their own. No p2p word in application names (not "swarm").
 | `base-demo-other-host` | step 6 as a scenario in the abstract vocabulary: a node on another host joins, a request crosses, the node stops while the swarm runs on; with its messages |
 
 The swarm map is an application, not platform: one way of presenting the
-abstract world; others can be built on the same watchers and actions.
+abstract world; others can be built on the same sources and actions.
 Built outside the platform, it also tests the contract: if it works as an
 outside application, the platform is a platform.
 
@@ -132,12 +132,12 @@ outside application, the platform is a platform.
 ```
 node (container)                        host
 ┌──────────────────────────┐            ┌──────────────────────────────────────┐
-│ the node's modules ──events──┐        │ node manager ── records (durable)    │
+│ the node's modules ──events──┐        │ node manager ── logs (mycelium-log)  │
 │                          │   │        │      │                               │
-│ observer (an application │◄──┘        │      └─ local feed ──┐               │
+│ observer (an application │◄──┘        │      └─ followed ────┐               │
 │ on the node, privileged) │◄─mgmt ch.─►│                      ▼               │
 └──────────────────────────┘            │            Splectral server ── browser(s) │
-          ▲                             │              │  (watchers → topics)  │
+          ▲                             │              │  (sources → topics)   │
           └──────── the swarm (data plane) ─── peer ───┘                       │
                                         └──────────────────────────────────────┘
 ```
@@ -145,8 +145,9 @@ node (container)                        host
 1. **The observer**, an application on every node that runs one.
 2. **The management channel**, between the node and its own manager:
    the auxiliary link that provisioning sets up and keeps open.
-3. **The node manager's local feed**, on the host.
-4. **The Splectral server**, one per host: watchers in, topics out, the app
+3. **The node manager's logs**, on the host: the node's and its own,
+   append-only (`logs.md`).
+4. **The Splectral server**, one per host: sources in, topics out, the app
    served to browsers.
 5. **The app** in the browser: a menu of pages and scenarios.
 
@@ -185,13 +186,17 @@ one more, privileged in a narrow, defined way.
   since step 5. The master gets its secret on stdin and has none: the
   master is provisioned through the auxiliary swarm too (carried forward
   from step 5) before it gets an observer.
-- **The local feed.** Each node manager offers a feed of its node, on the
-  host only (for example a socket in the node's folder). It carries the
-  observer's events and state, the manager's own events, and actions
-  passed down to the observer.
-- **The records stay the durable truth.** Managers keep writing
-  `manager.jsonl` and `node.jsonl` whether anyone watches or not. The feed
-  is the live, two-way path; replay works from the records.
+- **Logs, not a feed.** Each node manager appends what it learns to logs
+  in the node's folder (`logs.md`, through `mycelium-log`): the node's
+  log (the observer's events) and its own. Splectral reads and follows
+  them from an offset; nothing else is needed to carry them. Their state
+  files (`state.json`) become views folded from the logs.
+- **Actions are records too.** An action for a node is appended to the
+  node's action log, which its manager follows; the manager carries it
+  out, or passes it to the observer over the management channel, and
+  appends the result, correlated, to the node's log.
+- **The logs are the durable truth**, written whether anyone watches or
+  not; replay is reading them from an earlier offset.
 - **What only the manager sees comes from the manager**: container exits,
   out-of-memory kills, resource samples.
 
@@ -200,29 +205,32 @@ one more, privileged in a narrow, defined way.
 One per host. It is a management-plane application, outside the p2p
 layer: the modules do not know it.
 
-**Watchers.** Configured, each of a watcher type, each picking up its
-changes on its own and announcing the **topics** it provides:
+**Sources.** Configured, each a URI to an object or a log (`logs.md`):
+every read returns an array of records; a log is read from an offset and
+followed. A source says what it holds, and announces the **topics** it
+provides. Source kinds are watcher types, generic by where data lives:
 
-| Watcher type | Picks up | Topics, for example |
+| Source kind | Where the data lives | From |
 |---|---|---|
-| `manager` | a node manager's local feed: the observer's events and state, the manager's events | `node:<uri>/events`, `node:<uri>/manager`, `node:<uri>/state` |
-| `records` | a manager's or swarm manager's folder, followed as it grows (when no feed runs) | as `manager`, read-only |
-| `swarm` | the swarm, with the server as a peer: the name service; later, the nodes' audit cores | `swarm`, `node:<uri>/audit` |
-| `resource` | one repository by URI, from a replica: requests arriving, responses | `resource:<uri>` |
-| `docker` | a swarm's containers and networks starting, stopping, dying | `host/containers` |
-| `replay` | a recorded run (a step's `record/` folder), at a chosen speed | the topics of the run's records |
+| `file` | objects and logs in folders on the host: the managers' logs, a step's records | the platform |
+| `repository` | objects and logs in a repository's layer, by URI, from a replica | the p2p adapter |
+| `core` | logs on cores (later: the nodes' audit cores) | the p2p adapter |
+| `swarm` | the name service, as a peer: who is in the swarm, their resources by URI | the p2p adapter |
+| `docker` | a swarm's containers and networks starting, stopping, dying, as records | the p2p adapter |
+| `replay` | any log read from its start at a chosen speed | the platform |
 
-**One event shape.** Everything carries the series' instrumentation shape
-(`{ module, kind, time, ... }`), tagged with its watcher. Scenario
-messages add one kind of event, `say`.
+**Records.** Everything is a record in Kafka's shape (`key`, `value`,
+`time`, `headers`, `offset`: `logs.md`), JSON first, read by its shape.
+Scenario messages are records too (kind `say`).
 
-**The model.** The server folds events into one model: swarm → hosts →
-nodes → resources, connections, requests. It pushes a snapshot and then
-the changes to every connected browser (a WebSocket or Server-Sent
-Events). It is a Node server serving a React app; no server-side
-rendering.
+**The model** folds records into the abstract world: the latest per key
+gives the state; the records in order give the activity. It pushes a
+snapshot and then the changes to every connected browser (a WebSocket or
+Server-Sent Events). It is a Node server serving a React app; no
+server-side rendering.
 
-**Actions** go through the existing paths only:
+**Actions** are records appended to action logs, and go through the
+existing paths only:
 - the managers' operations: join, restart, stop, invite;
 - the observers' named actions, through their managers;
 - peer operations: requests, as `request.mjs` does.
@@ -243,7 +251,7 @@ with a manifest, found at start-up, so adding one never touches the core.
 | **Action** | something that makes activity happen | the manager, observer or peer operation it calls |
 
 **The menu follows what is available.**
-- The running watchers announce their topics.
+- The running sources announce their topics.
 - A page appears in the menu when the topics it needs are there.
 - A parameterised page appears once per instance found, under its URI:
   one "node log" page per node.
@@ -314,7 +322,7 @@ So the same pages serve a viewer and a future mobile node app.
 
 ## Testing
 
-- **In the cloud**: the server, its watchers and a swarm in Docker;
+- **In the cloud**: the server, its sources and a swarm in Docker;
   headless Chromium driven by Playwright. Tests assert on the page:
   - the menu's pages;
   - the shapes for nodes and resources by URI, and their states;
@@ -334,7 +342,7 @@ So the same pages serve a viewer and a future mobile node app.
 
 ## Rules
 
-- **No secret anywhere in the app**: not in the observer, the feeds, the
+- **No secret anywhere in the app**: not in the observer, the logs, the
   Splectral server, the model, the pages or the records.
 - **No web server on the nodes.** The observer talks only to its manager,
   over the management channel; the node's other ways in stay p2p.
@@ -349,13 +357,16 @@ So the same pages serve a viewer and a future mobile node app.
 ## When built: the steps
 
 **Step 7, the app with live demos on one host and the simulated two:**
+- `mycelium-log` (`logs.md`): the managers' records become logs, their
+  state files views;
 - the master provisioned through the auxiliary swarm, so every node has
   a management channel;
-- the observer on every node, and the managers' local feeds;
+- the observer on every node, its events in its manager's logs;
 - the platform's core: the contract with the abstract world, the model,
   the transport, the server, the shell, the menu;
 - the generic extensions: replay, scenario runner, timeline;
-- the p2p adapters: watchers `manager`, `records`, `swarm` and the
+- the platform's `file` source; the p2p adapters: sources `repository`
+  and `swarm`, the records' mapping, and the
   abstract actions (start, stop, invite, request);
 - the applications `base-view-map` and `base-demo-other-host` (step 6 as a
   scenario), live and replayed, agnostic of p2p.
@@ -366,19 +377,17 @@ Validated by:
 3. the headless browser tests recorded.
 
 **Next:**
-- nodes' audit cores and the `swarm` watcher following them, so the
+- nodes' audit cores and the `core` source following them, so the
   view works across real machines;
-- watchers `resource` and `docker`, the resource page, more scenarios;
+- the `docker` source, the resource page, more scenarios;
 - liveness in the name service, which the swarm map will make visible.
 
 ## Open
 
 
-1. **The feed's form** on the host: a socket per node folder, or the view
-   server as a peer of each node's auxiliary network.
-2. **The observer's named actions**: which ones step 7 needs, and how
+1. **The observer's named actions**: which ones step 7 needs, and how
    each is declared and recorded.
-3. **The audit core**: its format, signing, and what goes in it (all
+2. **The audit core**: its format, signing, and what goes in it (all
    events, or audit only, with metrics summarised).
-4. **The extension contract**: its first version, and how it is
+3. **The extension contract**: its first version, and how it is
    versioned as interaction and applications arrive.
