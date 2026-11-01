@@ -1,20 +1,61 @@
-# The view app: design
+# Splectral: design
 
 Status: **proposed, 2026-11-01**, from the discussion after step 6. Not
-started: no request yet. The name is a working name; the app's
-repository in `pear-full-square` is to be named and created.
+started: no request yet. Name: **Splectral** (proposed by the human); its
+repository is to be created.
 
 ## Purpose
 
-A browser app that shows swarm and node activity, as shapes, live:
+A platform for seeing and, later, working with the swarm. Its first use
+is a viewer: a browser app that shows swarm and node activity, as shapes,
+live:
 - **Live demos to humans**, in addition to the closed-box tests, from
   the same runs.
 - **A tool that shows how things work**: activity generated step by
   step, with explanatory messages alongside.
 - **Later, a showcase for applications with a UI** on the swarm.
 
+Then interaction: humans acting on the swarm and its repositories through
+it, and applications with a UI built on it. It is a platform from the
+start, so the viewer is its first set of extensions, not its limits.
+
 It is developed and tested in the cloud (headless Chromium, Playwright),
 then installed locally and seen running for real.
+
+## A platform: viewer first, interaction later
+
+The core is a shell that knows nothing of any page; everything a user
+sees or does comes from extensions. What makes it a platform rather than
+a viewer:
+
+- **A contract for extensions**, versioned: what a watcher type, page,
+  scenario, action (and later an application) declares and may call.
+  Extensions are written against the contract, never against the core's
+  insides, so the core can change under them.
+- **Two-way from the start.** The transport and the model carry actions
+  and their results as well as events, even when the first pages only
+  look. Scenarios already act; interaction adds a person as the one
+  acting.
+- **Actions as the one way to change anything.** Every change, by a
+  scenario or a person, is a declared action through an existing path
+  (managers, observers, peers), recorded with who asked for it and what
+  came back. Nothing in the platform writes around them.
+- **Who acts.** The viewer runs as the host's operator. Interaction
+  needs identities: a person acting with a key of their own (a peer of
+  the swarm under their own identity, owning what they create, as nodes
+  do), and permissions per action. Designed for now, built with
+  interaction.
+- **Applications as extensions.** An application is pages, actions and
+  its own state, possibly with a node-side part: the observer is the
+  first node-side application, and others follow the same way.
+- **Extensions as packages.** Found at start-up from folders first; later
+  delivered like other code, as packages from the capability store.
+
+| Stage | What it adds | Built on |
+|---|---|---|
+| viewer (step 7) | fixed pages, scenarios with messages, replay | watchers, topics, the model, named actions for scenarios |
+| interaction | people acting: requests, repository edits, managing nodes, from the pages | identities, permissions, actions recorded per person |
+| applications | UI-based applications on the swarm, demoed and used in Splectral | the extension contract; node-side applications like the observer |
 
 ## The parts, end to end
 
@@ -25,7 +66,7 @@ node (container)                        host
 │                          │   │        │      │                               │
 │ observer (an application │◄──┘        │      └─ local feed ──┐               │
 │ on the node, privileged) │◄─mgmt ch.─►│                      ▼               │
-└──────────────────────────┘            │            view server ── browser(s) │
+└──────────────────────────┘            │            Splectral server ── browser(s) │
           ▲                             │              │  (watchers → topics)  │
           └──────── the swarm (data plane) ─── peer ───┘                       │
                                         └──────────────────────────────────────┘
@@ -35,7 +76,7 @@ node (container)                        host
 2. **The management channel**, between the node and its own manager:
    the auxiliary link that provisioning sets up and keeps open.
 3. **The node manager's local feed**, on the host.
-4. **The view server**, one per host: watchers in, topics out, the app
+4. **The Splectral server**, one per host: watchers in, topics out, the app
    served to browsers.
 5. **The app** in the browser: a menu of pages and scenarios.
 
@@ -84,7 +125,7 @@ one more, privileged in a narrow, defined way.
 - **What only the manager sees comes from the manager**: container exits,
   out-of-memory kills, resource samples.
 
-## The view server
+## The Splectral server
 
 One per host. It is a management-plane application, outside the p2p
 layer: the modules do not know it.
@@ -116,7 +157,7 @@ rendering.
 - the observers' named actions, through their managers;
 - peer operations: requests, as `request.mjs` does.
 
-The view server never reads a vault, and its configuration has no field
+The Splectral server never reads a vault, and its configuration has no field
 for one.
 
 ## The app: extensions, menu and pages
@@ -184,12 +225,12 @@ So the same pages serve a viewer and a future mobile node app.
 
 ## Across hosts and devices
 
-- **Each host's view server** shows its own nodes live and two-way,
+- **Each host's Splectral server** shows its own nodes live and two-way,
   through their managers.
 - **Other hosts' nodes** come through the swarm: the name service and
   replicas now, the nodes' audit cores later.
 - **The simulation of step 6** has both hosts' folders on one machine,
-  so one view server covers both.
+  so one Splectral server covers both.
 - **Tablets and phones:**
   - **As viewers**: they open the app in their browser on the local
     network, with no wrapping. The layout works on small screens from the
@@ -224,7 +265,7 @@ So the same pages serve a viewer and a future mobile node app.
 ## Rules
 
 - **No secret anywhere in the app**: not in the observer, the feeds, the
-  view server, the model, the pages or the records.
+  Splectral server, the model, the pages or the records.
 - **No web server on the nodes.** The observer talks only to its manager,
   over the management channel; the node's other ways in stay p2p.
 - **Observing and driving only through existing paths**: managers,
@@ -239,7 +280,7 @@ So the same pages serve a viewer and a future mobile node app.
 - the master provisioned through the auxiliary swarm, so every node has
   a management channel;
 - the observer on every node, and the managers' local feeds;
-- the view server's core: extensions, configuration, the model, the
+- the Splectral server's core: extensions, configuration, the model, the
   stream to browsers, the menu;
 - watchers `manager`, `records`, `replay`, `swarm`;
 - the fixed pages: swarm map, node events, manager events, timeline;
@@ -259,10 +300,13 @@ Validated by:
 
 ## Open
 
-1. **Names**: the app's (and its repository's), and the observer's.
+1. **Names**: the observer's; Splectral's repository (which
+   organisation).
 2. **The feed's form** on the host: a socket per node folder, or the view
    server as a peer of each node's auxiliary network.
 3. **The observer's named actions**: which ones step 7 needs, and how
    each is declared and recorded.
 4. **The audit core**: its format, signing, and what goes in it (all
    events, or audit only, with metrics summarised).
+5. **The extension contract**: its first version, and how it is
+   versioned as interaction and applications arrive.

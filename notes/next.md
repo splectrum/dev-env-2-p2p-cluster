@@ -126,9 +126,9 @@ Every module now has its product repository in `pear-full-square`
 
 ## Designed, not started
 
-- **The view app** (`notes/view-app.md`): proposed as step 7, with the
+- **Splectral** (`notes/splectral.md`), a platform, viewer first: proposed as step 7, with the
   master provisioned through the auxiliary swarm, an observer on every
-  node, a host-local view server and the step 6 scenario as its first
+  node, a host-local Splectral server and the step 6 scenario as its first
   demo. Waiting for the go; its open points are listed there.
 
 ## To continue
