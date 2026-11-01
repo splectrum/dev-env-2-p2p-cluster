@@ -1,0 +1,9 @@
+{"module":"p2p-swarm-manager","kind":"genesis-started","time":1793514592436,"swarm":"genesis"}
+{"module":"p2p-swarm-manager","kind":"image-built","time":1793514598846,"image":"p2p-node:e473305","ms":6410}
+{"module":"p2p-swarm-manager","kind":"network-created","time":1793514598909,"network":"p2p-genesis","subnet":"172.34.0.0/24","internal":true}
+{"module":"p2p-swarm-manager","kind":"master-ready","time":1793514608929,"uri":"/genesis/master","key":"faab5d5b6b973a593eb5dd91c3a758a21f2eb6ab32ff33f8b369bde0644e50ff","packages":"ab2e1592c3930061145ece0bddf8fffaec4176ac","ms":16493}
+{"module":"p2p-swarm-manager","kind":"status","time":1793514609254,"nodes":["/genesis/master"],"resources":["/genesis/master/node","/genesis/master/packages"],"ms":50}
+{"module":"p2p-swarm-manager","kind":"node-stopped","time":1793514610338,"node":"master","exitCode":0}
+{"module":"p2p-swarm-manager","kind":"node-restarted","time":1793514619859,"node":"master","key":"faab5d5b6b973a593eb5dd91c3a758a21f2eb6ab32ff33f8b369bde0644e50ff","packages":"ab2e1592c3930061145ece0bddf8fffaec4176ac","sameKey":true,"ms":9515}
+{"module":"p2p-swarm-manager","kind":"status","time":1793514620219,"nodes":["/genesis/master"],"resources":["/genesis/master/node","/genesis/master/packages"],"ms":62}
+{"module":"p2p-swarm-manager","kind":"swarm-stopped","time":1793514621400,"nodes":[{"name":"master","exitCode":0}]}

@@ -1,0 +1,12 @@
+{"module":"p2p-node-manager","kind":"starting","time":1793514598964,"container":"p2p-genesis-master","image":"p2p-node:e473305","network":"p2p-genesis","ip":"172.34.0.2","hardening":["read-only","cap-drop ALL","no-new-privileges","user 65534","memory 768m no swap","core 0","store tmpfs 512m"]}
+{"module":"p2p-node-manager","kind":"secret-handed-over","time":1793514598969,"via":"stdin"}
+{"module":"p2p-node-manager","kind":"node-ready","time":1793514608731,"uri":"/genesis/master","key":"faab5d5b6b973a593eb5dd91c3a758a21f2eb6ab32ff33f8b369bde0644e50ff","dht":"172.34.0.2:49737","ms":9789}
+{"module":"p2p-node-manager","kind":"stopping","time":1793514610087,"signal":"SIGTERM","timeout":15}
+{"module":"p2p-node-manager","kind":"container-exited","time":1793514610319,"exitCode":0,"oomKilled":false,"error":null,"ms":11377}
+{"module":"p2p-node-manager","kind":"stopped","time":1793514610320,"exitCode":0,"graceful":true}
+{"module":"p2p-node-manager","kind":"starting","time":1793514610405,"container":"p2p-genesis-master","image":"p2p-node:e473305","network":"p2p-genesis","ip":"172.34.0.2","hardening":["read-only","cap-drop ALL","no-new-privileges","user 65534","memory 768m no swap","core 0","store tmpfs 512m"]}
+{"module":"p2p-node-manager","kind":"secret-handed-over","time":1793514610412,"via":"stdin"}
+{"module":"p2p-node-manager","kind":"node-ready","time":1793514619552,"uri":"/genesis/master","key":"faab5d5b6b973a593eb5dd91c3a758a21f2eb6ab32ff33f8b369bde0644e50ff","dht":"172.34.0.2:49737","ms":9178}
+{"module":"p2p-node-manager","kind":"stopping","time":1793514621015,"signal":"SIGTERM","timeout":15}
+{"module":"p2p-node-manager","kind":"container-exited","time":1793514621243,"exitCode":0,"oomKilled":false,"error":null,"ms":10869}
+{"module":"p2p-node-manager","kind":"stopped","time":1793514621243,"exitCode":0,"graceful":true}

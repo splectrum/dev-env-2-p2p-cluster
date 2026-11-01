@@ -1,0 +1,11 @@
+{
+  "swarm": "genesis",
+  "name": "master",
+  "role": "master",
+  "image": "p2p-node:e473305",
+  "network": "p2p-genesis",
+  "ip": "172.34.0.2",
+  "container": "p2p-genesis-master",
+  "memory": "768m",
+  "storeSize": "512m"
+}

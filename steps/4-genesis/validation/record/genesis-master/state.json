@@ -1,0 +1,29 @@
+{
+  "swarm": "genesis",
+  "name": "master",
+  "role": "master",
+  "container": "p2p-genesis-master",
+  "image": "p2p-node:e473305",
+  "ip": "172.34.0.2",
+  "status": "exited",
+  "startedAt": "2026-11-01T06:30:10.374Z",
+  "genesis": {
+    "packages": {
+      "key": "94b7ff6ebb378f76822f21aed28a32139c92064b40cc73a9b308b67ebe4b30db",
+      "id": "bf4739b9-f171-45d3-abb9-86f6f20a1599",
+      "commit": "ab2e1592c3930061145ece0bddf8fffaec4176ac",
+      "files": 3603
+    },
+    "nodeRepo": {
+      "key": "10a49eef1f68a8064197d44f944cdfa99f6a63c11b8949233d9d18cdc6a7b41b",
+      "id": "1d1c4933-54e7-4979-92cb-c1cadd0bbf4b"
+    }
+  },
+  "uri": "/genesis/master",
+  "key": "faab5d5b6b973a593eb5dd91c3a758a21f2eb6ab32ff33f8b369bde0644e50ff",
+  "dht": "172.34.0.2:49737",
+  "readyMs": 9177,
+  "exitCode": 0,
+  "oomKilled": false,
+  "exitedAt": "2026-11-01T06:30:21.242Z"
+}
