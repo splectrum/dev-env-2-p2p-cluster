@@ -1,0 +1,14 @@
+{
+  "name": "splectral-transport",
+  "id": "b95c0155-8a87-459b-8060-92701fef5d9f",
+  "description": "Splectral's stream between server and browser: snapshots, changes, actions and their results",
+  "type": "module",
+  "exports": {
+    ".": "./index.js",
+    "./browser": "./browser.js"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "license": "MIT"
+}
