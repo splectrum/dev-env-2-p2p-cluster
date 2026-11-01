@@ -20,7 +20,7 @@ export const world = {
     actionResult: 'an action came back { id, action, ok }',
     say: 'a message for the people watching { text }'
   },
-  actions: ['state', 'write', 'sendRequest', 'stopNode', 'startNodeFromInvitation']
+  actions: ['state', 'write', 'sendRequest', 'stopNode', 'invite', 'startNodeFromInvitation']
 }
 
 const KINDS = ['source', 'mapper', 'page', 'scenario', 'action']

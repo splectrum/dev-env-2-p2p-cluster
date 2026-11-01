@@ -61,7 +61,9 @@ export async function startServer ({ config }) {
   for (const p of provided('mapper')) mappers.push({ holds: p.holds, map: (await load(p))() })
   const mapperFor = holds => mappers.find(m => m.holds === holds || (m.holds.endsWith('*') && holds.startsWith(m.holds.slice(0, -1))))
   const mapRecord = (topic, record) => {
-    const m = mapperFor(topic.holds)
+    // Records holding `splectral/world` are events of the abstract world
+    // already (a scenario's run, recorded); others go through their mapper.
+    const m = topic.holds === 'splectral/world' ? { map: r => [r.value] } : mapperFor(topic.holds)
     const events = m ? m.map(record, topic) : [{ kind: 'record', holds: topic.holds, value: record.value }]
     for (const e of events || []) emit(e)
   }

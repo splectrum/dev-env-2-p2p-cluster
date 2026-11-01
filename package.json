@@ -19,7 +19,10 @@
     "splectral-model",
     "splectral-transport",
     "splectral-server",
-    "splectral-shell"
+    "splectral-shell",
+    "splectral-replay",
+    "splectral-scenario",
+    "splectral-timeline"
   ],
   "dependencies": {
     "child_process": "npm:bare-node-child-process@1.0.1",
