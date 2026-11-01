@@ -4,6 +4,7 @@
 //   await genesis({ swarm, folder, nodes, vault, code })   the swarm from zero
 //   await joinNode({ folder, node })                       a node joining it
 //   await status({ folder })                               the swarm as p2p-rns sees it
+//   invite({ folder })                                     what another host is given to join
 //   await restart({ folder, node }), await stop({ folder })
 //
 // Folders stand side by side under `nodes` (no hierarchy): the swarm
@@ -16,6 +17,13 @@
 // Two internal networks per swarm: the swarm's own (the data plane) and an
 // auxiliary one (the management plane), where each joining node's manager
 // provisions it; the host is the gateway of both.
+//
+// Nodes on other hosts (step 6): the data plane is one network every node
+// reaches (a DHT node has one address: a master on two networks is reached
+// on one only); across hosts, an overlay or the hosts' LAN. Each host's
+// management plane is its own: another host's node manager makes its own
+// auxiliary network and keeps its own vault. Such a node is the swarm's,
+// seen by p2p-rns, but not this manager's: status tells them apart.
 
 import { spawn, execFileSync } from 'node:child_process'
 import { mkdirSync, writeFileSync, appendFileSync, readFileSync, existsSync, openSync, rmSync } from 'node:fs'
@@ -130,9 +138,36 @@ export async function status ({ folder }) {
   const managers = s.nodes.map(n => existsSync(join(n.folder, 'state.json')) ? JSON.parse(readFileSync(join(n.folder, 'state.json'), 'utf8')) : { name: n.name, status: 'unknown' })
   await net.close()
   await d.close()
-  const result = { swarm: s.swarm, nodes, resources, managers: managers.map(m => ({ name: m.name, status: m.status, uri: m.uri, key: m.key })), ms: Date.now() - t0 }
-  record('status', { nodes: nodes.map(n => n.uri), resources: resources.map(r => r.uri), ms: result.ms })
+  // Controlled: the nodes this manager started (through their managers);
+  // the others joined from elsewhere, under managers of their own.
+  const mine = new Set(s.nodes.map(n => `/${s.swarm}/${n.name}`))
+  const result = {
+    swarm: s.swarm,
+    nodes: nodes.map(n => ({ ...n, controlled: mine.has(n.uri) })),
+    resources,
+    managers: managers.map(m => ({ name: m.name, status: m.status, uri: m.uri, key: m.key })),
+    ms: Date.now() - t0
+  }
+  record('status', { nodes: nodes.map(n => n.uri), controlled: result.nodes.filter(n => n.controlled).map(n => n.uri), resources: resources.map(r => r.uri), ms: result.ms })
   return result
+}
+
+// What another host is given to join the swarm: public facts only (no
+// secret, no key but public ones, nothing of this host's management
+// plane). That host's node manager makes the rest its own.
+export function invite ({ folder }) {
+  const { record, read } = swarmRecord(folder)
+  const s = read()
+  const invitation = {
+    swarm: s.swarm,
+    network: { name: s.network, subnet: `${s.subnet}.0/24`, gateway: s.gateway },
+    bootstrap: `${s.dht.host}:${s.dht.port}`,
+    master: s.master.key,
+    packages: { uri: s.master.packages.uri, key: s.master.packages.key, commit: s.master.packages.commit },
+    image: s.image
+  }
+  record('invited', { swarm: s.swarm, master: s.master.key, packages: s.master.packages.commit })
+  return invitation
 }
 
 async function stopNodeManager (node, timeout = 60000) {

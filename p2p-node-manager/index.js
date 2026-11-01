@@ -21,6 +21,13 @@
 //   channel. The node then runs from the swarm's code (`join`: the master's
 //   key and DHT address, the packages' URI, key and commit).
 //
+// On a host of its own (step 6): `joinFromInvitation` makes the node's
+// management plane here (its auxiliary network, created for the node's life
+// and removed after) and joins the node from an invitation (public facts:
+// the swarm, its data plane, bootstrap, master and packages, the image),
+// with this host's vault. No swarm manager is involved: the swarm sees the
+// node, this manager controls it.
+//
 // Records, in the node's folder (one per node, side by side; nothing
 // secret): node.json (what the node is), manager.jsonl (what the manager
 // did and saw: started, ready, resources sampled, exited, stopped),
@@ -159,6 +166,20 @@ export async function manageNode ({ folder, vault, image, network, ip, swarm, na
       return end
     }
   }
+}
+
+export async function joinFromInvitation ({ invitation: inv, folder, vault, name, ip, auxSubnet, ...rest }) {
+  const aux = { network: `p2p-${inv.swarm}-${name}-aux`, gateway: `${auxSubnet}.1`, port: 49740, ip: `${auxSubnet}.2` }
+  tryDocker('network', 'rm', aux.network)
+  docker('network', 'create', '--internal', '--subnet', `${auxSubnet}.0/24`, '--gateway', aux.gateway, aux.network)
+  mkdirSync(folder, { recursive: true })
+  appendFileSync(join(folder, 'manager.jsonl'), JSON.stringify({ module: 'p2p-node-manager', kind: 'aux-network-created', time: Date.now(), network: aux.network, subnet: `${auxSubnet}.0/24`, from: 'invitation', swarm: inv.swarm, master: inv.master }) + '\n')
+  const m = await manageNode({
+    folder, vault, image: inv.image, network: inv.network.name, ip, swarm: inv.swarm, name, role: 'join', aux,
+    joining: { master: inv.master, bootstrap: inv.bootstrap, packages: inv.packages }, ...rest
+  })
+  m.done.then(() => tryDocker('network', 'rm', aux.network))
+  return m
 }
 
 // The manager's peer on the auxiliary swarm: a DHT of its own at the
