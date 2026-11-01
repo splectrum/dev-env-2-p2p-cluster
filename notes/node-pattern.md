@@ -153,7 +153,16 @@ the auxiliary swarm.
    boundary.
 6. **Scope.** A swarm manager manages only the nodes it controls. Other
    nodes join and are part of the swarm while living on other hosts,
-   under their own managers: the general pattern.
+   under their own managers: the general pattern. Such a node is given
+   an invitation (public facts: the swarm, its data plane, its bootstrap,
+   the master's key, the packages); its host's node manager makes its
+   management plane there and provisions it from that host's vault. The
+   swarm sees it (p2p-rns); its swarm manager does not control it.
+7. **One data plane, a management plane per host.** A DHT node has one
+   address (its identity is derived from it): a swarm's data plane is one
+   network every node reaches, across hosts an overlay or the hosts' LAN.
+   Each node's management plane (its auxiliary network) stays on its own
+   host, with its manager.
 
 ## What a running node is
 
@@ -309,6 +318,15 @@ frequency (streaming) comes later, through dedicated channels.
 
 ## Probed
 
+- **A node on another host** (`steps/6-other-host`, the other host
+  simulated on one machine): a master on two networks is reached on one
+  only, so the data plane is one network (point 7 of the host side); a
+  node joins from an invitation under its own manager, vault and
+  auxiliary network, is reached by URI and reaches the others, restarts
+  with its identity, and stops while the swarm runs on. Nothing tells the
+  swarm a node has gone: p2p-rns in code keeps its registration and peers
+  wait on its address (open, point 5).
+
 - **Explicit keypairs** (`steps/0-probes/drive-keypair`): a Hyperdrive is
   writable with an explicit keypair through its db core (Hyperdrive's
   internal `_db` option, to wrap in `p2p-store`); the drive moves to
@@ -361,3 +379,9 @@ frequency (streaming) comes later, through dedicated channels.
 4. **The p2p series** (its instrumentation and audit included), and **starting from zero
    and joining** (the first node and its DHT, a node joining), step by
    step.
+5. **Liveness.** A registration held while its owner is connected (or a
+   lease), and a node leaving the swarm on a graceful stop, so a gone node
+   is neither listed nor waited on (found in step 6).
+6. **The invitation**: how it travels (a file, a repository, a resource of
+   the swarm), whether the master signs it, and address allocation on a
+   data plane shared by hosts.

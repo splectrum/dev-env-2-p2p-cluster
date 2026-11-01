@@ -1,0 +1,11 @@
+{
+  "swarm": "hosts",
+  "name": "master",
+  "role": "master",
+  "image": "p2p-node:28642a8",
+  "network": "p2p-hosts",
+  "ip": "172.34.0.2",
+  "container": "p2p-hosts-master",
+  "memory": "1g",
+  "storeSize": "512m"
+}

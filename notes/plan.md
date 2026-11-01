@@ -153,7 +153,12 @@ repositories from checkpoints.
   `pending/default`; responses read from the replica.
 - Validated: nodes resolving each other's repositories by URI.
 
-### 6. A node on another host
+### 6. A node on another host — done
+
+Record: `steps/6-other-host/`. The other host simulated on this session's
+machine: its own node manager, vault and auxiliary network, given only an
+invitation; one data plane shared by the hosts (a DHT node has one
+address). Found: nothing tells the swarm a node has gone (liveness, open).
 
 - A node on another host joining under its own node manager: the general
   pattern (a swarm manager manages only the nodes it controls).

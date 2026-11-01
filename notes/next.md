@@ -1,6 +1,7 @@
 # Handover: where the phase stands, and how to continue
 
-Written 2026-11-01, for the next session (or after compaction). Read this
+Written 2026-11-01, for the next session (or after compaction); updated
+after step 6. Read this
 first, then `notes/plan.md`. Everything below is on `main`.
 
 ## Where it stands
@@ -19,23 +20,28 @@ Steps, each with its request, parts and records: `steps/` (index:
 | 3. Repositories on the p2p layer | done | `steps/3-repositories/` |
 | 4. The swarm: genesis | done | `steps/4-genesis/` |
 | 5. A node joining | done | `steps/5-node-joining/` |
-| 6. A node on another host | **next** | `steps/6-other-host/` (a placeholder readme) |
+| 6. A node on another host | done (simulated on one machine) | `steps/6-other-host/` |
 
 What runs today: a swarm manager on the host does genesis (a master node
 in a hardened container: the swarm's DHT, p2p-rns in code, the packages
 and boot repositories) and adds joining nodes, each provisioned by its own
 node manager through the auxiliary swarm and run from the master's
 packages by replication; requests in code are answered by every node;
-everything by URI (`/<swarm>/<node>/<name>`).
+everything by URI (`/<swarm>/<node>/<name>`). A node on another host joins
+from an invitation (public facts only) under its own node manager, vault
+and auxiliary network, on the one data plane all nodes reach (a DHT node
+has one address); the swarm manager sees it and does not control it. The
+phase's plan (steps 0 to 6) is done.
 
 ## Decisions waiting on the human
 
 1. **Repositories to create** in `pear-full-square`: `p2p-node`, `p2p-rns`,
    `p2p-mrepo` (the first and last are proposed names). Their folders are
    ready to merge (split, plain merge, as for the others).
-2. **Step 6**: simulate the second host in this session (a second node
-   manager with its own vault and auxiliary network, reaching the swarm
-   only through the swarm's network) or wait for a real second machine.
+2. **Step 6 on a real second machine**, if wanted: it was simulated on
+   this session's one machine (the choice made at its start, recorded in
+   `steps/6-other-host/readme.md`). On real hosts the data plane needs an
+   overlay or the LAN: which one is open.
 3. **`pear-full-square/p2p-swarm`**: created before the connections module
    was named `p2p-connect`; unused. Keep or delete.
 
@@ -56,6 +62,11 @@ everything by URI (`/<swarm>/<node>/<name>`).
   record as a deployment repository.
 - Code loaded by replication runs from an exec tmpfs (a recorded
   trade-off).
+- Liveness: p2p-rns in code keeps a gone node's registration and peers
+  wait on its address (step 6); a registration held while connected, or a
+  lease, and leaving on a graceful stop.
+- The invitation: how it travels, signed by the master, address
+  allocation on a shared data plane.
 
 ## How to work here
 
@@ -115,5 +126,6 @@ everything by URI (`/<swarm>/<node>/<name>`).
 
 ## To continue
 
-"Read `notes/next.md` and continue with step 6", after the decision on how
-to do step 6 (above).
+The plan's steps are done. Next is the human's call: what comes after
+the plan (the items carried forward, the roadmap's repository-based
+versions, the request's remaining done items), and the decisions above.

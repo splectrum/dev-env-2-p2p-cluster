@@ -1,6 +1,6 @@
 {
   "name": "p2p-node-manager",
-  "id": "5c362760-598e-4520-8026-24c9dfe03ea8",
+  "id": "0ff5ad51-91bc-4f7f-9f87-c8de7caffbdd",
   "description": "One node's manager on the host: its container started, its secret handed over, followed, recorded and stopped",
   "type": "module",
   "exports": {

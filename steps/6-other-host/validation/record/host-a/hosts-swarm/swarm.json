@@ -1,0 +1,65 @@
+{
+  "swarm": "hosts",
+  "image": "p2p-node:28642a8",
+  "network": "p2p-hosts",
+  "subnet": "172.34.0",
+  "gateway": "172.34.0.1",
+  "aux": {
+    "network": "p2p-hosts-aux",
+    "subnet": "172.35.0.0/24",
+    "gateway": "172.35.0.1"
+  },
+  "nodes": [
+    {
+      "name": "master",
+      "role": "master",
+      "ip": "172.34.0.2",
+      "folder": "/tmp/claude-0/-home-user/d01f3080-f030-5051-8c75-7cd188d75161/scratchpad/v6r/a/hosts-master",
+      "uri": "/hosts/master",
+      "key": "f32ceb25ff0a99df1d3628775be81a5025c0921171f13dededa48d243d4c1907",
+      "managerPid": 15436
+    },
+    {
+      "name": "node-1",
+      "role": "join",
+      "ip": "172.34.0.3",
+      "auxIp": "172.35.0.10",
+      "auxPort": 49741,
+      "folder": "/tmp/claude-0/-home-user/d01f3080-f030-5051-8c75-7cd188d75161/scratchpad/v6r/a/hosts-node-1",
+      "uri": "/hosts/node-1",
+      "key": "dfabb742b664f8b9647afdf4ae41c60bb84c496befc4e0bf95bc6d7e90a92706",
+      "managerPid": 15562,
+      "materialised": {
+        "commit": "bfccac2bf1045c854c3ebd12faebd6674fe9b80b",
+        "files": 3609,
+        "downloaded": {
+          "blocks": 4605,
+          "bytes": 14437148
+        },
+        "ms": 6033
+      }
+    }
+  ],
+  "vault": "/tmp/claude-0/-home-user/d01f3080-f030-5051-8c75-7cd188d75161/scratchpad/v6r/a-vault",
+  "dht": {
+    "host": "172.34.0.2",
+    "port": 49737
+  },
+  "nodesFolder": "/tmp/claude-0/-home-user/d01f3080-f030-5051-8c75-7cd188d75161/scratchpad/v6r/a",
+  "created": "2026-11-01T07:48:50.787Z",
+  "master": {
+    "uri": "/hosts/master",
+    "key": "f32ceb25ff0a99df1d3628775be81a5025c0921171f13dededa48d243d4c1907",
+    "packages": {
+      "uri": "/hosts/master/packages",
+      "key": "a5d79b4ff85f50deed956a05c8c37b40a8becc4caa5b1164ce013a241c418be8",
+      "id": "7f719706-df10-487f-85e0-35f508fee892",
+      "commit": "bfccac2bf1045c854c3ebd12faebd6674fe9b80b",
+      "files": 3609
+    },
+    "boot": {
+      "key": "0813e006e76c27e6c3c338749f55326ddda62e1ec5a101bd0a0092931b69e281",
+      "id": "7e103249-0264-4e3a-bb1d-6ca03e2c5242"
+    }
+  }
+}

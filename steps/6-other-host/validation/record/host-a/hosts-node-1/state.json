@@ -1,0 +1,35 @@
+{
+  "swarm": "hosts",
+  "name": "node-1",
+  "role": "join",
+  "container": "p2p-hosts-node-1",
+  "image": "p2p-node:28642a8",
+  "ip": "172.34.0.3",
+  "status": "exited",
+  "startedAt": "2026-11-01T07:49:00.683Z",
+  "materialised": {
+    "commit": "bfccac2bf1045c854c3ebd12faebd6674fe9b80b",
+    "files": 3609,
+    "downloaded": {
+      "blocks": 4605,
+      "bytes": 14437148
+    },
+    "ms": 6033
+  },
+  "live": {
+    "uri": "/hosts/node-1/node",
+    "key": "6ba3933ef0e86285d93119664cf6b895111ea9cb9b2644752bd831f276fa492a",
+    "id": "a4a3c8cb-a773-4482-8cf1-a5e3a2c3a044",
+    "origin": {
+      "id": "7e103249-0264-4e3a-bb1d-6ca03e2c5242",
+      "key": "0813e006e76c27e6c3c338749f55326ddda62e1ec5a101bd0a0092931b69e281"
+    }
+  },
+  "uri": "/hosts/node-1",
+  "key": "dfabb742b664f8b9647afdf4ae41c60bb84c496befc4e0bf95bc6d7e90a92706",
+  "dht": null,
+  "readyMs": 7686,
+  "exitCode": 0,
+  "oomKilled": false,
+  "exitedAt": "2026-11-01T07:49:45.756Z"
+}

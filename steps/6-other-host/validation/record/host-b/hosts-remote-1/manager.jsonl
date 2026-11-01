@@ -1,0 +1,22 @@
+{"module":"p2p-node-manager","kind":"aux-network-created","time":1793519349189,"network":"p2p-hosts-remote-1-aux","subnet":"172.36.0.0/24","from":"invitation","swarm":"hosts","master":"f32ceb25ff0a99df1d3628775be81a5025c0921171f13dededa48d243d4c1907"}
+{"module":"p2p-node-manager","kind":"starting","time":1793519349208,"container":"p2p-hosts-remote-1","image":"p2p-node:28642a8","network":"p2p-hosts","ip":"172.34.0.100","role":"join","hardening":["read-only","cap-drop ALL","no-new-privileges","user 65534","memory 1g no swap","core 0","store tmpfs 512m noexec","tmp tmpfs 64m noexec","code tmpfs 256m exec"]}
+{"module":"p2p-node-manager","kind":"provisioning-ready","time":1793519349220,"gateway":"172.36.0.1","port":49740,"network":"p2p-hosts-remote-1-aux","publicKey":"9f47b5a9cb735ea1b0cc746dd134211dbb9512bfe039f083e11dc8ac83182e2c"}
+{"module":"p2p-node-manager","kind":"provisioning-authorised","time":1793519350159,"peer":"d323ea4a4a714f9d50e09cf2ec15d92aa937e7ca6f91a6e2799cc3d6f043c636"}
+{"module":"p2p-node-manager","kind":"provisioning-connected","time":1793519350178,"peer":"d323ea4a4a714f9d50e09cf2ec15d92aa937e7ca6f91a6e2799cc3d6f043c636"}
+{"module":"p2p-node-manager","kind":"secret-handed-over","time":1793519350185,"via":"auxiliary swarm","to":"d323ea4a4a714f9d50e09cf2ec15d92aa937e7ca6f91a6e2799cc3d6f043c636"}
+{"module":"p2p-node-manager","kind":"materialised","time":1793519357052,"commit":"bfccac2bf1045c854c3ebd12faebd6674fe9b80b","files":3609,"downloaded":{"blocks":4605,"bytes":14437148},"ms":6893}
+{"module":"p2p-node-manager","kind":"node-ready","time":1793519357892,"uri":"/hosts/remote-1","key":"f6ebabaa9e59cddf2e50a015f85ea3bf90f117b8019717b167da0af86d74387a","dht":null,"ms":8703}
+{"module":"p2p-node-manager","kind":"stopping","time":1793519360742,"signal":"SIGTERM","timeout":15}
+{"module":"p2p-node-manager","kind":"container-exited","time":1793519361045,"exitCode":0,"oomKilled":false,"error":null,"ms":11856}
+{"module":"p2p-node-manager","kind":"stopped","time":1793519361164,"exitCode":0,"graceful":true}
+{"module":"p2p-node-manager","kind":"aux-network-created","time":1793519361446,"network":"p2p-hosts-remote-1-aux","subnet":"172.36.0.0/24","from":"invitation","swarm":"hosts","master":"f32ceb25ff0a99df1d3628775be81a5025c0921171f13dededa48d243d4c1907"}
+{"module":"p2p-node-manager","kind":"starting","time":1793519361475,"container":"p2p-hosts-remote-1","image":"p2p-node:28642a8","network":"p2p-hosts","ip":"172.34.0.100","role":"join","hardening":["read-only","cap-drop ALL","no-new-privileges","user 65534","memory 1g no swap","core 0","store tmpfs 512m noexec","tmp tmpfs 64m noexec","code tmpfs 256m exec"]}
+{"module":"p2p-node-manager","kind":"provisioning-ready","time":1793519361493,"gateway":"172.36.0.1","port":49740,"network":"p2p-hosts-remote-1-aux","publicKey":"3f1bed3e9a69c6782e8b0bd25f679304d8d00f0bf858a1e1a59acb4c271daa2d"}
+{"module":"p2p-node-manager","kind":"provisioning-authorised","time":1793519362521,"peer":"a413587fbe166e00c23913b9dab46427ebea91d07aadad93cbbcb47fe041d8ff"}
+{"module":"p2p-node-manager","kind":"provisioning-connected","time":1793519362549,"peer":"a413587fbe166e00c23913b9dab46427ebea91d07aadad93cbbcb47fe041d8ff"}
+{"module":"p2p-node-manager","kind":"secret-handed-over","time":1793519362558,"via":"auxiliary swarm","to":"a413587fbe166e00c23913b9dab46427ebea91d07aadad93cbbcb47fe041d8ff"}
+{"module":"p2p-node-manager","kind":"materialised","time":1793519368636,"commit":"bfccac2bf1045c854c3ebd12faebd6674fe9b80b","files":3609,"downloaded":{"blocks":4605,"bytes":14437148},"ms":6116}
+{"module":"p2p-node-manager","kind":"node-ready","time":1793519369534,"uri":"/hosts/remote-1","key":"f6ebabaa9e59cddf2e50a015f85ea3bf90f117b8019717b167da0af86d74387a","dht":null,"ms":8086}
+{"module":"p2p-node-manager","kind":"stopping","time":1793519371261,"signal":"SIGTERM","timeout":15}
+{"module":"p2p-node-manager","kind":"container-exited","time":1793519371591,"exitCode":0,"oomKilled":false,"error":null,"ms":10144}
+{"module":"p2p-node-manager","kind":"stopped","time":1793519371724,"exitCode":0,"graceful":true}

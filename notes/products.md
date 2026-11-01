@@ -39,8 +39,8 @@ All in `pear-full-square` (the design: `node-pattern.md`, `plan.md`):
 | `p2p-replicate` | `pear-full-square/p2p-replicate` | `0b46561` (step 2, from dev `adbbc29`) |
 | `p2p-channel` | `pear-full-square/p2p-channel` | `c4fb7c7` (step 2, from dev `adbbc29`) |
 | `p2p-git` | `pear-full-square/p2p-git` | moved from `bare-for-pear/p2p-git`, `main` at `d7d154d`; mycelium-git's dependency names it since step 1 |
-| `p2p-node-manager` | `pear-full-square/p2p-node-manager` | `63d9628` (step 4, from dev `9f67efa`); `584c2a0` (step 5, from dev `2a7816d`: provisioning through the auxiliary swarm) |
-| `p2p-swarm-manager` | `pear-full-square/p2p-swarm-manager` | `4e4b807` (step 4, from dev `9f67efa`); `375a95c` (step 5, from dev `2a7816d`: join) |
+| `p2p-node-manager` | `pear-full-square/p2p-node-manager` | `63d9628` (step 4, from dev `9f67efa`); `584c2a0` (step 5, from dev `2a7816d`: provisioning through the auxiliary swarm); `bf52040` (step 6, from dev `a73df80`: joining from an invitation) |
+| `p2p-swarm-manager` | `pear-full-square/p2p-swarm-manager` | `4e4b807` (step 4, from dev `9f67efa`); `375a95c` (step 5, from dev `2a7816d`: join); `7e6a79b` (step 6, from dev `a73df80`: invite, controlled in status) |
 | `p2p-rns` | to create | the resource name service, in code (step 4); a folder here until its repository exists |
 | `p2p-mrepo` | to create (name proposed) | mycelium repositories on the p2p layer, from step 3 (a given id since step 4); a folder here until its repository exists |
 | `p2p-node` | to create (name proposed) | the node application, from step 4 (the master role) and step 5 (join, boot, requests); a folder here until its repository exists |

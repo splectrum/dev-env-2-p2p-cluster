@@ -1,9 +1,12 @@
 {
   "name": "p2p-swarm-manager",
-  "id": "95bfe35f-b5fc-48b1-adfa-e57b97073120",
+  "id": "5e94f27e-73d3-4a35-a6cb-fe3cd1b0f358",
   "description": "A swarm's manager on the host: genesis, the nodes it controls through their node managers, the swarm's record",
   "type": "module",
   "exports": "./index.js",
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
   "license": "MIT",
   "dependencies": {
     "hypercore-crypto": "3.7.0",

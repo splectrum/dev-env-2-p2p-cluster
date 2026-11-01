@@ -1,0 +1,12 @@
+{"module":"p2p-node-manager","kind":"starting","time":1793519340706,"container":"p2p-hosts-node-1","image":"p2p-node:28642a8","network":"p2p-hosts","ip":"172.34.0.3","role":"join","hardening":["read-only","cap-drop ALL","no-new-privileges","user 65534","memory 1g no swap","core 0","store tmpfs 512m noexec","tmp tmpfs 64m noexec","code tmpfs 256m exec"]}
+{"module":"p2p-node-manager","kind":"provisioning-ready","time":1793519340720,"gateway":"172.35.0.1","port":49741,"network":"p2p-hosts-aux","publicKey":"f89f84239b721d532d44b437ace856093730cfa797d23dfe3488d4cafc103489"}
+{"module":"p2p-node-manager","kind":"provisioning-authorised","time":1793519341551,"peer":"cbc1103d573ee41a5c69209d00dfae3d0847937da7c0017a3ee4c87040c22cc4"}
+{"module":"p2p-node-manager","kind":"provisioning-connected","time":1793519341572,"peer":"cbc1103d573ee41a5c69209d00dfae3d0847937da7c0017a3ee4c87040c22cc4"}
+{"module":"p2p-node-manager","kind":"secret-handed-over","time":1793519341580,"via":"auxiliary swarm","to":"cbc1103d573ee41a5c69209d00dfae3d0847937da7c0017a3ee4c87040c22cc4"}
+{"module":"p2p-node-manager","kind":"materialised","time":1793519347583,"commit":"bfccac2bf1045c854c3ebd12faebd6674fe9b80b","files":3609,"downloaded":{"blocks":4605,"bytes":14437148},"ms":6033}
+{"module":"p2p-node-manager","kind":"node-ready","time":1793519348369,"uri":"/hosts/node-1","key":"dfabb742b664f8b9647afdf4ae41c60bb84c496befc4e0bf95bc6d7e90a92706","dht":null,"ms":7686}
+{"module":"p2p-node-manager","kind":"resources","time":1793519356863,"cpu":"0.27%","memory":"356.5MiB / 1GiB","memoryPercent":"34.81%","net":"15.9MB / 1.23MB","pids":"31"}
+{"module":"p2p-node-manager","kind":"resources","time":1793519371828,"cpu":"0.32%","memory":"357.1MiB / 1GiB","memoryPercent":"34.88%","net":"15.9MB / 1.26MB","pids":"31"}
+{"module":"p2p-node-manager","kind":"stopping","time":1793519385451,"signal":"SIGTERM","timeout":15}
+{"module":"p2p-node-manager","kind":"container-exited","time":1793519385757,"exitCode":0,"oomKilled":false,"error":null,"ms":45074}
+{"module":"p2p-node-manager","kind":"stopped","time":1793519385757,"exitCode":0,"graceful":true}
