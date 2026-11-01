@@ -60,8 +60,9 @@ be created in `pear-full-square`. The rules this note follows are in
 | `offset` | the record's position in its partition, assigned by the partition | assigned, never written by the producer |
 
 - **Property names are data names** (`rules.md`, Data names):
-  lowerCamelCase, starting with a lowercase letter, no two capitals in a
-  row, `_` allowed, no two names differing only in case. The same name in
+  lowerCamelCase (letters and digits), starting with a lowercase letter,
+  no two capitals in a row, no two names differing only in case; `_`
+  reserved. The same name in
   JSON, in memory and in AVRO (`publicKey`); in a URI addressing into a
   value, its URI form (`…/value/public-key`). Kafka's own property names
   already are data names.
@@ -188,7 +189,7 @@ Single concern: topics of Kafka records, as above, on any storage.
   modules carry their own copies of the old segment check (`p2p-rns`,
   `p2p-mrepo`, `p2p-node`'s requests, the vault in `p2p-node-manager`),
   against the rule. In step 7 they go: `mycelium-uri` is the one
-  validator, its rule updated (`_`, data names in URI form), applied only
+  validator, its rule updated (data names in URI form), applied only
   where input enters (network handlers for the name service and request
   intake, command-line arguments, external files and imports); internal
   APIs trust their callers.

@@ -134,8 +134,9 @@ Scope: branch names and repository folders, wherever XPath is used.
   is always a leaf.
 - Relative within a repository: `/`-separated segments; no scheme, query
   or fragment.
-- Segments, for branches and folders alike: lowercase `a-z`, `0-9`, `-`,
-  `_`. Any folder can then become a branch, and the other way round.
+- Segments, for branches and folders alike: lowercase `a-z`, `0-9`, `-`.
+  Any folder can then become a branch, and the other way round. `_` is
+  reserved (Data names).
   Inside a value, a segment is a data name in its URI form (Data names).
 - A file's segment includes its extension: a name as above, then
   optional `.`-separated extensions of the same characters
@@ -184,8 +185,8 @@ configuration, audit, metrics, events, state (`notes/topics.md`).
 Scope: the names of properties in records, values and headers, and of
 anything that becomes an AVRO name (`notes/topics.md`).
 
-- **lowerCamelCase**: letters `a-z`, `A-Z`, digits `0-9` and `_`,
-  starting with a lowercase letter: `publicKey`, `readyMs`,
+- **lowerCamelCase**: letters `a-z`, `A-Z` and digits `0-9`, starting
+  with a lowercase letter: `publicKey`, `readyMs`,
   `routingTable`.
 - **No two capitals in a row**: `dhtUrl`, not `dhtURL`.
 - **Practically case-insensitive**: no two names that differ only in
@@ -196,9 +197,10 @@ anything that becomes an AVRO name (`notes/topics.md`).
 - **In a URI, its URI form**: each capital becomes `-` and the letter in
   lowercase (`publicKey` → `public-key`); back, `-` and a letter become
   the letter in capitals. Exact both ways under the rules above.
-- **`_` is untouched**: no mapping uses it, so it passes unchanged
-  through every form, data names and URI segments alike (`ready_ms` →
-  `ready_ms`).
+- **`_` is reserved**, in data names and URI segments alike: it adds
+  nothing to readability, and it is the one character left for an
+  encoding, should one be needed (foreign names at the boundary, for
+  instance).
 - **Other mappings later**, at the boundary, for external names that
   break these rules.
 
