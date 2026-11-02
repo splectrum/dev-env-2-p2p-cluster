@@ -103,6 +103,12 @@ depends on nothing outside itself.
   agnostic of p2p: they work in the platform's abstract world (hosts,
   nodes, resources by URI, activity), as mycelium works with the p2p
   layer's abstractions.
+- **Splectral, the future vision** (the human, 2026-11-02): a platform for
+  multiple functional components that are part of a solution. Approached
+  step by step. First feedback towards it, from the local run of the
+  demos (`steps/9-click-and-run/demos-local-run.md`): a solution (the demo
+  app) as one tab with its own menu, its components as tabs inside it;
+  time shown on every screen, not only the timeline.
 - **`splectrum`: the language layer**: language modules, for building real applications on
   the mycelium p2p platform. What exists now as URI-expressed capabilities,
   together with AVRO (typed values named by URI), becomes a DSL platform:

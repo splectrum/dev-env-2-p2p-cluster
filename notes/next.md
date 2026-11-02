@@ -128,8 +128,14 @@ Every module has its product repository; every validated change is merged
    local agent, from dev `04bcb84` (step 9's table in
    `steps/9-click-and-run/8-validation/products.md`). Later merges are
    plain, from a session that can attach them, or locally the same way.
-3. **The human runs the demos locally** with `demos.md` (step 9's one
-   document): what they find may set the next step.
+3. **The human ran the demos locally** (2026-11-02, WSL2, Node 24): both
+   projects started, ran, stopped and were torn down with `haicc`; "really
+   good". Report and findings: `steps/9-click-and-run/demos-local-run.md`.
+   Feedback on Splectral, noted for the vision (a platform for a
+   solution's components, step by step; `vision.md`,
+   `notes/splectral.md` open point 4), not asked for now: the demo app
+   as a tab with its menu and components as tabs inside it; time on
+   every screen.
 
 ## Carried forward (open, not built)
 

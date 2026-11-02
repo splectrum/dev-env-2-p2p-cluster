@@ -29,6 +29,9 @@ product commits back.
 
 ## 2. The demos, in the flesh (the human, with the local agent if wanted)
 
+**Done** 2026-11-02: both projects, as below; the report:
+`steps/9-click-and-run/demos-local-run.md`.
+
 `demos.md` (the one document since step 9). In short, after section 2's
 installs (note the folders moved: `pear-full-square/<module>`):
 
