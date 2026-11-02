@@ -22,6 +22,8 @@ try {
   const d = await openDeployment({ project: file, work: flags.work || join(homedir(), '.haicc', owner) })
   const result = await d[verb]()
   const met = xs => (xs || []).every(x => x.status === 'met' || x.status === 'extra')
+  // status of a project never deployed: say what deploying would need.
+  if (verb === 'status' && !result.desired.deployed) result.check = await d.check()
   const ok = verb === 'status' ? met(result.check)
     : result.after ? result.failed.length === 0 && result.blocked.length === 0 && met(result.after)
       : [result.stopped, result.removed].every(x => !x || x.failed.length === 0)

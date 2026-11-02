@@ -25,7 +25,9 @@ export const port = {
     })
     let holder = null
     if (!free && r.want.holder && existsSync(r.want.holder)) {
-      const pid = Number(readFileSync(r.want.holder, 'utf8'))
+      // A pid, or a JSON object with one ({ pid, ... }).
+      const text = readFileSync(r.want.holder, 'utf8').trim()
+      const pid = text.startsWith('{') ? JSON.parse(text).pid : Number(text)
       if (alive(pid)) holder = pid
     }
     return { port: r.want.port, host, free, holder }

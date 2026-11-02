@@ -73,5 +73,7 @@ export async function openDeployment ({ project: file, work }) {
     const reqs = want.running ? both() : want.deployed ? p.configuration : []
     return { project: p.owner, desired: want, check: reqs.length ? await engine.check(reqs, { strict: p.strict }) : [] }
   }
-  return { project: p, work, deploy: act('deploy'), start: act('start'), stop: act('stop'), teardown: act('teardown'), reconcile, status, desired }
+  // What deploying would need, checked: the machine before anything is made.
+  const check = () => { verb = 'check'; return engine.check(both(), { strict: p.strict }) }
+  return { project: p, work, check, deploy: act('deploy'), start: act('start'), stop: act('stop'), teardown: act('teardown'), reconcile, status, desired }
 }

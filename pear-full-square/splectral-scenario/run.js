@@ -1,6 +1,8 @@
 // splectral-scenario — the generic scenario runner, as an action:
 //   { action: 'run-scenario', with: { id } }
-// A scenario (an extension's JSON, see notes/splectral.md) is steps:
+// A scenario (an extension's JSON, see notes/splectral.md) is steps. When
+// the server was started for a project, the project is reconciled first.
+// The steps:
 //   { say }            a message for the people watching
 //   { do, with }       an action, dispatched as any action is
 //   { do, with, refused: true }
@@ -51,6 +53,12 @@ export default async function runScenario ({ id }, ctx) {
   }
   const t0 = Date.now()
   await tell({ kind: 'say', text: `Scenario: ${sc.title || id}`, step: -1 })
+  // Started for a project: the project brought back to its desired state
+  // first, so the scenario can run again, any number of times.
+  if (ctx.config.project && ctx.has?.('reconcile-project')) {
+    await tell({ kind: 'say', text: 'The project is brought back to its declared state.', step: -1 })
+    await ctx.dispatch({ action: 'reconcile-project' })
+  }
   for (let i = 0; i < sc.steps.length; i++) {
     const step = sc.steps[i]
     if (step.say) await tell({ kind: 'say', text: step.say, step: i })
