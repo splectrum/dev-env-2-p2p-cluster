@@ -81,9 +81,8 @@ Every module has its product repository; every validated change is merged
   platform (`splectral-contract`, `-model`, `-transport`, `-server`,
   `-shell`, `-replay`, `-scenario`, `-timeline`, `-p2p-watchers`,
   `-p2p-actions`, `-p2p-observer`).
-- **`splectral`**: `base-view-map`, `base-demo-other-host`;
-  `base-demo-liveness` waiting for its repository (to be created by the
-  human, then its first merge).
+- **`splectral`**: `base-view-map`, `base-demo-other-host`,
+  `base-demo-liveness`.
 
 ## Decisions waiting on the human
 
@@ -105,8 +104,6 @@ Every module has its product repository; every validated change is merged
    hand, and the demo runs only from this repository. The report's last
    section gives the input and a possible shape (one entry point:
    `check`, `install`, `up`, `down`, `replay`, `reset`, `clean`).
-5. **Create `splectral/base-demo-liveness`** (step 8's application), so
-   its first merge can follow.
 
 ## Carried forward (open, not built)
 

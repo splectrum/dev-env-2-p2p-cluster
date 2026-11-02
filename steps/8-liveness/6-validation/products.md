@@ -17,6 +17,8 @@ but the product's LICENSE. Every push verified against the remote.
 | `splectral-p2p-actions` | `pear-full-square/splectral-p2p-actions` | `a0c7c19` | `6dd0556` |
 | `base-view-map` | `splectral/base-view-map` | `1b41984` | `c3a2c5a` |
 
-**Waiting:** `base-demo-liveness` (new) needs its repository,
-`splectral/base-demo-liveness`, created by the human; its first merge
-follows.
+| `base-demo-liveness` | `splectral/base-demo-liveness` | `adf259a` | `3ae1f57` |
+
+`base-demo-liveness`: its first merge (2026-11-02, once the human created
+the repository), the folder's split history joined to the repository's
+initial commit, its LICENSE kept.
