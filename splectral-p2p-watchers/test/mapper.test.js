@@ -31,3 +31,16 @@ test('managers, logs and the swarm into nodes, resources, links, requests and ch
   const text = JSON.stringify(out.map(({ toKey, fromKey, key, ...e }) => e)).toLowerCase()
   for (const w of ['p2p', 'dht', 'hypercore', 'container', 'docker']) assert.ok(!text.includes(w), w)
 })
+
+test("the name service's presence, from the master's log", () => {
+  const map = createMapper()
+  const mlog = { holds: 'p2p-node/log', context: { host: 'host-a', folder: 'hosts-master' } }
+  map(r({ kind: 'starting', swarm: 'hosts', name: 'master' }), { ...mgr, context: { host: 'host-a', folder: 'hosts-master' } })
+  const out = [
+    ...map(r({ module: 'p2p-rns', kind: 'node-absent', uri: '/hosts/node-1', owner: 'kb', lastSeen: 100, leaseMs: 50 }), mlog),
+    ...map(r({ module: 'p2p-rns', kind: 'node-present', uri: '/hosts/node-1', owner: 'kb' }), mlog),
+    ...map(r({ module: 'p2p-rns', kind: 'node-left', uri: '/hosts/node-1', owner: 'kb' }), mlog),
+    ...map(r({ module: 'other', kind: 'node-left', uri: '/hosts/x' }), mlog)
+  ]
+  assert.deepEqual(out.map(({ time, ...e }) => e), [{ kind: 'absent', uri: '/hosts/node-1', since: 150 }, { kind: 'present', uri: '/hosts/node-1' }, { kind: 'left', uri: '/hosts/node-1' }])
+})

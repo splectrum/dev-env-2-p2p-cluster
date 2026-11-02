@@ -10,7 +10,7 @@ export default function Node ({ state, param, html }) {
   return html`
     <section data-node-page=${param}>
       <h2>${param}</h2>
-      <p>On <b>${n.host}</b> · <span data-status>${n.status}</span> · ${n.controlled ? 'controlled by its host' : 'joined from elsewhere'}</p>
+      <p>On <b>${n.host}</b> · <span data-status>${n.status}</span> · <span data-presence>${n.presence === 'absent' ? 'absent, not heard from within its lease' : n.presence === 'left' ? 'left' : n.presence || ''}</span> · ${n.controlled ? 'controlled by its host' : 'joined from elsewhere'}</p>
       <p>Resources: ${res.map(r => html`<code style=${{ marginRight: '8px' }}>${r.uri}</code>`)}</p>
       <table><thead><tr><th>#</th><th>kind</th><th>about</th></tr></thead>
       <tbody>${rows.map(e => html`<tr data-event=${e.kind}><td>${e.version}</td><td>${e.kind}</td><td>${about(e, param)}</td></tr>`)}</tbody></table>

@@ -9,7 +9,7 @@
 export function createModel ({ keep = 500 } = {}) {
   let version = 0
   const hosts = {} // name -> { name }
-  const nodes = {} // uri -> { uri, host, status, controlled, key }
+  const nodes = {} // uri -> { uri, host, status, controlled, key, presence, absentSince }
   const byKey = {} // key -> uri
   const resources = {} // uri -> { uri, node, type, changes }
   const links = {} // 'from|to' -> { from, to, open, bytes, opened }
@@ -29,10 +29,16 @@ export function createModel ({ keep = 500 } = {}) {
         host(e.host)
         const n = (nodes[e.uri] ??= { uri: e.uri })
         Object.assign(n, { host: e.host ?? n.host, controlled: e.controlled ?? n.controlled, status: e.kind === 'joined' ? 'running' : 'starting' })
+        if (e.kind === 'joined' && n.presence !== 'absent') n.presence = 'present'
         if (e.key) { n.key = e.key; byKey[e.key] = e.uri }
         break
       }
       case 'gone': if (nodes[e.uri]) { nodes[e.uri].status = 'gone'; if (e.controlled !== undefined) nodes[e.uri].controlled = e.controlled } for (const l of Object.values(links)) if (l.from === e.uri || l.to === e.uri) l.open = false; break
+      // Presence, as the world's naming sees it: apart from status
+      // (what its host sees of the process).
+      case 'absent': if (nodes[e.uri]) Object.assign(nodes[e.uri], { presence: 'absent', absentSince: e.since }); break
+      case 'present': if (nodes[e.uri]) { nodes[e.uri].presence = 'present'; delete nodes[e.uri].absentSince } break
+      case 'left': if (nodes[e.uri]) { nodes[e.uri].presence = 'left'; delete nodes[e.uri].absentSince } break
       case 'resource': resources[e.uri] = { ...(resources[e.uri] || { changes: 0 }), uri: e.uri, node: e.node, type: e.type }; break
       case 'connected': { const l = linkOf(e.from, e.toKey); l.open = true; l.opened++; break }
       case 'disconnected': { const l = linkOf(e.from, e.toKey); l.open = false; l.bytes += e.bytes || 0; break }

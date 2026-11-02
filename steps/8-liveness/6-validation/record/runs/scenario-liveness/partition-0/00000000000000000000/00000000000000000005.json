@@ -1,0 +1,1 @@
+{"value":{"time":1793608889750,"scenario":"liveness","kind":"say","text":"The master hears nothing from node-1. When its lease runs out, node-1 is flagged absent: a dashed ring. Its name and records stay, flagged.","step":2}}

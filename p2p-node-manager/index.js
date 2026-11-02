@@ -36,8 +36,8 @@
 // The node's state is a view: the fold of topics/manager (nodeState),
 // state.json its cache. node.stderr stays a text file.
 
-import { spawn, execFileSync } from 'node:child_process'
-import { mkdirSync, writeFileSync, createWriteStream } from 'node:fs'
+import { spawn, execFile, execFileSync } from 'node:child_process'
+import { mkdirSync, writeFileSync, createWriteStream, existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { openTopic, folderStorage, committedOffsets } from '../mycelium-topic/index.js'
 import crypto from 'hypercore-crypto'
@@ -66,9 +66,16 @@ export function reduceNodeState (state, v) {
 }
 
 // The view, for whoever reads a node's state: the fold of its manager's topic.
-export async function nodeState (folder) {
+// The node's state, the fold of its manager's topic; `from` an offset, to
+// see only a run started after it (stateOffset, taken before the start).
+export async function nodeState (folder, from = 0) {
+  if (!existsSync(join(folder, 'topics', 'manager'))) return null
   const t = await topicOf(folder, 'manager')
-  return t.fold((s, r) => reduceNodeState(s, r.value), null)
+  return (await t.consume(from)).reduce((s, r) => reduceNodeState(s, r.value), null)
+}
+export async function stateOffset (folder) {
+  if (!existsSync(join(folder, 'topics', 'manager'))) return 0
+  return (await topicOf(folder, 'manager')).endOffset()
 }
 
 export async function manageNode ({ folder, vault, image, network, ip, swarm, name, role, aux = null, joining = null, origin = null, observer = false, memory = '1g', storeSize = '512m', codeSize = '256m', metricsEvery = 30000, sampleEvery = 15000 }) {
@@ -128,6 +135,7 @@ export async function manageNode ({ folder, vault, image, network, ip, swarm, na
   const ready = new Promise((resolve, reject) => { readyResolve = resolve; readyReject = reject })
   ready.catch(() => {})
   child.stderr.pipe(createWriteStream(join(folder, 'node.stderr'), { flags: 'a' }))
+  // The node's log, a line at a time.
   let rest = ''
   child.stdout.on('data', chunk => {
     rest += chunk.toString()
@@ -135,9 +143,12 @@ export async function manageNode ({ folder, vault, image, network, ip, swarm, na
     while ((i = rest.indexOf('\n')) !== -1) {
       const line = rest.slice(0, i)
       rest = rest.slice(i + 1)
-      if (!line) continue
+      if (line) take(line)
+    }
+  })
+  function take (line) {
       let e
-      try { e = JSON.parse(line) } catch { produced = topics.node.produce({ value: { text: line } }); continue }
+      try { e = JSON.parse(line) } catch { produced = topics.node.produce({ value: { text: line } }); return }
       // An observer's result carries its action's correlation in a header.
       const headers = e.module === 'splectral-p2p-observer' && e.kind === 'action-result' ? [{ key: 'correlation', value: String(e.id) }] : undefined
       produced = topics.node.produce({ value: e, headers })
@@ -157,8 +168,7 @@ export async function manageNode ({ folder, vault, image, network, ip, swarm, na
       } else if (e.module === 'p2p-node' && e.kind === 'failed') {
         record('node-failed', { error: e.error })
       }
-    }
-  })
+  }
 
   // Actions for the node's observer: records produced into the node's
   // action topic (`topics/actions`, by whoever may act on this host); the
@@ -194,7 +204,9 @@ export async function manageNode ({ folder, vault, image, network, ip, swarm, na
     if (s) { const j = JSON.parse(s); record('resources', { cpu: j.CPUPerc, memory: j.MemUsage, memoryPercent: j.MemPerc, net: j.NetIO, pids: j.PIDs }) }
   }, sampleEvery)
 
-  const done = new Promise(resolve => child.once('exit', async code => {
+  // 'close', not 'exit': after the node's output is all read (a graceful
+  // stop's last lines, the node leaving, come just before the end).
+  const done = new Promise(resolve => child.once('close', async code => {
     clearInterval(sampler)
     if (stopActions) stopActions()
     if (provision) await provision.close()
@@ -215,7 +227,10 @@ export async function manageNode ({ folder, vault, image, network, ip, swarm, na
     flush,
     async stop (timeout = 15) {
       record('stopping', { signal: 'SIGTERM', timeout })
-      tryDocker('stop', '-t', String(timeout), container)
+      // Asynchronous: the node's output keeps being read while it stops (a
+      // synchronous call blocks this loop, the pipe fills, and the node's
+      // last lines are lost).
+      await new Promise(resolve => execFile('docker', ['stop', '-t', String(timeout), container], () => resolve()))
       const end = await done
       record('stopped', { exitCode: end.exitCode, graceful: end.exitCode === 0 })
       await flush()

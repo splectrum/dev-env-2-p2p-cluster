@@ -177,6 +177,17 @@ manager and on to a host-local Splectral server; watchers mapping to topics,
 pages and scenarios as extensions, the menu following what is available.
 Its request is written when the step starts.
 
+### 8. Liveness — done
+
+Record: `steps/8-liveness/`. p2p-rns holds a lease per node and flags a
+node absent when its lease runs out (records kept, flagged; the name its
+owner's), present again on renewal; a graceful stop leaves. Nodes renew at
+a third of the lease, drop a stale connection to the master; requesters
+refuse an absent node at once. Splectral shows presence; the scenario "A
+node goes quiet" watched live and replayed. Found and fixed: a graceful
+stop's last log lines were lost (the node manager's blocking stop), and
+the swarm manager read a cache half written.
+
 ## Further down the roadmap
 
 Each replacing its in-code version behind the same contract, once enough

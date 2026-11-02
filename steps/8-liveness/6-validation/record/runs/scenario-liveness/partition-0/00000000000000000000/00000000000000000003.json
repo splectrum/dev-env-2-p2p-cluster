@@ -1,0 +1,1 @@
+{"value":{"time":1793608889654,"scenario":"liveness","kind":"say","text":"node-1 is frozen: its container paused. It says nothing, and no graceful path sees it.","step":1}}
