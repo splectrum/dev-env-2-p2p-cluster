@@ -36,7 +36,7 @@
 // The node's state is a view: the fold of topics/manager (nodeState),
 // state.json its cache. node.stderr stays a text file.
 
-import { spawn, execFileSync } from 'node:child_process'
+import { spawn, execFile, execFileSync } from 'node:child_process'
 import { mkdirSync, writeFileSync, createWriteStream, existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { openTopic, folderStorage, committedOffsets } from '../mycelium-topic/index.js'
@@ -227,7 +227,10 @@ export async function manageNode ({ folder, vault, image, network, ip, swarm, na
     flush,
     async stop (timeout = 15) {
       record('stopping', { signal: 'SIGTERM', timeout })
-      tryDocker('stop', '-t', String(timeout), container)
+      // Asynchronous: the node's output keeps being read while it stops (a
+      // synchronous call blocks this loop, the pipe fills, and the node's
+      // last lines are lost).
+      await new Promise(resolve => execFile('docker', ['stop', '-t', String(timeout), container], () => resolve()))
       const end = await done
       record('stopped', { exitCode: end.exitCode, graceful: end.exitCode === 0 })
       await flush()
