@@ -78,7 +78,9 @@ it.
 ## Development and deployment
 
 - One development repository per phase; each package is a folder on
-  `main` (here `mycelium-uri/`, `mycelium-xpath/`, `mycelium-git/`).
+  `main` at the path of its product repository, `<org>/<repo>`
+  (`pear-full-square/mycelium-uri/`, `splectral/base-view-map/`); a
+  project and its component may share a name across organisations.
 - The code is developed on `main` as data and deployed as a tree into a
   `capability/<purpose>` branch to operate.
 - `capability/default` operates this repository's own functionality.

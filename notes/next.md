@@ -179,7 +179,10 @@ Every module has its product repository; every validated change is merged
   5. Validated modules get new ids (`package.json`) and their product
      repositories are updated:
      - attach the repository (`add_repo`, push) and clone it;
-     - `git subtree split --prefix=<module>`;
+     - `git subtree split --prefix=<org>/<module>`. Since step 9's move
+       to `<org>/<repo>` folders, the first merge after the move is one
+       join, `--allow-unrelated-histories`, no file changed; plain merges
+       after;
      - plain merge into the product's `main`. The first time,
        `--allow-unrelated-histories`, and the product's LICENSE stays.
        For a product with an older history, take the folder's files.
@@ -188,13 +191,17 @@ Every module has its product repository; every validated change is merged
      the session branch.
 - **Commit messages**: first line the change; body why; `Request:
   <pending/default commit>:pending/phase-2/<step>/request.md`.
-- **Modules**: folders on `main`.
+- **Modules**: folders on `main` at `<org>/<repo>`, as their product
+  repositories (since step 9): `pear-full-square/` the engines,
+  `splectral/` the components, `haiccing/` the projects.
   - The p2p series, the node, the managers and the Splectral modules are
     npm workspaces at the root: one dependency tree, with the root
     `package.json` carrying Bare's `bare-node-*` aliases.
   - The mycelium modules (and `mycelium-topic`, which has no dependencies)
     are imported by relative path.
-  - Applications (`base-*`) are folders with a `splectral.json`.
+  - Components (`splectral/base-*`) are folders with a `splectral.json`.
+  - Unit tests: `sh steps/1-mycelium/validation/unit-tests.sh
+    pear-full-square/<module>`.
 - **Validation**: only where input enters, with `mycelium-uri`. Internal
   APIs trust their callers.
 
@@ -229,13 +236,14 @@ Every module has its product repository; every validated change is merged
   Monitor on the record's `results.jsonl`, not with `sleep`.
 - Scratch work goes in the session's scratchpad (outside the repository);
   records go into `steps/<step>/<part>/record/`.
-- Images: `p2p-node-manager/image/build.sh .` builds `bare-base:1.36.0`
+- Images: `pear-full-square/p2p-node-manager/image/build.sh .` builds `bare-base:1.36.0`
   and `p2p-node:<commit>` from a committed tree.
-- Swarms for a try: `node p2p-swarm-manager/cli.js genesis --swarm=demo
+- Swarms for a try: `node pear-full-square/p2p-swarm-manager/cli.js genesis --swarm=demo
   --folder=<w>/demo-swarm --nodes=<w> --vault=<w>/vault --code=.`, then
   `join --folder=... --node=node-1`, `status`, `invite`, `stop`. Always
   stop: containers and networks stay otherwise. Splectral on a running
-  swarm: `steps/7-splectral/10-validation/demo.sh` (phases in its header).
+  swarm: `steps/7-splectral/10-validation/demo.sh` (phases in its header;
+  it runs at step 7's commits, before the move to `<org>/<repo>`).
 
 ## To continue
 
