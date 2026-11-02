@@ -206,6 +206,9 @@ replicated; the managers the authority for the substrate, a 100% split but
 for auto mode; nodes shadowing their managers (`node-pattern.md`,
 authority). The roadmap's "swarm's record as a deployment repository".
 
+**Phase 2's request is met** (steps 0 to 10; the mapping below). Paused
+2026-11-02 for the human's local look (`local.md`).
+
 ## Further down the roadmap
 
 Each replacing its in-code version behind the same contract, once enough

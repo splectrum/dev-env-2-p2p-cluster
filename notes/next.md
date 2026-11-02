@@ -4,6 +4,13 @@ Written 2026-11-01 after step 7, updated 2026-11-02 after steps 8, 9 and 10 (the
 compaction). Read this first, then `rules.md` (single concern first), then
 `notes/plan.md`. Everything below is on `main`.
 
+## Paused (2026-11-02)
+
+After step 10 (phase 2's request met), for the human to look at the work
+locally: `notes/local.md` lists what to do there (the `haiccing` merge
+for the local agent, the demos in the flesh, what to report). Resume from
+what they bring back.
+
 ## Where it stands
 
 Phase 2, the P2P swarm (the request: `pending/phase-2/request.md` on

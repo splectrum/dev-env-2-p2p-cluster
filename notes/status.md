@@ -4,7 +4,13 @@ The second development phase: the creation of a P2P cluster, starting with
 p2p-git on Hyperdrive. Request: `pending/phase-2/request.md` on
 `pending/default`.
 
-Status (2026-10-31): **the design is settled; implementation starts over
+Status (2026-11-02): **phase 2's request is met; the work is paused** for
+the human to look at it locally (`local.md`: what to do there). Steps 0 to
+10 done (`plan.md`, `../steps/readme.md`); the products merged
+(`products.md`), but the two `haiccing` projects (with the local agent);
+the handover: `next.md`.
+
+Earlier status (2026-10-31): **the design is settled; implementation starts over
 along it.** A first build ran through the request's five steps on a thin
 path (2026-10-30). Reviewed afterwards, it had been built before the design
 was thought through: it stands as a set of probes, and its findings went
