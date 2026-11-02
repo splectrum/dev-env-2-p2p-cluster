@@ -190,11 +190,19 @@ the swarm manager read a cache half written.
 
 ### 9. Click and run — requested
 
-Request: `pending/phase-2/step-9-click-and-run/request.md` (`120a8f5`). Running
-Splectral and its demos as one command, then clicks: `haicc-reconcile`
-(`haicc-reconcile.md`; configuration apart from running), setups in
-Splectral, Splectral spoken to through topics, tabs, the `splectral` command,
+Request: `pending/phase-2/step-9-click-and-run/request.md` (`9c16387`). A
+demo is a project (`haiccing`) brought up with one command, then clicks:
+`haicc-reconcile` and `haicc-deployment` (`haicc-reconcile.md`: the
+engine, configuration apart from running, the lifecycle), Splectral as
+part of a project and spoken to through topics, tabs, the demo projects,
 the local run's fixes.
+
+### 10. The deployment on the swarm — next
+
+The swarm's part of a deployment as a repository on the master,
+replicated; the managers the authority for the substrate, a 100% split but
+for auto mode; nodes shadowing their managers (`node-pattern.md`,
+authority). The roadmap's "swarm's record as a deployment repository".
 
 ## Further down the roadmap
 
@@ -208,7 +216,7 @@ is built and proven:
 - the capability store as a repository: packages as commits of gitlinks,
   validation by test runs, availability, a repository's `capability/default`
   as gitlinks; kept runs holding links into it;
-- the swarm's record as a deployment repository.
+- the swarm's record as a deployment repository (step 10).
 
 ## The request's done, mapped
 

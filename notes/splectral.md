@@ -361,38 +361,29 @@ Agreed 2026-11-02.
 - **HTTP only at the browser's boundary**: a page cannot read the host's
   topics, so the transport is the browser's adapter onto the same topics
   (a click is an action record; the live view comes from the topics).
-- **The `splectral` command**: `haicc-reconcile apply` with Splectral's
-  requirements (configuration, then the server running), the browser
-  opened; its other subcommands are a client producing actions and
-  following results. No launcher module.
+- **Bringing it up is a project's lifecycle** (`haicc-deployment`:
+  deploy, start, stop, teardown): Splectral's configuration, then its
+  server running, as part of the project's deployment; the browser opened.
+  Commands once it runs are a client producing actions and following
+  results. No launcher module.
 - Latency (following polls) is no issue now; change notifications can
   replace polling behind the same `follow` later.
 
-## Setups: the world a demo needs
+## Demos as projects
 
-Agreed 2026-11-02. A demo may need a fixed world; not every demo will.
-- **A setup is its own extension kind**, apart from the scenario: a name
-  and the world it needs in abstract terms, hosts and the nodes on each
-  (`{ "hosts": { "host-a": { "nodes": ["master", "node-1"] }, "host-b":
-  {} } }`); no p2p. Setups are applications (`base-setup-one-host`,
-  `base-setup-two-hosts`), shared by the demos that need the same world.
-- **A scenario names a setup, or none** (`"setup": "<name>"`). With one,
-  Run first makes it true, then plays; without, it runs on whatever is
-  there. Later, if a demo asks: requirements (at least n nodes), met by
-  what runs or by adding to it.
-- **Making it true is reconciliation** (`haicc-reconcile`): reuse what
-  matches, add what is missing, stop what is extra (strict, on the
-  setup's own hosts), start over if the swarm itself does not match. A
-  scenario that changes the world beyond what reconciling can undo says
-  `"fresh": true`. The concrete actions come from the p2p adapter; every
-  step is recorded, so a replay shows the setup too.
-- **Splectral changes only what it created**: a swarm it merely watches is
-  never stopped or reset; a conflicting setup is refused, saying why.
-- **One active setup at a time** for the hosts it names; the menu groups
-  demos by setup and shows whether theirs is ready. Setups name their
-  swarm, and addresses are allocated rather than fixed: the foundation for
-  several demos running side by side later, each on its own swarm, with
-  pages scoped to it.
+Agreed 2026-11-02 (replacing setups as a Splectral kind). A demo, whole, is
+a project (`haiccing`, e.g. `haiccing/demo-liveness`): a specific test
+cluster, a Splectral install on top with the components it needs, and the
+scenario to run. Its configuration is a HAICC deployment
+(`notes/haicc-reconcile.md`), made true by `haicc-reconcile`.
+- **Components stay agnostic** (`splectral`): a demo's scenario names no
+  setup; the project around it provides the world.
+- **Splectral is installed and configured by the project**, and knows the
+  project it was started for. Run again: the project's cluster reconciled
+  back to its declaration, then the scenario played.
+- **One active project per machine** for now (fixed addresses); several
+  side by side later, when addresses are allocated.
+- Splectral has no `setup` extension kind.
 
 ## Rules
 

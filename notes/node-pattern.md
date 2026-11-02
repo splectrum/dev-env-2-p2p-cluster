@@ -363,6 +363,17 @@ frequency (streaming) comes later, through dedicated channels.
   Node, on Bare and between the host and a hardened container with its
   store on a tmpfs; every module's events form each peer's audit.
 
+## Authority: the swarm and the substrate
+
+Agreed 2026-11-02. The swarm is the authority for all that is the swarm
+(members, names, resources, the swarm's part of a deployment, as a
+repository on the master). The swarm and node managers are the authority
+for the substrate (containers, networks, images, vaults, host resources).
+A 100% split: neither writes the other's domain; nodes may hold a shadow
+copy of their managers' state, read-only. The exception is auto mode: a
+manager in auto mode accepts updates from the swarm and acts on its
+substrate for them; otherwise it reports. (`notes/haicc-reconcile.md`.)
+
 ## Open
 
 1. **The secure processes** for the keys that need securing: the

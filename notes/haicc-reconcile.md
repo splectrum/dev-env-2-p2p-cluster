@@ -57,7 +57,7 @@ in that module (the node image in `p2p-node-manager`, swarms and nodes in
    again changes nothing.
 
 A command (`check`, `plan`, `apply`) and a library (Splectral's Run calls
-it with a scenario's setup).
+it to reconcile its project's cluster before a run again).
 
 ## Modes and ownership
 
@@ -82,11 +82,46 @@ or not is one more requirement, applied after the configuration and never
 mixed with it. So stopping a server leaves its configuration as it was,
 and reconciling the configuration does not need the server.
 
-Splectral is the first use: `haicc-reconcile apply` with Splectral's
-requirements (declared in its own file) makes its configuration true, then
-its server running; the `splectral` command is a short name for that, and
-a client of the server once it runs (`notes/splectral.md`, running
-Splectral).
+Splectral is the first use, inside a project: its configuration made
+true, then its server running (`notes/splectral.md`).
+
+## The deployment and its lifecycle: haicc-deployment
+
+Agreed 2026-11-02. Two concerns, two modules:
+- **`haicc-deployment`** owns a deployment as an object: the declared
+  configuration and the desired lifecycle state. The verbs change only
+  the desired state:
+  - **deploy**: the configuration should exist;
+  - **start**: running, on top of it;
+  - **stop**: not running, the configuration kept;
+  - **teardown**: the configuration removed (only what it owns).
+  Every change is a record in the deployment's topic; its state is their
+  fold.
+- **`haicc-reconcile`** makes the world match the desired state: it reads
+  what the deployment wants, compares, acts. It decides nothing itself.
+
+A project (`haiccing`, e.g. `demo-liveness`) declares its deployment: the
+cluster, Splectral's configuration and components, the server running.
+
+## Authority: the swarm and the substrate
+
+Agreed 2026-11-02 (`notes/node-pattern.md`, authority).
+- **The swarm is the authority for all that is the swarm**: members,
+  names, resources, and the swarm's part of a deployment, held as a
+  repository on the swarm (the master), replicated.
+- **The swarm and node managers are the authority for the substrate**:
+  containers, networks, images, vaults, the host's resources.
+- **A 100% split**: neither writes the other's domain. Nodes may hold a
+  shadow copy of their managers' state, read-only.
+- **Auto mode** is the one exception: a manager in auto mode accepts
+  updates from the swarm (the deployment asks for two more nodes of a
+  type: the manager creates their containers). Otherwise a manager only
+  reports what the swarm's deployment would need of it.
+
+Built in two steps: step 9 keeps the deployment on the host (topics in
+the project's folder); the next step puts the swarm's part on the swarm,
+as a repository on the master, with the managers' substrate apart and
+auto mode.
 
 ## Records
 
@@ -97,7 +132,7 @@ can show them.
 ## Later
 
 - Allocation: a free subnet, a free port as requirements the tool
-  satisfies, so several setups run side by side (concurrent demos).
+  satisfies, so several projects run side by side (concurrent demos).
 - `p2p-propagate`: a desired state carried across a swarm, each node
   reconciling its part with this engine.
 - The same pattern on a node itself: its packages and capabilities
