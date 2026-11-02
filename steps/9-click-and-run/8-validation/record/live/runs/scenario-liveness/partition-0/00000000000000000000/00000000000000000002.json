@@ -1,0 +1,1 @@
+{"value":{"time":1793640971075,"scenario":"liveness","kind":"say","text":"Host A runs the swarm: the master, which keeps the names, and node-1, which renews its lease with the master every few seconds.","step":0}}

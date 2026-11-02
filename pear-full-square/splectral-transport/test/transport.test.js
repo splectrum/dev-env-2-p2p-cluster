@@ -7,7 +7,7 @@ import { createModel } from '../../splectral-model/index.js'
 test('a snapshot, then changes; an action and its result', async () => {
   const model = createModel()
   model.apply({ kind: 'joined', uri: '/s/a', host: 'h', key: 'k' })
-  const t = serveTransport({ model, dispatch: async a => ({ did: a.action }) })
+  const t = serveTransport({ model, act: async a => ({ ok: true, result: { did: a.action } }) })
   const server = http.createServer((req, res) => { if (!t.handle(req, res)) { res.writeHead(404); res.end() } })
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
   const base = `http://127.0.0.1:${server.address().port}`

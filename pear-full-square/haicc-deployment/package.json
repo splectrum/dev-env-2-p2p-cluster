@@ -1,0 +1,12 @@
+{
+  "name": "haicc-deployment",
+  "id": "1c692b73-22e7-47b2-bcb4-2c9f201e8a1a",
+  "description": "A deployment as an object: its declared configuration and lifecycle (deploy, start, stop, teardown) as records, reconciled by haicc-reconcile",
+  "type": "module",
+  "exports": "./index.js",
+  "bin": { "haicc-deployment": "./cli.js" },
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "license": "MIT"
+}

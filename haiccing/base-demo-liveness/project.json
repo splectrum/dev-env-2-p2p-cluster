@@ -1,0 +1,185 @@
+{
+  "owner": "base-demo-liveness",
+  "title": "A node goes quiet",
+  "description": "A one-host test cluster (master, node-1) with Splectral and the liveness scenario: node-1 frozen and flagged absent, back, then leaving.",
+  "providers": [
+    "{here}/../../pear-full-square/p2p-swarm-manager/reconcile.js",
+    "{here}/../../pear-full-square/p2p-node-manager/reconcile.js",
+    "{here}/../../pear-full-square/splectral-server/reconcile.js"
+  ],
+  "strict": true,
+  "configuration": [
+    {
+      "kind": "os",
+      "want": {
+        "platform": "linux",
+        "arch": "x64"
+      }
+    },
+    {
+      "kind": "docker",
+      "want": {
+        "native": true
+      }
+    },
+    {
+      "kind": "nodejs",
+      "want": {
+        "atLeast": 22
+      }
+    },
+    {
+      "kind": "bare",
+      "want": {
+        "runtime": "1.36.0"
+      }
+    },
+    {
+      "name": "data-plane",
+      "kind": "subnet",
+      "want": {
+        "cidr": "172.34.0.0/24",
+        "network": "p2p-hosts"
+      },
+      "needs": [
+        "docker"
+      ]
+    },
+    {
+      "name": "management-plane",
+      "kind": "subnet",
+      "want": {
+        "cidr": "172.35.0.0/24",
+        "network": "p2p-hosts-aux"
+      },
+      "needs": [
+        "docker"
+      ]
+    },
+    {
+      "name": "udp-to-host",
+      "kind": "udp",
+      "want": {
+        "network": "bridge"
+      },
+      "needs": [
+        "docker"
+      ]
+    },
+    {
+      "name": "ui-port",
+      "kind": "port",
+      "want": {
+        "port": 4400,
+        "holder": "{work}/splectral.pid"
+      }
+    },
+    {
+      "name": "host-a",
+      "kind": "folder",
+      "want": {
+        "path": "{work}/a"
+      }
+    },
+    {
+      "name": "host-a-vault",
+      "kind": "folder",
+      "want": {
+        "path": "{work}/a-vault"
+      }
+    },
+    {
+      "kind": "image",
+      "want": {
+        "code": "{here}/../.."
+      },
+      "needs": [
+        "docker",
+        "bare"
+      ]
+    },
+    {
+      "name": "splectral-config",
+      "kind": "splectral-config",
+      "want": {
+        "file": "{work}/splectral.json",
+        "config": {
+          "port": 4400,
+          "host": "127.0.0.1",
+          "runs": "runs",
+          "extensions": [
+            "{here}/../../pear-full-square/splectral-p2p-watchers",
+            "{here}/../../pear-full-square/splectral-p2p-actions",
+            "{here}/../../pear-full-square/splectral-scenario",
+            "{here}/../../pear-full-square/splectral-timeline",
+            "{here}/../../pear-full-square/splectral-replay",
+            "{here}/../../pear-full-square/haicc-deployment",
+            "{here}/../../splectral/base-view-map",
+            "{here}/../../splectral/base-demo-liveness"
+          ],
+          "sources": [
+            {
+              "kind": "p2p-host",
+              "host": "host-a",
+              "folder": "{work}/a"
+            }
+          ],
+          "hosts": {
+            "host-a": {
+              "folder": "{work}/a"
+            }
+          },
+          "project": {
+            "file": "{here}/project.json",
+            "work": "{work}"
+          }
+        }
+      }
+    }
+  ],
+  "running": [
+    {
+      "name": "splectral",
+      "kind": "splectral-server",
+      "want": {
+        "config": "{work}/splectral.json",
+        "pid": "{work}/splectral.pid",
+        "out": "{work}/splectral.out"
+      },
+      "needs": [
+        "splectral-config",
+        "ui-port"
+      ]
+    },
+    {
+      "name": "swarm",
+      "kind": "swarm",
+      "want": {
+        "swarm": "hosts",
+        "folder": "{work}/a/hosts-swarm",
+        "nodes": "{work}/a",
+        "vault": "{work}/a-vault",
+        "code": "{here}/../.."
+      },
+      "needs": [
+        "host-a",
+        "host-a-vault",
+        "image",
+        "data-plane",
+        "management-plane",
+        "udp-to-host"
+      ]
+    },
+    {
+      "name": "node-1",
+      "kind": "node",
+      "want": {
+        "swarm": "{work}/a/hosts-swarm",
+        "name": "node-1"
+      },
+      "needs": [
+        "swarm"
+      ]
+    }
+  ]
+}

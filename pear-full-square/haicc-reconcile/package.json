@@ -1,0 +1,12 @@
+{
+  "name": "haicc-reconcile",
+  "id": "b8130816-d49b-4d99-ad0b-778bbd25f492",
+  "description": "Declare what a module needs; check it, plan it, make it so. HAICC's reconcile engine: configuration state apart from running, non-strict by default, only what it owns",
+  "type": "module",
+  "exports": "./index.js",
+  "bin": { "haicc-reconcile": "./cli.js" },
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "license": "MIT"
+}

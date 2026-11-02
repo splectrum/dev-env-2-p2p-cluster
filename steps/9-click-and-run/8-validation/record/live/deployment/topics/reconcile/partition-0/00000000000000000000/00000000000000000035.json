@@ -1,0 +1,1 @@
+{"value":{"verb":"start","time":1793640964881,"phase":"check","name":"swarm","kind":"swarm","status":"met","fixable":null,"detail":{"nodes":["master","node-1"]},"mine":true}}

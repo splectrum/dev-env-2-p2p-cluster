@@ -7,7 +7,9 @@
 //   port, host,
 //   extensions: [folders],        each with a splectral.json (splectral-contract)
 //   sources: [{ kind, ... }],     the platform's `file`, or a kind an extension provides
-//   runs: folder                  where actions and scenario runs are recorded (topics)
+//   runs: folder                  where actions and scenario runs are recorded (topics);
+//                                 clients' action topics under <runs>/clients
+//   project: { file, work }       the HAICC project this instance was started for (optional)
 // }
 //
 // Sources yield records; mappers (extensions, matched by what a source
@@ -26,6 +28,7 @@ import { checkManifest } from '../splectral-contract/index.js'
 import { createModel } from '../splectral-model/index.js'
 import { serveTransport } from '../splectral-transport/index.js'
 import { openTopic, folderStorage } from '../mycelium-topic/index.js'
+import { followClients } from './lib/clients.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const types = { '.js': 'text/javascript', '.mjs': 'text/javascript', '.html': 'text/html', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml' }
@@ -101,14 +104,22 @@ export async function startServer ({ config }) {
   for (const p of provided('action')) actions[p.id] = await load(p)
   const scenarios = {}
   for (const p of provided('scenario')) scenarios[p.id] = { ...JSON.parse(readFileSync(join(p.dir, p.file), 'utf8')), id: p.id, ext: p.ext, title: p.title }
-  const ctx = { config, model, emit, platform, scenarios, dispatch: a => dispatch(a) }
-  async function dispatch ({ action, with: args = {} }) {
+  const ctx = { config, model, emit, platform, scenarios, dispatch: a => dispatch(a), has: id => Boolean(actions[id]) }
+  // `meta`: the client and correlation id of an action that came through a
+  // client topic; actions dispatched inside (a scenario's steps) have none.
+  async function dispatch ({ action, with: args = {} }, meta = {}) {
     const run = actions[action]
-    if (!run) throw new Error(`no action: ${action}`)
     const t0 = Date.now()
     let result, error = null
-    try { result = await run(args, ctx) } catch (err) { error = err.message }
-    if (actionLog) await actionLog.produce({ value: { action, with: args, ok: !error, error, ms: Date.now() - t0 } })
+    // An unknown action is refused, and recorded as refused.
+    if (!run) error = `no action: ${action}`
+    else try { result = await run(args, ctx) } catch (err) { error = err.message }
+    if (actionLog) {
+      await actionLog.produce({
+        value: { action, with: args, ok: !error, error, ms: Date.now() - t0, ...(meta.client ? { client: meta.client } : {}), ...(result !== undefined && !error ? { result } : {}) },
+        ...(meta.correlation ? { headers: [{ key: 'correlation', value: meta.correlation }] } : {})
+      })
+    }
     emit({ kind: 'actionResult', action, ok: !error, error })
     if (error) throw new Error(error)
     return result
@@ -140,7 +151,9 @@ export async function startServer ({ config }) {
     res.writeHead(200, { 'content-type': types[extname(file)] })
     res.end(readFileSync(file))
   }
-  const transport = serveTransport({ model, dispatch })
+  // Clients through topics; the browser's HTTP adapter is one of them.
+  const clients = config.runs ? await followClients({ runs: config.runs, dispatch }) : null
+  const transport = serveTransport({ model, act: a => clients ? clients.submit('browser', a) : dispatch(a).then(result => ({ ok: true, result }), err => ({ ok: false, error: err.message })) })
   const server = http.createServer((req, res) => {
     if (transport.handle(req, res)) return
     const url = new URL(req.url, 'http://x')
@@ -166,6 +179,7 @@ export async function startServer ({ config }) {
     menu,
     async close () {
       for (const r of running) await r?.stop?.()
+      clients?.stop()
       transport.close()
       const closed = new Promise(resolve => server.close(resolve))
       server.closeAllConnections()

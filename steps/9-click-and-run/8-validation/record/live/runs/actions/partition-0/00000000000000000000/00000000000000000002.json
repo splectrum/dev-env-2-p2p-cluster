@@ -1,0 +1,1 @@
+{"value":{"action":"send-request","with":{"from":"host-a","to":"/hosts/node-1/node","name":"status-while-absent"},"ok":false,"error":"absent: /hosts/node-1/node, since 2026-11-02T17:36:22.164Z","ms":6086}}

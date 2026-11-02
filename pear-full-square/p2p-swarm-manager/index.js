@@ -6,6 +6,9 @@
 //   await status({ folder })                               the swarm as p2p-rns sees it
 //   invite({ folder })                                     what another host is given to join
 //   await restart({ folder, node }), await stop({ folder })
+//   await start({ folder })                                a stopped swarm, as described
+//   await stopNode({ folder, node })                       one node, gracefully
+//   describe({ folder })                                   the swarm as recorded (or null)
 //
 // Folders stand side by side under `nodes` (no hierarchy): the swarm
 // manager's own (`folder`: its topic, swarm.json its cache) and one per node (its
@@ -70,6 +73,17 @@ async function swarmRecord (folder) {
   return { record, read, write }
 }
 
+// The swarm's two internal networks, made anew: the data plane and the
+// management plane; the host the gateway of both.
+function networks (s, record) {
+  tryDocker('network', 'rm', s.network)
+  docker('network', 'create', '--internal', '--subnet', `${s.subnet}.0/24`, '--gateway', `${s.subnet}.1`, s.network)
+  record('network-created', { network: s.network, subnet: `${s.subnet}.0/24`, internal: true })
+  tryDocker('network', 'rm', s.aux.network)
+  docker('network', 'create', '--internal', '--subnet', s.aux.subnet, '--gateway', s.aux.gateway, s.aux.network)
+  record('network-created', { network: s.aux.network, subnet: s.aux.subnet, internal: true, plane: 'management' })
+}
+
 // Start a node's manager, detached, and wait for its node to be ready.
 async function startNodeManager (s, node, { vault, timeout = 180000 }) {
   const folder = node.folder
@@ -105,13 +119,8 @@ export async function genesis ({ swarm, folder, nodes, vault, code, subnet = '17
   const image = execFileSync('sh', [join(here, '..', 'p2p-node-manager', 'image', 'build.sh'), code], { encoding: 'utf8' }).trim()
   record('image-built', { image, ms: Date.now() - t0 })
   const network = `p2p-${swarm}`
-  tryDocker('network', 'rm', network)
-  docker('network', 'create', '--internal', '--subnet', `${subnet}.0/24`, '--gateway', `${subnet}.1`, network)
-  record('network-created', { network, subnet: `${subnet}.0/24`, internal: true })
   const aux = { network: `p2p-${swarm}-aux`, subnet: `${auxSubnet}.0/24`, gateway: `${auxSubnet}.1` }
-  tryDocker('network', 'rm', aux.network)
-  docker('network', 'create', '--internal', '--subnet', aux.subnet, '--gateway', aux.gateway, aux.network)
-  record('network-created', { network: aux.network, subnet: aux.subnet, internal: true, plane: 'management' })
+  networks({ network, subnet, aux }, record)
   // The master is provisioned through the auxiliary swarm too (step 7):
   // index 0 there, as joining nodes are 1, 2, ...
   const master = { name: 'master', role: 'master', ip: `${subnet}.2`, auxIp: `${auxSubnet}.9`, auxPort: 49740, folder: join(nodes, `${swarm}-master`) }
@@ -218,6 +227,42 @@ export async function restart ({ folder, node: name }) {
   write(s)
   record('node-restarted', { node: name, key: ready.key, packages: ready.genesis?.packages?.commit, sameKey: ready.key === before?.key, ms: ready.ms })
   return { before, after: ready }
+}
+
+// A stopped swarm started again, as it was described: its networks, then
+// its nodes' managers, the master first (its identity kept by the vault:
+// the same keys and ids). Nodes already running are left as they are.
+export async function start ({ folder }) {
+  const { record, read, write } = await swarmRecord(folder)
+  const s = await read()
+  const t0 = Date.now()
+  record('start-started', { swarm: s.swarm })
+  const running = async n => (await nodeState(n.folder))?.status === 'running'
+  if (!(await running(s.nodes[0]))) networks(s, record)
+  for (let i = 0; i < s.nodes.length; i++) {
+    if (await running(s.nodes[i])) continue
+    const ready = await startNodeManager(s, s.nodes[i], { vault: s.vault })
+    s.nodes[i] = { ...s.nodes[i], uri: ready.uri, key: ready.key, managerPid: ready.managerPid }
+  }
+  write(s)
+  record('swarm-started', { nodes: s.nodes.map(n => n.name), ms: Date.now() - t0 })
+  return s
+}
+
+// One node stopped (its manager stops it gracefully); the swarm runs on.
+export async function stopNode ({ folder, node: name }) {
+  const { record, read } = await swarmRecord(folder)
+  const s = await read()
+  const n = s.nodes.find(x => x.name === name)
+  if (!n) throw new Error(`no node: ${name}`)
+  const end = await stopNodeManager(n)
+  record('node-stopped', { node: name, exitCode: end?.exitCode })
+  return end
+}
+
+export async function describe ({ folder }) {
+  if (!existsSync(join(folder, 'topics', 'swarm'))) return null
+  try { return await (await swarmRecord(folder)).read() } catch { return null }
 }
 
 export async function stop ({ folder }) {

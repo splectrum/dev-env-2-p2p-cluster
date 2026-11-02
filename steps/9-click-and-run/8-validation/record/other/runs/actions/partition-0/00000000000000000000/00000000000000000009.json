@@ -1,0 +1,1 @@
+{"value":{"action":"invite","with":{"from":"host-a","to":"host-b"},"ok":true,"error":null,"ms":10,"result":{"swarm":"hosts","to":"host-b"}}}

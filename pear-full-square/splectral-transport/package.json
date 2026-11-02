@@ -1,6 +1,6 @@
 {
   "name": "splectral-transport",
-  "id": "b95c0155-8a87-459b-8060-92701fef5d9f",
+  "id": "a3bcf3d4-02cb-4393-babd-c1008ccc3eac",
   "description": "Splectral's stream between server and browser: snapshots, changes, actions and their results",
   "type": "module",
   "exports": {

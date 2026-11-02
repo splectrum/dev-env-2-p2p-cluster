@@ -1,0 +1,1 @@
+{"value":{"action":"send-request","with":{"from":"host-a","to":"/hosts/remote-1/node","name":"status-from-host-a"},"ok":true,"error":null,"ms":449,"result":{"to":"/hosts/remote-1/node","name":"status-from-host-a-mvzjofsa","answer":"Status given.","main":"e7b6c22957ca07667b6fbcc80d66369554b93b92","ms":436}}}

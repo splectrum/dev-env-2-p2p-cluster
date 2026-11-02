@@ -1,0 +1,9 @@
+{ "owner": "lacking",
+  "requirements": [
+    { "kind": "os", "want": { "platform": "linux", "arch": "x64" } },
+    { "kind": "docker", "want": { "native": true } },
+    { "kind": "nodejs", "want": { "atLeast": 99 } },
+    { "kind": "bare", "want": { "runtime": "9.9.9" } },
+    { "name": "taken-port", "kind": "port", "want": { "port": 4499 } },
+    { "name": "work", "kind": "folder", "want": { "path": "{here}/never-made" }, "needs": ["bare"] }
+  ] }

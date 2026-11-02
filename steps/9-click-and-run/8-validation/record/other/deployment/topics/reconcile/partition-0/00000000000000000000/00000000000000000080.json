@@ -1,0 +1,1 @@
+{"value":{"verb":"reconcile","time":1793641216822,"phase":"check","name":"swarm","kind":"swarm","status":"met","fixable":null,"detail":{"nodes":["master","node-1"]},"mine":true}}

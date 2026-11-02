@@ -1,0 +1,129 @@
+# Running the demos on your own machine
+
+The demos are HAICC projects (`haiccing/`): each a test cluster, Splectral
+on top with its components, and a scenario to watch. One command brings a
+demo up; then everything is clicks in the browser, and a scenario runs
+again as often as you like. Local network only: nothing goes to the
+internet while a demo runs.
+
+| Project | What you see |
+|---|---|
+| `base-demo-liveness` | A node goes quiet: node-1 frozen, flagged absent when its lease runs out, a request to it refused, thawed and present again, then leaving gracefully. |
+| `base-demo-other-host` | A node on another host: host B's own manager starts a node from an invitation, a request crosses the hosts, the node writes, stops and leaves; the swarm runs on. |
+
+This replaces the steps' instructions (`steps/6-other-host/local-machine.md`,
+`steps/7-splectral/local-machine.md`), which stay as records of their steps.
+
+## 1. The machine
+
+`sh haicc check <project>` checks all of this and says what is missing,
+with a hint for each:
+
+- **Linux on x86-64.** On Windows: inside WSL2 (tested: Ubuntu 24.04).
+- **Docker Engine, rootful, running natively** (in WSL2: Docker Engine
+  inside the distribution). Not Docker Desktop, not rootless: the managers
+  on the host must reach the Docker networks' addresses.
+- **Node.js 22 or later** (24 tested), npm, git.
+- **Bare's runtime 1.36.0**: `npm i -g bare@1.36.2`.
+- **Free subnets** `172.34.0.0/24`, `172.35.0.0/24` (and `172.36.0.0/24`
+  for the other-host demo), **port 4400** free, **UDP from containers to
+  the host's bridge addresses** allowed by the firewall.
+
+## 2. Once, while online
+
+```bash
+git clone https://github.com/splectrum/dev-env-2-p2p-cluster.git && cd dev-env-2-p2p-cluster
+```
+
+```bash
+PUPPETEER_SKIP_DOWNLOAD=1 npm install
+```
+
+```bash
+for m in mycelium-git mycelium-layer mycelium-repo; do (cd pear-full-square/$m && PUPPETEER_SKIP_DOWNLOAD=1 npm install); done
+```
+
+```bash
+docker pull debian:bookworm-slim
+```
+
+From here the machine can be offline. (`PUPPETEER_SKIP_DOWNLOAD=1` stops
+a git dependency's preparation from fetching a browser.)
+
+## 3. A demo
+
+```bash
+sh haicc check base-demo-liveness
+```
+
+```bash
+sh haicc start base-demo-liveness
+```
+
+`start` deploys what is missing (the work folders, the node image,
+Splectral's configuration), then starts Splectral and the swarm: about a
+minute the first time (the image is built once per commit). It opens the
+browser where it can (Linux desktop, WSL), and prints the URL:
+**http://127.0.0.1:4400**.
+
+In the browser:
+1. **The menu**: the scenario, Timeline, Map, a page per node.
+2. **The scenario's page**: press **Run**. Open **Map** too: its tab's
+   **⇆** shows it beside the scenario, so you watch the messages and the
+   swarm together.
+3. **Run again**, any time: the project is first brought back to its
+   declared state (a node that left is started again), then the scenario
+   plays.
+
+Stop it (nothing runs; everything it made is kept, and `start` brings it
+back), or tear it down (nothing of it left but its records):
+
+```bash
+sh haicc stop base-demo-liveness
+```
+
+```bash
+sh haicc teardown base-demo-liveness
+```
+
+**One demo at a time**: both use the swarm name `hosts`, its subnets and
+port 4400. Starting the second while the first runs is refused, saying
+why; stop the first, then start the second.
+
+The work folder is `~/.haicc/<project>` (`--work=<folder>` for another).
+It holds the swarm's folders and vaults (the nodes' secret keys: never
+copy them; teardown removes them) and the records: the deployment's
+topics (`deployment/`), Splectral's runs (`runs/`).
+
+## 4. Watching from a tablet or phone
+
+Splectral listens on `127.0.0.1`. To reach it from your local network,
+change `"host"` to `"0.0.0.0"` in the project's `project.json` (the
+`splectral-config` requirement), and run `sh haicc reconcile <project>`:
+the configuration is rewritten, and the server restarted on it. Open
+`http://<this machine's address>:4400`. Splectral has no sign-in yet, and
+its actions start and stop things on this machine: only on a network you
+trust, and set it back afterwards.
+
+## 5. When something goes wrong
+
+- `sh haicc status <project>`: what is wanted and what is there.
+- `sh haicc reconcile <project>`: brings it back to what is wanted (a
+  stopped node started, a stopped Splectral restarted).
+- A scenario that fails says why on its page; every action and its result
+  is in `~/.haicc/<project>/runs/actions` (a topic: one JSON file per
+  record).
+- A node that does not start usually means UDP to the bridge addresses is
+  blocked (section 1).
+
+## For Claude Code
+
+Open Claude Code in the repository's folder and give it this:
+
+> Read `demos.md`. Run `sh haicc check base-demo-liveness` and tell me
+> what is missing; do section 2 if needed; then `sh haicc start
+> base-demo-liveness` and give me the URL. Don't run the scenario: I will
+> press Run in the browser. Don't commit anything. When I say I'm done,
+> `sh haicc stop`, and `teardown` if I ask.
+
+Never print or copy the vaults (`~/.haicc/<project>/a-vault`, `b-vault`).

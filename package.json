@@ -24,7 +24,9 @@
     "pear-full-square/splectral-scenario",
     "pear-full-square/splectral-timeline",
     "pear-full-square/splectral-p2p-watchers",
-    "pear-full-square/splectral-p2p-actions"
+    "pear-full-square/splectral-p2p-actions",
+    "pear-full-square/haicc-reconcile",
+    "pear-full-square/haicc-deployment"
   ],
   "dependencies": {
     "child_process": "npm:bare-node-child-process@1.0.1",

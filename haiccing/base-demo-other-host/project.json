@@ -1,0 +1,219 @@
+{
+  "owner": "base-demo-other-host",
+  "title": "A node on another host",
+  "description": "A two-host test cluster: host A runs the swarm (master, node-1); host B has its own manager and vault and nothing running. With Splectral and the other-host scenario: a node joins from host B by invitation.",
+  "providers": [
+    "{here}/../../pear-full-square/p2p-swarm-manager/reconcile.js",
+    "{here}/../../pear-full-square/p2p-node-manager/reconcile.js",
+    "{here}/../../pear-full-square/splectral-server/reconcile.js"
+  ],
+  "strict": true,
+  "configuration": [
+    {
+      "kind": "os",
+      "want": {
+        "platform": "linux",
+        "arch": "x64"
+      }
+    },
+    {
+      "kind": "docker",
+      "want": {
+        "native": true
+      }
+    },
+    {
+      "kind": "nodejs",
+      "want": {
+        "atLeast": 22
+      }
+    },
+    {
+      "kind": "bare",
+      "want": {
+        "runtime": "1.36.0"
+      }
+    },
+    {
+      "name": "data-plane",
+      "kind": "subnet",
+      "want": {
+        "cidr": "172.34.0.0/24",
+        "network": "p2p-hosts"
+      },
+      "needs": [
+        "docker"
+      ]
+    },
+    {
+      "name": "management-plane",
+      "kind": "subnet",
+      "want": {
+        "cidr": "172.35.0.0/24",
+        "network": "p2p-hosts-aux"
+      },
+      "needs": [
+        "docker"
+      ]
+    },
+    {
+      "name": "udp-to-host",
+      "kind": "udp",
+      "want": {
+        "network": "bridge"
+      },
+      "needs": [
+        "docker"
+      ]
+    },
+    {
+      "name": "ui-port",
+      "kind": "port",
+      "want": {
+        "port": 4400,
+        "holder": "{work}/splectral.pid"
+      }
+    },
+    {
+      "name": "host-a",
+      "kind": "folder",
+      "want": {
+        "path": "{work}/a"
+      }
+    },
+    {
+      "name": "host-a-vault",
+      "kind": "folder",
+      "want": {
+        "path": "{work}/a-vault"
+      }
+    },
+    {
+      "kind": "image",
+      "want": {
+        "code": "{here}/../.."
+      },
+      "needs": [
+        "docker",
+        "bare"
+      ]
+    },
+    {
+      "name": "remote-plane",
+      "kind": "subnet",
+      "want": {
+        "cidr": "172.36.0.0/24",
+        "network": "p2p-hosts-remote-1-aux"
+      },
+      "needs": [
+        "docker"
+      ]
+    },
+    {
+      "name": "host-b",
+      "kind": "folder",
+      "want": {
+        "path": "{work}/b"
+      }
+    },
+    {
+      "name": "host-b-vault",
+      "kind": "folder",
+      "want": {
+        "path": "{work}/b-vault"
+      }
+    },
+    {
+      "name": "splectral-config",
+      "kind": "splectral-config",
+      "want": {
+        "file": "{work}/splectral.json",
+        "config": {
+          "port": 4400,
+          "host": "127.0.0.1",
+          "runs": "runs",
+          "extensions": [
+            "{here}/../../pear-full-square/splectral-p2p-watchers",
+            "{here}/../../pear-full-square/splectral-p2p-actions",
+            "{here}/../../pear-full-square/splectral-scenario",
+            "{here}/../../pear-full-square/splectral-timeline",
+            "{here}/../../pear-full-square/splectral-replay",
+            "{here}/../../pear-full-square/haicc-deployment",
+            "{here}/../../splectral/base-view-map",
+            "{here}/../../splectral/base-demo-other-host"
+          ],
+          "sources": [
+            {
+              "kind": "p2p-host",
+              "host": "host-a",
+              "folder": "{work}/a"
+            },
+            {
+              "kind": "p2p-host",
+              "host": "host-b",
+              "folder": "{work}/b"
+            }
+          ],
+          "hosts": {
+            "host-a": {
+              "folder": "{work}/a"
+            },
+            "host-b": {
+              "folder": "{work}/b",
+              "vault": "{work}/b-vault"
+            }
+          },
+          "project": {
+            "file": "{here}/project.json",
+            "work": "{work}"
+          }
+        }
+      }
+    }
+  ],
+  "running": [
+    {
+      "name": "splectral",
+      "kind": "splectral-server",
+      "want": {
+        "config": "{work}/splectral.json",
+        "pid": "{work}/splectral.pid",
+        "out": "{work}/splectral.out"
+      },
+      "needs": [
+        "splectral-config",
+        "ui-port"
+      ]
+    },
+    {
+      "name": "swarm",
+      "kind": "swarm",
+      "want": {
+        "swarm": "hosts",
+        "folder": "{work}/a/hosts-swarm",
+        "nodes": "{work}/a",
+        "vault": "{work}/a-vault",
+        "code": "{here}/../.."
+      },
+      "needs": [
+        "host-a",
+        "host-a-vault",
+        "image",
+        "data-plane",
+        "management-plane",
+        "udp-to-host"
+      ]
+    },
+    {
+      "name": "node-1",
+      "kind": "node",
+      "want": {
+        "swarm": "{work}/a/hosts-swarm",
+        "name": "node-1"
+      },
+      "needs": [
+        "swarm"
+      ]
+    }
+  ]
+}
