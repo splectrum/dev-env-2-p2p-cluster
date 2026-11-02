@@ -12,17 +12,22 @@
 // yet admitted or refused (open: admitting writers). Requests run one at a
 // time, in the order they came.
 //
-// Kinds: `Status: node`, answered with the node's status (status()).
+// Kinds: `Status: node`, answered with the node's status (status());
+// `Deployment: set`, on the master only (`deployment`): the request's
+// `deployment.json`, checked at this boundary, committed to the swarm's
+// deployment repository.
 
 import { readBundle, writeBundle, writer, openRepo } from '../mycelium-git/index.js'
 import { executeRequests } from '../mycelium-layer/index.js'
 import { validateName } from '../mycelium-uri/index.js'
+import { checkDeployment } from './deployment.js'
 
 const author = { name: 'p2p-node', email: 'p2p-node@localhost' }
 
-export function requests ({ repo, status, observer = null }) {
+export function requests ({ repo, status, deployment = null, observer = null }) {
   const emit = (kind, facts) => observer && observer({ module: 'p2p-node', kind, time: Date.now(), repository: repo.name, ...facts })
   let queue = Promise.resolve()
+  const senders = new Map() // request name -> its sender, as taken in
 
   async function intake ({ name, bytes, sender }) {
     const backend = repo.backend
@@ -46,6 +51,7 @@ export function requests ({ repo, status, observer = null }) {
       await c.put(path, content)
     }
     const commit = await c.commit(`Request ${name}\n\nTaken in from ${sender}.\n`, { author })
+    senders.set(name, sender)
     emit('request-taken', { name, sender, files: files.length, bytes: bytes.length, commit })
     return commit
   }
@@ -60,10 +66,21 @@ export function requests ({ repo, status, observer = null }) {
       environment: { runtime: typeof Bare !== 'undefined' ? `bare ${Bare.version}` : `node ${process.version}` },
       plan: pending => pending.map(({ name, text }) => {
         const m = text.match(/^Status:[ \t]*node[ \t]*$/m)
-        return { name, kind: m ? 'status' : null, line: m ? m[0] : null }
+        const d = text.match(/^Deployment:[ \t]*set[ \t]*$/m)
+        return { name, kind: m ? 'status' : d ? 'deployment' : null, line: (m || d)?.[0] ?? null }
       }),
       handle: async request => {
-        if (!request.kind) return { outcome: "not executed: the request has no 'Status: node' line." }
+        if (request.kind === 'deployment') {
+          if (!deployment) return { outcome: 'not executed: this node does not keep the deployment (the master does).' }
+          let value
+          try {
+            const raw = await openRepo(repo.backend).read(`/pending/default/pending/${request.name}/deployment.json`)
+            value = checkDeployment(JSON.parse(raw.toString()), deployment.swarm)
+          } catch (err) { return { outcome: `not executed: ${err.message}.` } }
+          const commit = await deployment.set(value, senders.get(request.name) || 'unknown')
+          return { outcome: 'Deployment set.', body: '```json\n' + JSON.stringify({ commit, nodes: value.nodes }, null, 2) + '\n```\n' }
+        }
+        if (!request.kind) return { outcome: "not executed: the request has no 'Status: node' or 'Deployment: set' line." }
         const s = await status()
         return { outcome: 'Status given.', body: '```json\n' + JSON.stringify(s, null, 2) + '\n```\n' }
       }

@@ -51,6 +51,7 @@ import { mrepos, idFrom } from 'p2p-mrepo'
 import { writer, openRepo } from '../mycelium-git/index.js'
 import { deploy } from '../mycelium-layer/index.js'
 import { requests } from './requests.js'
+export { checkDeployment } from './deployment.js'
 
 export { askRequest, requestBundle } from './requests.js'
 
@@ -161,14 +162,22 @@ async function start (opts, opened) {
     await c.put('/readme.md', 'Requests to this node, one folder each: pending/<name>/request.md.\n')
     await c.commit('Where requests come', { author, time })
     await w.createExecution('main')
+    // The swarm's deployment (step 10): empty at genesis; the swarm manager
+    // hands its part over by request, and the swarm keeps it from then on.
+    const dp = await repos.create('deployment', { id: idOf('deployment') })
+    const wd = writer(dp.backend)
+    await wd.createLayer('main', 'Create main', { author, time })
+    const cd = await wd.change('main')
+    await cd.put('/deployment.json', JSON.stringify({ swarm, nodes: [] }, null, 2) + '\n')
+    await cd.commit(`The deployment of swarm ${swarm}: nothing yet`, { author, time })
     packages = { uri: `/${swarm}/${name}/packages`, key: pk.key, commit: r.commit }
-    for (const [repo, type] of [[pk, 'packages'], [bt, 'boot']]) {
+    for (const [repo, type] of [[pk, 'packages'], [bt, 'boot'], [dp, 'deployment']]) {
       rns.register({ name: repo.name, id: repo.id, key: repo.key, type })
       rep.track(repo.drive)
       await net.join(repo.drive.discoveryKey, { server: true, client: false })
     }
     await net.join(swarmTopic(swarm), { server: true, client: false })
-    emit('genesis', { swarm, node: name, owner, packages: { key: pk.key, id: pk.id, commit: r.commit, files: r.files }, boot: { key: bt.key, id: bt.id }, ms: Date.now() - t0 })
+    emit('genesis', { swarm, node: name, owner, packages: { key: pk.key, id: pk.id, commit: r.commit, files: r.files }, boot: { key: bt.key, id: bt.id }, deployment: { key: dp.key, id: dp.id }, ms: Date.now() - t0 })
   } else {
     // Joining: to the master, then the name service on that connection.
     net.connectTo(Buffer.from(opts.master, 'hex'))
@@ -242,7 +251,19 @@ async function start (opts, opened) {
     ...(rnsLocal ? { rns: rnsLocal.metrics() } : {})
   })
   const status = () => ({ uri: `/${swarm}/${name}`, role, key: owner, packages, connections: net.connections().length, resources: store.resources().length, uptimeMs: Date.now() - t0 })
-  services.push(requests({ repo: node, status, observer }))
+  // The master keeps the swarm's deployment: `Deployment: set` requests to it.
+  const deployment = role === 'master' ? {
+    swarm,
+    async set (value, sender) {
+      const dp = await repos.open('deployment')
+      const c = await writer(dp.backend).change('main')
+      await c.put('/deployment.json', JSON.stringify(value, null, 2) + '\n')
+      const commit = await c.commit(`The deployment of swarm ${swarm}, set\n\nBy ${sender}.\n`, { author })
+      emit('deployment-set', { commit, nodes: value.nodes, sender })
+      return commit
+    }
+  } : null
+  services.push(requests({ repo: node, status, deployment, observer }))
   // Connections opened before the service existed get its channel now.
   for (const s of net.swarm.connections) serveRequests(s, services[0], hex(s.remotePublicKey))
 
@@ -254,7 +275,7 @@ async function start (opts, opened) {
     uri: `/${swarm}/${name}`,
     key: owner,
     rns: rnsLocal,
-    repos: { node, ...(role === 'master' ? { packages: await repos.open('packages'), boot: await repos.open('boot') } : {}) },
+    repos: { node, ...(role === 'master' ? { packages: await repos.open('packages'), boot: await repos.open('boot'), deployment: await repos.open('deployment') } : {}) },
     packages,
     packagesCommit: packages?.commit,
     metrics,

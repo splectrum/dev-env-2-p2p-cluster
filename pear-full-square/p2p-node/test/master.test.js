@@ -47,7 +47,7 @@ test('genesis: the master serves p2p-rns, its packages and the boot repository; 
   assert.equal(master.uri, '/test/master')
   const p = await peer(49851)
   const { rns } = await p.to(master.key)
-  assert.deepEqual((await rns.list('/test/master/*')).map(r => r.name), ['boot', 'node', 'packages'])
+  assert.deepEqual((await rns.list('/test/master/*')).map(r => r.name), ['boot', 'deployment', 'node', 'packages'])
   const record = await rns.resolve('/test/master/packages')
   assert.equal(record.owner, master.key)
   const replica = await mrepos({ store: p.store }).replica(record.key)
@@ -132,5 +132,31 @@ test('liveness: a joined node renews its lease while it runs, and leaves on a gr
   assert.equal(master.rns.resolve('/test/node-1'), null)
   assert.equal(master.rns.resolve('/test/node-1/node'), null)
   assert.deepEqual(events.filter(e => e.module === 'p2p-rns' && /node-(absent|left)/.test(e.kind)).map(e => e.kind), ['node-left'])
+  await master.stop()
+})
+
+test('the deployment on the swarm: empty at genesis, set by request to the master, checked at the boundary', async () => {
+  const master = await startNode({ role: 'master', swarm: 'test', name: 'master', storage: dir(), primaryKey: crypto.randomBytes(32), host, dhtPort: 49856, code })
+  const read = async () => JSON.parse((await master.read(master.repos.deployment, '/main/deployment.json')).toString())
+  assert.deepEqual(await read(), { swarm: 'test', nodes: [] })
+  const p = await peer(49856)
+  const { rns, requests } = await p.to(master.key)
+  assert.equal((await rns.resolve('/test/master/deployment')).type, 'deployment')
+  const outbox = await mrepos({ store: p.store }).create('outbox')
+  const ask = async (name, deployment) => {
+    const bundle = await requestBundle(outbox.backend, { 'request.md': '# Request: the deployment\n\nDeployment: set\n', 'deployment.json': JSON.stringify(deployment) })
+    await askRequest(requests, { name, bundle })
+  }
+  const wanted = { swarm: 'test', nodes: [{ name: 'node-1' }, { prefix: 'worker-', atLeast: 2 }] }
+  await ask('deploy-1', wanted)
+  assert.deepEqual(await read(), wanted)
+  // Refused at the boundary: another swarm's, the master deployed, a field unknown.
+  for (const [n, bad] of [['bad-1', { swarm: 'other', nodes: [] }], ['bad-2', { swarm: 'test', nodes: [{ name: 'master' }] }], ['bad-3', { swarm: 'test', nodes: [{ name: 'x', size: 3 }] }]]) {
+    await ask(n, bad)
+    const response = (await master.read(master.repos.node, `/main/responses/${n}/response.md`)).toString()
+    assert.match(response, /not executed/)
+  }
+  assert.deepEqual(await read(), wanted, 'unchanged by what was refused')
+  await p.close()
   await master.stop()
 })
