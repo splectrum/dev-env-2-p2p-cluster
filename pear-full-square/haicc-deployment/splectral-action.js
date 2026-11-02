@@ -8,7 +8,8 @@ export default async (args, ctx) => {
   const p = ctx.config.project
   if (!p) throw new Error('this Splectral was not started for a project')
   const d = await openDeployment({ project: p.file, work: p.work })
-  const r = await d.reconcile()
+  // Everything but this server itself: it is the one running the scenario.
+  const r = await d.reconcile({ exceptKinds: ['splectral-server'] })
   const failed = [...(r.failed || []), ...(r.blocked || [])]
   if (failed.length) throw new Error(`not reconciled: ${failed.map(f => f.name).join(', ')}`)
   return { done: (r.done || []).map(x => `${x.name}:${x.action}`) }

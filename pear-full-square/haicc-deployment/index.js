@@ -6,7 +6,7 @@
 //   await d.start()      and run, on top of it
 //   await d.stop()       not run; the configuration kept
 //   await d.teardown()   nothing of it: what it made, taken away
-//   await d.reconcile()  the world brought back to the desired state
+//   await d.reconcile({ exceptKinds })  the world brought back to the desired state
 //   await d.status()     the desired state and what is there
 //
 // A project file (`project.json`): { owner, providers: [modules],
@@ -50,10 +50,12 @@ export async function openDeployment ({ project: file, work }) {
   const stopRunning = () => engine.remove(both(), { only: runningNames() })
   const desired = async () => desiredOf(await lifecycle.consume(0))
 
-  async function reconcile () {
+  // `exceptKinds`: kinds left alone (the Splectral server reconciling its
+  // own project leaves itself).
+  async function reconcile ({ exceptKinds = [] } = {}) {
     const want = await desired()
     verb = 'reconcile'
-    if (want.running) return engine.apply(both(), { strict: p.strict })
+    if (want.running) return engine.apply(both().filter(r => !exceptKinds.includes(r.kind)), { strict: p.strict })
     const stopped = await stopRunning()
     if (want.deployed) return { stopped, ...(await engine.apply(p.configuration, { strict: p.strict })) }
     return { stopped, removed: await engine.remove(p.configuration) }

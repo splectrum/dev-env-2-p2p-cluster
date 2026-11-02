@@ -1,5 +1,7 @@
 # Running Splectral on a local machine
 
+**Superseded by `demos.md`** (step 9): the demos as HAICC projects, one command each. Kept as the record of how this step ran, at its own commits, before the folders moved to `<org>/<repo>`.
+
 How to run step 7 on your own machine and see Splectral in a browser: a
 swarm on host A, a simulated host B, and the step 6 scenario driven from
 Splectral's page, live, then replayed. Local network only: nothing goes to

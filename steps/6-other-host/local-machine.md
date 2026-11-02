@@ -1,5 +1,7 @@
 # Repeating step 6 on a local machine
 
+**Superseded by `demos.md`** (step 9): the demos as HAICC projects, one command each. Kept as the record of how this step ran, at its own commits, before the folders moved to `<org>/<repo>`.
+
 How to rerun step 6's validation on your own machine, using the local
 network only. It is the same run as the record in `validation/record/`:
 host A and a simulated host B on one machine, joined by one Docker
