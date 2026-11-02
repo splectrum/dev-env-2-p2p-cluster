@@ -1,0 +1,1 @@
+{ "swarm": "hosts", "nodes": [ { "name": "master" } ] }

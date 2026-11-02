@@ -1,0 +1,1 @@
+{ "swarm": "hosts", "nodes": [ { "prefix": "worker-", "atLeast": 2 } ] }

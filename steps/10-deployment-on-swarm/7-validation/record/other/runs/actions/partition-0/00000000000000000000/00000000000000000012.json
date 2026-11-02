@@ -1,0 +1,1 @@
+{"value":{"action":"write","with":{"node":"/hosts/remote-1","name":"hello","text":"Hello from host B.\n"},"ok":true,"error":null,"ms":45,"result":{"node":"/hosts/remote-1","action":"write","correlation":"1"}}}

@@ -1,7 +1,7 @@
 {
   "owner": "base-demo-liveness",
   "title": "A node goes quiet",
-  "description": "A one-host test cluster (master, node-1) with Splectral and the liveness scenario: node-1 frozen and flagged absent, back, then leaving.",
+  "description": "A one-host test cluster (master, node-1) with Splectral and the liveness scenario: node-1 frozen and flagged absent, back, then leaving. The swarm keeps its part of the deployment (node-1); its manager, in auto mode, brings it up.",
   "providers": [
     "{here}/../../pear-full-square/p2p-swarm-manager/reconcile.js",
     "{here}/../../pear-full-square/p2p-node-manager/reconcile.js",
@@ -159,7 +159,15 @@
         "folder": "{work}/a/hosts-swarm",
         "nodes": "{work}/a",
         "vault": "{work}/a-vault",
-        "code": "{here}/../.."
+        "code": "{here}/../..",
+        "deployment": {
+          "swarm": "hosts",
+          "nodes": [
+            {
+              "name": "node-1"
+            }
+          ]
+        }
       },
       "needs": [
         "host-a",
@@ -171,14 +179,32 @@
       ]
     },
     {
-      "name": "node-1",
-      "kind": "node",
+      "name": "swarm-deployment",
+      "kind": "swarm-deployment",
       "want": {
         "swarm": "{work}/a/hosts-swarm",
-        "name": "node-1"
+        "deployment": {
+          "swarm": "hosts",
+          "nodes": [
+            {
+              "name": "node-1"
+            }
+          ]
+        }
       },
       "needs": [
         "swarm"
+      ]
+    },
+    {
+      "name": "swarm-watcher",
+      "kind": "swarm-watcher",
+      "want": {
+        "swarm": "{work}/a/hosts-swarm",
+        "auto": true
+      },
+      "needs": [
+        "swarm-deployment"
       ]
     }
   ]

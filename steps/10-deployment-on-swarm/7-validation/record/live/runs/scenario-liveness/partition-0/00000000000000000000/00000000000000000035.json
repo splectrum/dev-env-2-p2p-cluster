@@ -1,0 +1,1 @@
+{"value":{"time":1793643949781,"scenario":"liveness","kind":"say","text":"node-1 is stopped gracefully: it leaves the master's names first, so its name is free at once.","step":6}}

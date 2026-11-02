@@ -15,7 +15,8 @@
 //   remove(req, ctx, actual)   take it away (only what `owned` says is ours)
 //   owned(actual, ctx)         made by this owner?
 //   hint(req, actual)          for what only a human can fix
-//   extras(reqs, ctx)          what is there in the providers' scope and not declared
+//   extras(reqs, ctx)          what is there in the provider's scope and not declared
+//                              (given every requirement; it picks what concerns it)
 // Statuses: met; missing or different, fixable or not; extra. Non-strict
 // (the default) leaves extras; strict removes those it owns. Never what
 // someone else made.
@@ -68,7 +69,9 @@ export function createEngine ({ providers, owner = 'haicc', record = null }) {
     const out = []
     for (const [kind, p] of Object.entries(providers)) {
       if (!p.extras) continue
-      for (const x of await p.extras(reqs.filter(r => r.kind === kind), ctx)) {
+      // Every requirement: a provider decides what concerns it (a swarm's
+      // nodes are found from the selections too).
+      for (const x of await p.extras(reqs, ctx)) {
         out.push({ name: x.name, kind, status: 'extra', mine: p.owned ? Boolean(p.owned(x.actual, ctx)) : false, actual: x.actual })
       }
     }

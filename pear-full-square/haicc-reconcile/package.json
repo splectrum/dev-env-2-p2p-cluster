@@ -1,6 +1,6 @@
 {
   "name": "haicc-reconcile",
-  "id": "b8130816-d49b-4d99-ad0b-778bbd25f492",
+  "id": "4b7e5354-d7e1-4091-96a0-d76bf9eebf09",
   "description": "Declare what a module needs; check it, plan it, make it so. HAICC's reconcile engine: configuration state apart from running, non-strict by default, only what it owns",
   "type": "module",
   "exports": "./index.js",

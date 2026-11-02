@@ -1,0 +1,1 @@
+{"value":{"action":"stop-node","with":{"node":"/hosts/remote-1"},"ok":true,"error":null,"ms":785,"result":{"node":"/hosts/remote-1","status":"exited","exitCode":0}}}

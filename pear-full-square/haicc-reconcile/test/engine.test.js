@@ -14,7 +14,7 @@ function thingKind (world) {
     create: (r, ctx) => { if (r.want.fail) throw new Error('cannot'); world.set(r.want.id, { size: r.want.size, owner: ctx.owner }) },
     owned: (a, ctx) => a.owner === ctx.owner,
     remove: (r, ctx, a) => { for (const [k, v] of world) if (v === a) world.delete(k) },
-    extras: (reqs) => [...world].filter(([id]) => !reqs.some(r => r.want.id === id)).map(([id, actual]) => ({ name: `thing-${id}`, actual })),
+    extras: (reqs) => [...world].filter(([id]) => !reqs.some(r => r.kind === 'thing' && r.want.id === id)).map(([id, actual]) => ({ name: `thing-${id}`, actual })),
     hint: () => 'not ours to change'
   }
 }

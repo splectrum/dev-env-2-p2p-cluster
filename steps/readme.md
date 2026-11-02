@@ -34,3 +34,4 @@ done with them.
 | 7. Splectral and data in topics | `7-splectral/` | done |
 | 8. Liveness | `8-liveness/` | done |
 | 9. Click and run | `9-click-and-run/` | done |
+| 10. The deployment on the swarm | `10-deployment-on-swarm/` | done |

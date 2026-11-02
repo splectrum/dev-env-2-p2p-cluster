@@ -87,6 +87,7 @@ export async function manageNode ({ folder, vault, image, network, ip, swarm, na
   // reducer's fold, kept as it goes and cached in state.json.
   let state = null
   let produced = Promise.resolve()
+  let provision = null // the auxiliary link, once made; record() passes the state on through it
   // Written whole, by temporary file and rename: a reader never sees it
   // half written.
   const saveState = () => {
@@ -98,6 +99,7 @@ export async function manageNode ({ folder, vault, image, network, ip, swarm, na
     state = reduceNodeState(state, value)
     produced = topics.manager.produce({ value })
     saveState()
+    if (provision && kind !== 'resources') provision.shadow(state)
   }
   const flush = () => produced
   record('starting', { swarm, name, role, container, image, network, ip, memory, storeSize })
@@ -116,7 +118,6 @@ export async function manageNode ({ folder, vault, image, network, ip, swarm, na
 
   // A joining node is provisioned through the auxiliary swarm: the
   // manager's peer, there for the node's life.
-  let provision = null
   provision = await provisioner({ aux, record, secret: () => vault.keyFor(swarm, name) })
 
   // Every node is provisioned through the auxiliary swarm (step 7: the
@@ -294,6 +295,9 @@ async function provisioner ({ aux, record, secret }) {
       await toNode.opened
       return toNode.request({ op: 'action', action })
     },
+    // The manager's state, for the node's shadow of it (step 10): a
+    // message, read-only on the node's side; dropped while there is no channel.
+    shadow (state) { if (toNode) toNode.opened.then(() => toNode.send({ op: 'shadow', state }), () => {}) },
     async close () { await net.close(); await dht.close() }
   }
 }

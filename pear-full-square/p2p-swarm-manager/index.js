@@ -9,6 +9,9 @@
 //   await start({ folder })                                a stopped swarm, as described
 //   await stopNode({ folder, node })                       one node, gracefully
 //   describe({ folder })                                   the swarm as recorded (or null)
+//   genesis({ ..., deployment })                           the swarm's part handed over at genesis
+//   await setDeployment({ folder, deployment }), readDeployment({ folder }), watch({ folder, auto })
+//                                                          the deployment on the swarm (deployment.js)
 //
 // Folders stand side by side under `nodes` (no hierarchy): the swarm
 // manager's own (`folder`: its topic, swarm.json its cache) and one per node (its
@@ -40,6 +43,8 @@ import { openChannel } from 'p2p-channel'
 import { rnsClient } from 'p2p-rns'
 import { swarmTopic } from 'p2p-node'
 import { nodeState, stateOffset } from '../p2p-node-manager/index.js'
+import { setDeployment } from './deployment.js'
+export { setDeployment, readDeployment, watch } from './deployment.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const docker = (...args) => execFileSync('docker', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
@@ -111,8 +116,11 @@ async function startNodeManager (s, node, { vault, timeout = 180000 }) {
   throw new Error(`${node.name}: not ready within ${timeout} ms`)
 }
 
-export async function genesis ({ swarm, folder, nodes, vault, code, subnet = '172.34.0', auxSubnet = '172.35.0' }) {
+export async function genesis ({ swarm, folder, nodes, vault, code, subnet = '172.34.0', auxSubnet = '172.35.0', deployment = null }) {
   mkdirSync(folder, { recursive: true })
+  // Its owner (haicc's mark): this manager, unless a project made it (the
+  // project's provider marks it its own). What is owned may be stopped.
+  if (!existsSync(join(folder, '.haicc-owner'))) writeFileSync(join(folder, '.haicc-owner'), 'p2p-swarm-manager\n')
   const { record, write } = await swarmRecord(folder)
   const t0 = Date.now()
   record('genesis-started', { swarm })
@@ -131,6 +139,12 @@ export async function genesis ({ swarm, folder, nodes, vault, code, subnet = '17
   s.master = { uri: ready.uri, key: ready.key, packages: { uri: `/${swarm}/master/packages`, ...ready.genesis?.packages }, boot: ready.genesis?.boot }
   write(s)
   record('master-ready', { uri: ready.uri, key: ready.key, packages: ready.genesis?.packages?.commit, ms: Date.now() - t0 })
+  // The handover (step 10): the swarm's part of the deployment, given with
+  // the swarm, set on the swarm; from here the swarm is its authority.
+  if (deployment) {
+    const set = await setDeployment({ folder, deployment })
+    record('deployment-handed-over', { commit: set.commit, nodes: deployment.nodes })
+  }
   return s
 }
 

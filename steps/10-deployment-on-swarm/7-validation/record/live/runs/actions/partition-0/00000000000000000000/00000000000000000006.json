@@ -1,0 +1,1 @@
+{"value":{"action":"send-request","with":{"from":"host-a","to":"/hosts/master/node","name":"status-after-leave"},"ok":true,"error":null,"ms":2402,"result":{"to":"/hosts/master/node","name":"status-after-leave-mvzl97md","answer":"Status given.","main":"3424dfd5ba12dc11e5641bf3ac60b82340b1a9aa","ms":2386}}}

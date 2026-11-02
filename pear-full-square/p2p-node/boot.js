@@ -50,6 +50,8 @@ export async function boot (flags, log) {
         observer: log,
         // The management channel, from the manager: actions for the
         // observer, passed to the node's process on its stdin.
+        // The manager's state, for the node's shadow: passed on as a line.
+        onmessage: body => { if (body.op === 'shadow' && toNode) toNode.write(JSON.stringify({ shadow: body.state }) + '\n') },
         onrequest: body => {
           if (body.op !== 'action' || !toNode) throw new Error(`not taken: ${body.op}`)
           toNode.write(JSON.stringify(body.action) + '\n')

@@ -79,6 +79,18 @@ try {
   // stdin after the secret (from the boot program, the management
   // channel's end), results go to the log.
   if (flags.observer === 'true') {
+    // The manager's state, as a shadow (step 10): lines { shadow } on stdin,
+    // beside the observer's actions.
+    let rest = ''
+    process.stdin.on('data', chunk => {
+      rest += chunk.toString()
+      let i
+      while ((i = rest.indexOf('\n')) !== -1) {
+        const line = rest.slice(0, i); rest = rest.slice(i + 1)
+        if (!line.includes('"shadow"')) continue
+        try { const m = JSON.parse(line); if (m.shadow) node.shadow(m.shadow) } catch {}
+      }
+    })
     const { attachObserver } = await import('splectral-p2p-observer')
     attachObserver({ node, input: process.stdin, log })
   }
