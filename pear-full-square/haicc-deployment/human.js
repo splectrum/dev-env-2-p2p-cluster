@@ -13,7 +13,8 @@ else {
   for (const s of [x.stopped, x.removed]) for (const n of s?.done || []) out.push(`  removed ${n}`)
   for (const f of x.failed || []) out.push(`  FAILED  ${f.name}: ${f.error || f.status}${f.hint ? `\n          ${f.hint}` : ''}`)
   for (const b of x.blocked || []) out.push(`  blocked ${b.name} (needs ${b.needs.join(', ')})`)
-  for (const c of x.after || x.check || []) {
+  const told = new Set([...(x.failed || []), ...(x.blocked || [])].map(f => f.name))
+  for (const c of (x.after || x.check || []).filter(c => !told.has(c.name))) {
     if (c.status === 'met') { if (c.detail?.url) out.push(`  running ${c.name}  ${c.detail.url}`); continue }
     if (c.status === 'extra') { out.push(`  extra   ${c.name} (left as it is)`); continue }
     out.push(`  ${c.status.padEnd(7)} ${c.name}${c.hint ? `\n          ${c.hint}` : ''}`)
