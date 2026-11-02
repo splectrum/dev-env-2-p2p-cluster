@@ -17,7 +17,7 @@
 // Ownership: a swarm made through haicc is marked with its owner in its
 // folder; its nodes are that owner's. Extras: running nodes of a declared
 // swarm that no requirement names (strict stops them, if ours).
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
 import { join } from 'node:path'
 import { genesis, joinNode, start, stop, stopNode, restart, describe, setDeployment } from './index.js'
@@ -47,8 +47,10 @@ const swarm = {
   compare: (r, a) => !a ? { status: 'missing' } : a.conflict ? { status: 'different', detail: 'another swarm of this name runs here' } : a.running ? { status: 'met', detail: { nodes: a.nodes } } : { status: 'different', detail: 'stopped' },
   async create (r, ctx, a) {
     if (!a) {
-      const s = await genesis(r.want)
+      // Marked first: a genesis that fails leaves a swarm still ours to clean up.
+      mkdirSync(r.want.folder, { recursive: true })
       writeFileSync(join(r.want.folder, MARK), ctx.owner + '\n')
+      const s = await genesis(r.want)
       return { genesis: s.swarm, image: s.image }
     }
     const s = await start({ folder: r.want.folder })
