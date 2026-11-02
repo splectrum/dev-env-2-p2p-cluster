@@ -85,4 +85,4 @@ Every row in `steps/8-liveness/6-validation/products.md`. Changed, plain
 merges: `p2p-rns`, `p2p-node`, `p2p-node-manager`, `p2p-swarm-manager`,
 `splectral-contract`, `-model`, `-scenario`, `-p2p-watchers`,
 `-p2p-actions` in `pear-full-square`; `base-view-map` in `splectral`. New:
-`base-demo-liveness` (`splectral`), waiting for its repository.
+`base-demo-liveness` (`splectral`), its first merge.
