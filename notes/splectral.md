@@ -341,6 +341,32 @@ So the same pages serve a viewer and a future mobile node app.
   needs Playwright's browser (`npx playwright install chromium`); seeing
   the app needs only a browser.
 
+## Setups: the world a demo needs
+
+Agreed 2026-11-02. A demo may need a fixed world; not every demo will.
+- **A setup is its own extension kind**, apart from the scenario: a name
+  and the world it needs in abstract terms, hosts and the nodes on each
+  (`{ "hosts": { "host-a": { "nodes": ["master", "node-1"] }, "host-b":
+  {} } }`); no p2p. Setups are applications (`base-setup-one-host`,
+  `base-setup-two-hosts`), shared by the demos that need the same world.
+- **A scenario names a setup, or none** (`"setup": "<name>"`). With one,
+  Run first makes it true, then plays; without, it runs on whatever is
+  there. Later, if a demo asks: requirements (at least n nodes), met by
+  what runs or by adding to it.
+- **Making it true is reconciliation** (`haicc-reconcile`): reuse what
+  matches, add what is missing, stop what is extra (strict, on the
+  setup's own hosts), start over if the swarm itself does not match. A
+  scenario that changes the world beyond what reconciling can undo says
+  `"fresh": true`. The concrete actions come from the p2p adapter; every
+  step is recorded, so a replay shows the setup too.
+- **Splectral changes only what it created**: a swarm it merely watches is
+  never stopped or reset; a conflicting setup is refused, saying why.
+- **One active setup at a time** for the hosts it names; the menu groups
+  demos by setup and shows whether theirs is ready. Setups name their
+  swarm, and addresses are allocated rather than fixed: the foundation for
+  several demos running side by side later, each on its own swarm, with
+  pages scoped to it.
+
 ## Rules
 
 - **No secret anywhere in the app**: not in the observer, the topics, the

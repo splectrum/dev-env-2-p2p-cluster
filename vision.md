@@ -88,3 +88,26 @@ the working store; deltas are an optimisation for later.
   the mycelium p2p platform. What exists now as URI-expressed capabilities,
   together with AVRO (typed values named by URI), becomes a DSL platform:
   that is where splectrum lives.
+- **HAICC, human–AI creative collaboration (in `splectrum`)**: the
+  eventual tool for the whole cycle: ideas discussed, designed, requested,
+  implemented, validated, released and deployed, with the records and the
+  repositories as its memory. It is what this repository's process does by
+  hand, made explicit and runnable, stage by stage. Its first module is
+  the deployment stage, `haicc-reconcile` (`notes/haicc-reconcile.md`):
+  declare what a module needs, check it, make it so.
+- **`p2p-propagate`**: later, a desired state (node types and their
+  configurations) carried across a swarm, each node reconciling its part.
+
+## Releases and Pear
+
+- Pear (Holepunch's runtime and platform for p2p applications: staged,
+  seeded and released from a `pear://` link) comes in when versions are
+  fixed: released versions of Splectral and the tools, run from a link.
+  Until then, everything runs from the development tree.
+- There is always a public component (Pear's platform, a first fetch), and
+  air-gapping is possible: our swarms keep their own DHTs, and what is
+  fetched once can be seeded on our own network.
+- Nodes keep getting their code by replication of the swarm's packages
+  repository, inside the swarm: that is mycelium's, and becomes the
+  capability store.
+
