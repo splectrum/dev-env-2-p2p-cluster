@@ -1,6 +1,6 @@
 {
   "name": "p2p-node",
-  "id": "0c76a96b-4f6e-480c-93d0-9eb69f09afd8",
+  "id": "f7f5bcad-5da3-4e22-a1d0-72faa30bc902",
   "description": "The node application: a node of a swarm, composed from the p2p series, its repositories and the resource name service",
   "type": "module",
   "exports": "./index.js",
