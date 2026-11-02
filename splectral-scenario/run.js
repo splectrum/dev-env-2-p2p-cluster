@@ -6,6 +6,7 @@
 //   { do, with, refused: true }
 //                      an action expected to be refused: its refusal is
 //                      told as a message; a success fails the step
+//   { ..., hold }      after the step, a pause (ms) for people to read
 //   { await, timeout } wait until the world shows it: '<event kind>' or
 //                      '<event kind>:<uri>' (joined, gone, changed,
 //                      requestAnswered, resource, ...)
@@ -59,6 +60,7 @@ export default async function runScenario ({ id }, ctx) {
       await tell({ kind: 'say', text: `Refused: ${refusal}`, step: i })
     } else if (step.do) await ctx.dispatch({ action: step.do, with: step.with || {} })
     if (step.await) await waitFor(ctx.model, step.await, step.timeout ?? 120000)
+    if (step.hold) await new Promise(resolve => setTimeout(resolve, step.hold))
     await tell({ kind: 'scenarioStep', step: i, done: true })
   }
   await tell({ kind: 'say', text: 'Scenario finished.', step: sc.steps.length })

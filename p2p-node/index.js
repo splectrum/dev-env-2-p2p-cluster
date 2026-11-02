@@ -122,7 +122,9 @@ async function start (opts, opened) {
   let resolveMaster
   let toMaster = null
   const masterChannel = role === 'join' ? new Promise(resolve => { resolveMaster = resolve }) : null
-  const onMaster = ch => {
+  let masterStream = null
+  const onMaster = (ch, stream) => {
+    masterStream = stream
     const first = !toMaster
     toMaster = rnsClient(ch)
     if (first) resolveMaster(ch)
@@ -133,7 +135,7 @@ async function start (opts, opened) {
   net.onConnection((stream, peer) => {
     rep.replicate(stream, { peer: peer.peer })
     if (rnsLocal) openChannel(stream, { name: 'p2p-rns', peer: peer.peer, observer, onrequest: rnsLocal.handler(peer.peer) })
-    else if (peer.peer === opts.master) onMaster(openChannel(stream, { name: 'p2p-rns', peer: peer.peer, observer }))
+    else if (peer.peer === opts.master) onMaster(openChannel(stream, { name: 'p2p-rns', peer: peer.peer, observer }), stream)
     for (const s of services) serveRequests(stream, s, peer.peer)
   })
   const serving = new WeakSet()
@@ -178,24 +180,31 @@ async function start (opts, opened) {
       register: r => { resources.push(r); return toMaster.register(r) },
       resolve: uri => toMaster.resolve(uri)
     }
-    // The heartbeat: a third of the lease, bounded by it.
+    // The heartbeat: every third of the lease, each renewal bounded by
+    // that third. No answer: the connection is stale (the master closed it
+    // while this node was frozen, or the network went), so it is dropped
+    // and made again at once, rather than waited on.
+    const every = Math.ceil(registered.leaseMs / 3)
     const bounded = (p, ms) => Promise.race([p, new Promise((resolve, reject) => setTimeout(() => reject(new Error('no answer')), ms))])
     let beating = false
     heartbeat = async () => {
       if (beating) return
       beating = true
       try {
-        await bounded(toMaster.renew(), registered.leaseMs)
+        await bounded(toMaster.renew(), every)
       } catch (err) {
         if (/not a node/.test(err.message)) {
           // The registry forgot this node (its master restarted): again.
           await toMaster.registerNode(name)
           for (const r of resources) await toMaster.register(r)
           emit('registered-again', { uri: `/${swarm}/${name}`, resources: resources.length })
-        } else emit('renew-failed', { error: err.message })
+        } else {
+          emit('renew-failed', { error: err.message })
+          if (err.message === 'no answer') masterStream?.destroy()
+        }
       } finally { beating = false }
     }
-    const beat = setInterval(() => heartbeat().catch(() => {}), Math.ceil(registered.leaseMs / 3))
+    const beat = setInterval(() => heartbeat().catch(() => {}), every)
     opened.push(async () => clearInterval(beat))
     leave = async () => {
       clearInterval(beat)
