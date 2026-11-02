@@ -86,8 +86,8 @@ can show them.
 - The same pattern on a node itself: its packages and capabilities
   checked before it starts.
 
-## Open
+## Where it lives
 
-- Its repository: in `splectrum`, with the rest of the HAICC family, or
-  in `pear-full-square`, beside the infrastructure it serves. The human
-  decides.
+`pear-full-square/haicc-reconcile`: engines (all code) live in
+`pear-full-square`; the HAICC prefix names its layer (`vision.md`,
+organisations).

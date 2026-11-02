@@ -76,15 +76,29 @@ the working store; deltas are an optimisation for later.
 
 ## Organisations: infrastructure and language
 
+Agreed 2026-11-02. The layers: the p2p and language substrate, mycelium
+the repository layer, splectrum the language layer, haicc the project
+layer; Splectral for interaction alongside them. **One rule: engines (all
+code) in `pear-full-square`; what is made with an engine in its layer's
+organisation.** A module's prefix names its layer (`mycelium-`,
+`splectral-`, `haicc-`); the organisation says what kind of thing it is.
+Dependencies run one way: everything depends on `pear-full-square`, which
+depends on nothing outside itself.
+
+- **`haiccing`: projects**, run with the HAICC project tool. A repository
+  moves there only once that tool can be used: today's development
+  repositories, this one included, are manual collaboration, not
+  structured by tooling, and stay where they are.
+
 - **`pear-full-square`: the p2p infrastructure.** The p2p series, p2p-git,
   mycelium on the p2p layer, the node and its managers, and the Splectral
   platform (for seeing and working with running systems, the swarm
   first).
-- **`splectral`: applications on the Splectral platform**, completely
+- **`splectral`: (interaction) components on the Splectral platform**, completely
   agnostic of p2p: they work in the platform's abstract world (hosts,
   nodes, resources by URI, activity), as mycelium works with the p2p
   layer's abstractions.
-- **`splectrum`: the language medium**, for building real applications on
+- **`splectrum`: the language layer**: language modules, for building real applications on
   the mycelium p2p platform. What exists now as URI-expressed capabilities,
   together with AVRO (typed values named by URI), becomes a DSL platform:
   that is where splectrum lives.
