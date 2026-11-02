@@ -8,13 +8,23 @@ projects), `main:notes/node-pattern.md` (authority), `main:vision.md` (the
 organisations, HAICC, Pear later). Amended twice on 2026-11-02, as the
 discussion settled: configuration apart from running, the server through
 topics, no launcher; then demos as projects deployed by HAICC, replacing
-Splectral setups.
+Splectral setups; then the repository's folders as `<org>/<repo>`, so a
+project and its component share their name (`haiccing/base-demo-liveness`
+and `splectral/base-demo-liveness` belong together).
 
 The aim: a demo is a project brought up with one command, then clicks,
 and run again any number of times.
 
 ## Parts, in order
 
+0. **The folders as `<org>/<repo>`**: every module moved to the folder of
+   its product repository (`pear-full-square/p2p-rns`,
+   `splectral/base-view-map`, ...); the paths that name folders fixed
+   (workspaces, the node image's command, the node's code paths,
+   configurations, scripts in use); recorded steps left as they are (they
+   rerun at their commit); product splits continued from their previous
+   heads (`--onto`), verified on one product; all unit tests and a swarm
+   end to end.
 1. **`haicc-reconcile`**: the engine (requirements named and selected;
    check, plan, apply; non-strict by default, strict per scope; only what
    it owns; records in a topic), a command and a library. Cold
@@ -47,8 +57,9 @@ and run again any number of times.
    - It knows the project it was started for: Run again reconciles the
      project's cluster, then plays.
    - Tabs in the shell: pages side by side (a demo, the map).
-6. **The demo projects** (`haiccing`): `demo-liveness` and
-   `demo-other-host`, each a test cluster, a Splectral install with its
+6. **The demo projects** (`haiccing`): `base-demo-liveness` and
+   `base-demo-other-host`, sharing their names with the scenarios they
+   run (`splectral`), each a test cluster, a Splectral install with its
    components, and its scenario. The scenarios (`splectral`) name no
    setup.
 7. **One document** for running the demos, replacing the steps'
