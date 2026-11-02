@@ -19,19 +19,12 @@ product equals its folder but for its LICENSE. Every push verified.
 | `splectral-server` | `pear-full-square/splectral-server` | `dc0adaf` | `91c3436` | join after the move |
 | `splectral-shell` | `pear-full-square/splectral-shell` | `bcec5e3` | `503f52d` | join after the move |
 | `splectral-transport` | `pear-full-square/splectral-transport` | `4efc1c4` | `4892096` | join after the move |
+| `base-demo-liveness` | `haiccing/base-demo-liveness` | `271b052` | `f85b958` | first merge |
+| `base-demo-other-host` | `haiccing/base-demo-other-host` | `756742a` | `a34735f` | first merge |
 
-**Waiting: the projects** `haiccing/base-demo-liveness` and
-`haiccing/base-demo-other-host`. This cloud session cannot attach them:
-it checks repositories out by name, and the `splectral` components of the
-same names are attached. Their first merge, from a session started with
-them as sources, or by hand on a machine with access:
-
-```bash
-git -C dev-env-2-p2p-cluster subtree split --prefix=haiccing/base-demo-liveness -b split-liveness
-```
-
-```bash
-git clone https://github.com/haiccing/base-demo-liveness && cd base-demo-liveness && git pull --allow-unrelated-histories --no-edit ../dev-env-2-p2p-cluster split-liveness && git push origin main
-```
-
-(the same for `base-demo-other-host`).
+The projects `haiccing/base-demo-liveness` and `haiccing/base-demo-other-host`:
+merged 2026-11-02 by the local agent (`notes/handover-haiccing-merge.md`),
+splits of `haiccing/<project>` from dev `04bcb84` (after step 10, so with
+step 10's changes to the projects), each joined to its product's initial
+commit (`--allow-unrelated-histories`, the LICENSE kept). Each product
+equals its folder but for its LICENSE; pushed and verified.

@@ -17,6 +17,10 @@ cd dev-env-2-p2p-cluster && git checkout main && git pull --ff-only
 
 ## 1. The haiccing projects' first product merge (local agent)
 
+**Done** 2026-11-02: `base-demo-liveness` split `271b052`, product
+`f85b958`; `base-demo-other-host` split `756742a`, product `a34735f`;
+recorded in step 9's product table.
+
 The cloud session cannot attach `haiccing/base-demo-liveness` and
 `haiccing/base-demo-other-host` beside the `splectral` components of the
 same names. The steps, for a local Claude Code agent:
