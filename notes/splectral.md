@@ -437,3 +437,12 @@ Validated by:
    events, or audit only, with metrics summarised).
 3. **The extension contract**: its first version, and how it is
    versioned as interaction and applications arrive.
+4. **Towards a platform for a solution's components** (`vision.md`: the
+   future vision, step by step). The human's feedback from the local run
+   of the demos (`steps/9-click-and-run/demos-local-run.md`), noted, not
+   scheduled:
+   - the demo app (a solution) as one tab with its own left-hand menu, its
+     components (scenario, map, timeline, a node) as tabs inside it;
+     today each menu link opens a tab of its own;
+   - time on every screen (the map, the scenario's page, the node pages),
+     not only the timeline.
