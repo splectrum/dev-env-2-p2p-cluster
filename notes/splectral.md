@@ -341,6 +341,33 @@ So the same pages serve a viewer and a future mobile node app.
   needs Playwright's browser (`npx playwright install chromium`); seeing
   the app needs only a browser.
 
+## Running Splectral: configuration, then the server on top
+
+Agreed 2026-11-02.
+- **Two states, kept apart.** A Splectral instance's configuration (its
+  folder: the configuration, its topics, its runs) is repository state,
+  made true cold by `haicc-reconcile`, before and independent of any
+  server. The server runs on top of it; up or down changes nothing in the
+  configuration.
+- **Talking to the server is producing and consuming topics**, the pattern
+  a node's manager and observer already use: a client produces an action
+  record into an action topic of its own (one producer per partition), a
+  correlation id in a header; the server follows every client's action
+  topic from its committed offset, acts, and produces the result into its
+  results topic with the same correlation id; the client follows that. An
+  action produced while the server is down waits for it. The topics are
+  the audit. Today topics on host folders; on cores later, and a client
+  elsewhere reaches the server the same way.
+- **HTTP only at the browser's boundary**: a page cannot read the host's
+  topics, so the transport is the browser's adapter onto the same topics
+  (a click is an action record; the live view comes from the topics).
+- **The `splectral` command**: `haicc-reconcile apply` with Splectral's
+  requirements (configuration, then the server running), the browser
+  opened; its other subcommands are a client producing actions and
+  following results. No launcher module.
+- Latency (following polls) is no issue now; change notifications can
+  replace polling behind the same `follow` later.
+
 ## Setups: the world a demo needs
 
 Agreed 2026-11-02. A demo may need a fixed world; not every demo will.

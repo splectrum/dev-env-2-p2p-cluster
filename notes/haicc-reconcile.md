@@ -71,6 +71,23 @@ it with a scenario's setup).
   created, which it marks as its own. Strict never removes what someone
   else started.
 
+## Cold configuration: state apart from running
+
+Agreed 2026-11-02. What must be true before anything runs is this tool's:
+the machine checked, what is installed, the node image, the work folder,
+a component's configuration. That **configuration state is repository
+state**: it exists, and is checked and made true, whether or not anything
+runs on top of it. **Running is a separate layer**, on top: a server up
+or not is one more requirement, applied after the configuration and never
+mixed with it. So stopping a server leaves its configuration as it was,
+and reconciling the configuration does not need the server.
+
+Splectral is the first use: `haicc-reconcile apply` with Splectral's
+requirements (declared in its own file) makes its configuration true, then
+its server running; the `splectral` command is a short name for that, and
+a client of the server once it runs (`notes/splectral.md`, running
+Splectral).
+
 ## Records
 
 Every check, plan and apply is produced into a topic (`mycelium-topic`,
