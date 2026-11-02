@@ -2,7 +2,10 @@
 
 From the human's local run of Splectral (`main:steps/7-splectral/local-machine-run.md`)
 and the discussion after it. The design: `main:notes/haicc-reconcile.md`,
-`main:notes/splectral.md` (setups), `main:vision.md` (HAICC, Pear later).
+`main:notes/splectral.md` (running Splectral, setups), `main:vision.md`
+(HAICC, the organisations, Pear later). Amended 2026-11-02 after the
+discussion: configuration apart from running; the server spoken to
+through topics; no launcher module.
 
 The aim: running Splectral and its demos is one command, then clicks.
 Every demo can be run again, any number of times.
@@ -14,7 +17,9 @@ Every demo can be run again, any number of times.
    it owns; records in a topic), as a command and a library. Its generic
    providers, checked only: the OS and native Docker, Node and Bare's
    runtime version, the subnets, the ports, UDP to the bridges; and
-   folders, which it creates.
+   folders, which it creates. Cold configuration is its concern:
+   configuration state (repository state) made true apart from anything
+   running on top; running is a separate requirement, applied after.
 2. **The p2p providers**, each in the module that knows its kind: the
    node image (`p2p-node-manager`); swarms and nodes, named and
    selected (`p2p-swarm-manager`).
@@ -32,10 +37,21 @@ Every demo can be run again, any number of times.
    `base-demo-other-host` and `base-demo-liveness` naming theirs; both in
    one configuration.
 6. **Tabs in the shell**: pages opened side by side (a demo, the map).
-7. **The `splectral` command**: `check`, `up` (requirements made true,
-   Splectral served, the browser opened), `down`, `replay`, `clean`; a
-   default work folder. One document for running Splectral, replacing the
-   steps' `local-machine.md` (the step folders keep their records).
+7. **Splectral on topics, and its command.**
+   - Splectral's requirements declared in its own file: its
+     configuration (the instance's folder) made true cold by
+     `haicc-reconcile`, then its server running on top.
+   - The server spoken to through topics: each client produces actions
+     into an action topic of its own (a correlation id in a header); the
+     server follows them from committed offsets and produces results into
+     its results topic. HTTP only at the browser's boundary, as its
+     adapter onto the same topics.
+   - The `splectral` command: `haicc-reconcile apply` for Splectral, the
+     browser opened; its other subcommands (`down`, `replay`, `clean`) a
+     client producing actions and following results. A default work
+     folder. No launcher module.
+   - One document for running Splectral, replacing the steps'
+     `local-machine.md` (the step folders keep their records).
 8. **Validation and products.** Unit tests; from a machine with nothing
    running: `splectral check`, `up`, both demos run from the browser one
    after the other and one of them twice, `down`, `clean`, recorded, with
