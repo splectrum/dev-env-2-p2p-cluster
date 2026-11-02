@@ -1,6 +1,6 @@
 {
   "name": "splectral-p2p-actions",
-  "id": "075a1233-8258-4716-8ca5-48ebad18fbfe",
+  "id": "654d86cf-0142-4a99-b6f0-e7f13af8f68f",
   "description": "Splectral's p2p adapter out: abstract actions carried out through managers, observers and peers",
   "type": "module",
   "license": "MIT",

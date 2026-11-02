@@ -8,7 +8,7 @@ v=steps/8-liveness/6-validation
 u=steps/1-mycelium/validation/unit-tests.sh
 r=$v/record
 set --
-for m in p2p-rns p2p-node splectral-contract splectral-model splectral-scenario splectral-server splectral-p2p-watchers; do
+for m in p2p-rns p2p-node p2p-node-manager p2p-swarm-manager splectral-contract splectral-model splectral-scenario splectral-server splectral-p2p-watchers; do
   set -- "$@" "unit-$m=sh $u $m"
 done
 for p in swarm config serve ui-live unserve liveness stop replay ui-replay unreplay records; do
