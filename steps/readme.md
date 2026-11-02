@@ -33,3 +33,4 @@ done with them.
 | 6. A node on another host | `6-other-host/` | done (the other host simulated) |
 | 7. Splectral and data in topics | `7-splectral/` | done |
 | 8. Liveness | `8-liveness/` | done |
+| 9. Click and run | `9-click-and-run/` | done |
