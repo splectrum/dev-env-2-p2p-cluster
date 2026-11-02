@@ -85,6 +85,9 @@ organisation.** A module's prefix names its layer (`mycelium-`,
 Dependencies run one way: everything depends on `pear-full-square`, which
 depends on nothing outside itself.
 
+- **Splectrum's tool**: the language layer will have a tool of its own,
+  its modules (engines) in `pear-full-square`; the `splectrum`
+  organisation holds the language modules made with it.
 - **`haiccing`: projects**, run with the HAICC project tool. A repository
   moves there only once that tool can be used: today's development
   repositories, this one included, are manual collaboration, not
