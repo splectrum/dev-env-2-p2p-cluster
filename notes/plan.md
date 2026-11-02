@@ -188,6 +188,13 @@ node goes quiet" watched live and replayed. Found and fixed: a graceful
 stop's last log lines were lost (the node manager's blocking stop), and
 the swarm manager read a cache half written.
 
+### 9. Click and run — requested
+
+Request: `pending/phase-2/step-9-click-and-run/request.md`. Running
+Splectral and its demos as one command, then clicks: `haicc-reconcile`
+(`haicc-reconcile.md`), setups in Splectral, tabs, the `splectral` command,
+the local run's fixes.
+
 ## Further down the roadmap
 
 Each replacing its in-code version behind the same contract, once enough
