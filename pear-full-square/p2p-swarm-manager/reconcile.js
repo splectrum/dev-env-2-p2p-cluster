@@ -4,6 +4,13 @@
 //           described and running (its master up); made by genesis, or
 //           started again as described; removed: stopped
 //   node    { swarm: <swarm folder>, name }      a named node, running
+//   swarm-deployment { swarm: <swarm folder>, deployment }
+//           the swarm's part of a deployment, as the swarm has it (observed
+//           through this manager's shadow; set by request: the swarm is its
+//           authority)
+//   swarm-watcher { swarm: <swarm folder>, auto }
+//           the manager following the deployment, a process on top (auto:
+//           making the substrate match); removed: stopped
 //   nodes   { swarm: <swarm folder>, atLeast, prefix, type?, config? }
 //           selected: at least n running nodes named <prefix><i>, the
 //           master not counted (types and configurations: later)
@@ -13,7 +20,13 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
 import { join } from 'node:path'
-import { genesis, joinNode, start, stop, stopNode, restart, describe } from './index.js'
+import { genesis, joinNode, start, stop, stopNode, restart, describe, setDeployment } from './index.js'
+import { openTopic, folderStorage } from '../mycelium-topic/index.js'
+import { spawn } from 'node:child_process'
+import { openSync, rmSync } from 'node:fs'
+import { dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { isDeepStrictEqual } from 'node:util'
 import { nodeState } from '../p2p-node-manager/index.js'
 
 const MARK = '.haicc-owner'
@@ -109,4 +122,51 @@ const nodes = {
   owned: (a, ctx) => a.owner === ctx.owner
 }
 
-export const providers = { swarm, node, nodes }
+const shadowOf = async folder => {
+  if (!existsSync(join(folder, 'topics', 'deployment'))) return null
+  const t = await openTopic({ storage: folderStorage(join(folder, 'topics', 'deployment')) })
+  return t.fold((at, r) => r.value.kind === 'deployment' ? { commit: r.value.commit, deployment: r.value.deployment } : at, null)
+}
+
+const swarmDeployment = {
+  async observe (r) {
+    if (!(await describe({ folder: r.want.swarm }))) return null
+    const seen = await shadowOf(r.want.swarm)
+    return { ...(seen || { commit: null, deployment: null }), owner: ownerOf(r.want.swarm) }
+  },
+  compare: (r, a) => !a || !a.deployment ? { status: 'missing' } : isDeepStrictEqual(a.deployment, r.want.deployment) ? { status: 'met', detail: { commit: a.commit } } : { status: 'different', detail: { commit: a.commit } },
+  async create (r) { return setDeployment({ folder: r.want.swarm, deployment: r.want.deployment }) },
+  owned: (a, ctx) => a.owner === ctx.owner
+}
+
+const cli = join(dirname(fileURLToPath(import.meta.url)), 'cli.js')
+const alive = pid => { try { process.kill(pid, 0); return true } catch { return false } }
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+
+const watcher = {
+  observe (r) {
+    const f = join(r.want.swarm, 'watch.pid')
+    const pid = existsSync(f) ? Number(readFileSync(f, 'utf8')) : null
+    return pid && alive(pid) ? { pid, owner: ownerOf(r.want.swarm) } : null
+  },
+  compare: (r, a) => a ? { status: 'met', detail: { pid: a.pid } } : { status: 'missing' },
+  async create (r) {
+    const out = openSync(join(r.want.swarm, 'watch.out'), 'a')
+    const child = spawn(process.execPath, [cli, 'watch', `--folder=${r.want.swarm}`, `--auto=${r.want.auto ? 'true' : 'false'}`], { detached: true, stdio: ['ignore', out, out] })
+    child.unref()
+    for (let i = 0; i < 120; i++) {
+      if (existsSync(join(r.want.swarm, 'watch.pid'))) return { pid: child.pid, auto: Boolean(r.want.auto) }
+      if (!alive(child.pid)) throw new Error('the watcher stopped at its start (watch.out)')
+      await sleep(250)
+    }
+    throw new Error('the watcher did not start within 30 s')
+  },
+  owned: (a, ctx) => a.owner === ctx.owner,
+  async remove (r, ctx, a) {
+    try { process.kill(a.pid, 'SIGTERM') } catch {}
+    for (let i = 0; i < 80 && alive(a.pid); i++) await sleep(250)
+    rmSync(join(r.want.swarm, 'watch.pid'), { force: true })
+  }
+}
+
+export const providers = { swarm, node, nodes, 'swarm-deployment': swarmDeployment, 'swarm-watcher': watcher }
