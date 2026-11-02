@@ -97,3 +97,10 @@ one join after the move: `p2p-node`, `p2p-node-manager`,
 `-scenario`, `-p2p-actions`. Waiting: `haiccing/base-demo-liveness`,
 `haiccing/base-demo-other-host` (this session cannot attach them beside
 the same-named `splectral` components).
+
+## Step 10 (2026-11-02): the deployment on the swarm
+
+Every row in `steps/10-deployment-on-swarm/7-validation/products.md`:
+`p2p-node`, `p2p-node-manager`, `p2p-swarm-manager`, `haicc-reconcile`
+(plain merges), `splectral-p2p-observer` (its join after the move). The
+`haiccing` projects: with the local agent.

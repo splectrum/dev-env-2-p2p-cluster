@@ -1,6 +1,6 @@
 # Handover: where the phase stands, and how to continue
 
-Written 2026-11-01 after step 7, updated 2026-11-02 after step 8, the human's local run and step 9, for the next session (or after
+Written 2026-11-01 after step 7, updated 2026-11-02 after steps 8, 9 and 10 (the phase's request met), for the next session (or after
 compaction). Read this first, then `rules.md` (single concern first), then
 `notes/plan.md`. Everything below is on `main`.
 
@@ -22,6 +22,7 @@ Phase 2, the P2P swarm (the request: `pending/phase-2/request.md` on
 | 7. Splectral and data in topics | done | `steps/7-splectral/` |
 | 8. Liveness | done | `steps/8-liveness/` |
 | 9. Click and run | done | `steps/9-click-and-run/` |
+| 10. The deployment on the swarm | done | `steps/10-deployment-on-swarm/` |
 
 **What runs today.**
 - A swarm manager on the host does genesis and adds nodes. Every node,
@@ -57,6 +58,12 @@ Phase 2, the P2P swarm (the request: `pending/phase-2/request.md` on
   plan, make it so; non-strict by default, only what it owns) and
   `haicc-deployment` (the lifecycle as records). Splectral is spoken to
   through topics, has tabs, knows its project. How to run: `demos.md`.
+- **The deployment on the swarm** (step 10): the master keeps the swarm's
+  `deployment` repository (each change a commit), handed over at genesis
+  and changed by request (`Deployment: set`); the swarm manager follows
+  and shadows it, reports in manual mode, makes the substrate match in
+  auto mode (`watch`); nodes shadow their managers. The demo projects
+  declare the swarm's part (node-1); the watcher brings it up.
 - **The folders are `<org>/<repo>`** (step 9): `pear-full-square/` the
   engines (all code), `splectral/` the components, `haiccing/` the
   projects, each folder its product repository.
@@ -98,21 +105,21 @@ Every module has its product repository; every validated change is merged
 
 ## Decisions waiting on the human
 
-1. **What comes next.** Named in the plan: **step 10, the deployment on
-   the swarm** (the swarm's part of a deployment as a repository on the
-   master; the managers the authority for the substrate, a 100% split but
-   for auto mode; nodes shadowing their managers). Other candidates:
+1. **What comes next: phase 2's request is met** (steps 0 to 10; the
+   mapping in `notes/plan.md`). The next phase is the human's call.
+   Candidates, from what is carried forward:
    - the nodes' audit cores (with Splectral's `repository` and `swarm`
      sources), so Splectral works across real machines;
-   - interaction in Splectral (identities and permissions: Splectral's
-     actions now start and stop swarms);
-   - several projects at once (addresses allocated);
-   - the repository-based versions; a real second machine; Pear, when
-     versions are fixed.
+   - interaction in Splectral, with identities and permissions (its
+     actions start and stop swarms; who may change a deployment);
+   - the deployment in Splectral; node types and configurations;
+     `p2p-propagate` (several hosts' managers on one deployment);
+   - several projects at once; the capability store and small runs; the
+     repository-based versions; a real second machine; Pear with fixed
+     versions; HAICC's project tool.
 2. **The `haiccing` projects' product merges**: this cloud session cannot
-   attach them beside the same-named `splectral` components. From a
-   session started with them as sources, or by hand
-   (`steps/9-click-and-run/8-validation/products.md`).
+   attach them beside the same-named `splectral` components. The local
+   agent does them (`notes/handover-haiccing-merge.md`).
 3. **The human runs the demos locally** with `demos.md` (step 9's one
    document): what they find may set the next step.
 
