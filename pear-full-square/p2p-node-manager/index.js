@@ -37,7 +37,7 @@
 // state.json its cache. node.stderr stays a text file.
 
 import { spawn, execFile, execFileSync } from 'node:child_process'
-import { mkdirSync, writeFileSync, createWriteStream, existsSync } from 'node:fs'
+import { mkdirSync, writeFileSync, renameSync, createWriteStream, existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { openTopic, folderStorage, committedOffsets } from '../mycelium-topic/index.js'
 import crypto from 'hypercore-crypto'
@@ -87,7 +87,12 @@ export async function manageNode ({ folder, vault, image, network, ip, swarm, na
   // reducer's fold, kept as it goes and cached in state.json.
   let state = null
   let produced = Promise.resolve()
-  const saveState = () => writeFileSync(join(folder, 'state.json'), JSON.stringify(state, null, 2) + '\n')
+  // Written whole, by temporary file and rename: a reader never sees it
+  // half written.
+  const saveState = () => {
+    writeFileSync(join(folder, 'state.json.tmp'), JSON.stringify(state, null, 2) + '\n')
+    renameSync(join(folder, 'state.json.tmp'), join(folder, 'state.json'))
+  }
   const record = (kind, facts = {}) => {
     const value = { module: 'p2p-node-manager', kind, time: Date.now(), ...facts }
     state = reduceNodeState(state, value)
