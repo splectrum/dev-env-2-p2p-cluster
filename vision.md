@@ -88,10 +88,12 @@ depends on nothing outside itself.
 - **Splectrum's tool**: the language layer will have a tool of its own,
   its modules (engines) in `pear-full-square`; the `splectrum`
   organisation holds the language modules made with it.
-- **`haiccing`: projects**, run with the HAICC project tool. A repository
-  moves there only once that tool can be used: today's development
-  repositories, this one included, are manual collaboration, not
-  structured by tooling, and stay where they are.
+- **`haiccing`: projects**, run with HAICC's tools. Demo projects first
+  (`demo-liveness`, `demo-other-host`: a test cluster, a Splectral install
+  with its components, a scenario), deployed with `haicc-deployment` and
+  `haicc-reconcile`. A development repository moves there only once the
+  project tool can be used: today's, this one included, are manual
+  collaboration, not structured by tooling, and stay where they are.
 
 - **`pear-full-square`: the p2p infrastructure.** The p2p series, p2p-git,
   mycelium on the p2p layer, the node and its managers, and the Splectral
