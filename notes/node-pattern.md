@@ -379,9 +379,11 @@ frequency (streaming) comes later, through dedicated channels.
 4. **The p2p series** (its instrumentation and audit included), and **starting from zero
    and joining** (the first node and its DHT, a node joining), step by
    step.
-5. **Liveness.** A registration held while its owner is connected (or a
-   lease), and a node leaving the swarm on a graceful stop, so a gone node
-   is neither listed nor waited on (found in step 6).
+5. **Liveness** (built in step 8): a lease per node in p2p-rns, renewed
+   by the node's heartbeat; absent when it runs out (flagged, not taken
+   out: the name stays its owner's), present again on renewal; `leave` on
+   a graceful stop. Open: how long an absent node keeps its name (a second,
+   longer timeout that takes it out?), and the lease's length per swarm.
 6. **The invitation**: how it travels (a file, a repository, a resource of
    the swarm), whether the master signs it, and address allocation on a
    data plane shared by hosts.

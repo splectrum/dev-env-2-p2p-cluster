@@ -78,7 +78,7 @@ a viewer:
 | | Vocabulary |
 |---|---|
 | **entities** | hosts, nodes, resources (by URI), links between them |
-| **events** | joined, gone, connected, disconnected, transferred (bytes), request sent, request answered, changed (a resource), say |
+| **events** | joined, gone, absent, present, left, connected, disconnected, transferred (bytes), request sent, request answered, changed (a resource), say |
 | **actions** | start a node, stop a node, restart a node, invite, send a request to a URI, write to a resource |
 | **facts** | per entity: its URI, kind, state, who controls it (managed here or elsewhere), metrics |
 
@@ -381,7 +381,8 @@ Validated by:
 - nodes' audit cores and the `core` source following them, so the
   view works across real machines;
 - the `docker` source, the resource page, more scenarios;
-- liveness in the name service, which the swarm map will make visible.
+- liveness in the name service, which the swarm map will make visible
+  (done in step 8: presence in the abstract world, contract 0.2).
 
 ## Open
 

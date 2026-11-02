@@ -1,0 +1,1 @@
+{"value":{"module":"p2p-node-manager","kind":"hardened","time":1793608871245,"hardening":["read-only","cap-drop ALL","no-new-privileges","user 65534","memory 1g no swap","core 0","store tmpfs 512m noexec","tmp tmpfs 64m noexec","code tmpfs 256m exec"]}}

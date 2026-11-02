@@ -1,0 +1,113 @@
+{
+  "mode": "live",
+  "seen": {
+    "absent": 12947,
+    "present": 30818,
+    "left": 31724,
+    "done": 38160
+  },
+  "menu": [
+    "A node goes quiet",
+    "Timeline",
+    "Map",
+    "Node: /hosts/master",
+    "Node: /hosts/node-1"
+  ],
+  "before": [
+    {
+      "uri": "/hosts/master",
+      "status": "running",
+      "presence": "present"
+    },
+    {
+      "uri": "/hosts/node-1",
+      "status": "running",
+      "presence": "present"
+    }
+  ],
+  "absent": {
+    "map": [
+      {
+        "uri": "/hosts/master",
+        "status": "running",
+        "presence": "present"
+      },
+      {
+        "uri": "/hosts/node-1",
+        "status": "running",
+        "presence": "absent"
+      }
+    ],
+    "ring": true,
+    "say": "A request to node-1 now is refused at once, not left waiting on its address."
+  },
+  "refusedSay": "Refused: absent: /hosts/node-1/node, since 2026-11-02T08:41:41.205Z",
+  "presentAgain": [
+    {
+      "uri": "/hosts/master",
+      "status": "running",
+      "presence": "present"
+    },
+    {
+      "uri": "/hosts/node-1",
+      "status": "running",
+      "presence": "present"
+    }
+  ],
+  "left": [
+    {
+      "uri": "/hosts/master",
+      "status": "running",
+      "presence": "present"
+    },
+    {
+      "uri": "/hosts/node-1",
+      "status": "gone",
+      "presence": "left"
+    }
+  ],
+  "outcome": "ok",
+  "stepsDone": [
+    "yes",
+    "yes",
+    "yes",
+    "yes",
+    "yes",
+    "yes",
+    "yes",
+    "yes"
+  ],
+  "says": [
+    "Scenario: A node goes quiet",
+    "Host A runs the swarm: the master, which keeps the names, and node-1, which renews its lease with the master every few seconds.",
+    "node-1 is frozen: its container paused. It says nothing, and no graceful path sees it.",
+    "The master hears nothing from node-1. When its lease runs out, node-1 is flagged absent: a dashed ring. Its name and records stay, flagged.",
+    "A request to node-1 now is refused at once, not left waiting on its address.",
+    "Refused: absent: /hosts/node-1/node, since 2026-11-02T08:41:41.205Z",
+    "node-1 is thawed. Its next heartbeat reaches the master, and it is present again.",
+    "A request to node-1 is answered again.",
+    "node-1 is stopped gracefully: it leaves the master's names first, so its name is free at once.",
+    "The swarm runs on: a request to the master's own repository is answered.",
+    "Scenario finished."
+  ],
+  "timelineKinds": [
+    "absent",
+    "actionResult",
+    "connected",
+    "disconnected",
+    "gone",
+    "joined",
+    "left",
+    "nodeStarting",
+    "present",
+    "requestAnswered",
+    "requestSent",
+    "resource",
+    "say",
+    "scenarioStep"
+  ],
+  "node1Page": {
+    "status": "gone",
+    "presence": "left"
+  }
+}
