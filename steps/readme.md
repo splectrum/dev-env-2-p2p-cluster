@@ -17,7 +17,8 @@ Each step folder holds:
     boundary;
   - kept runs, where a part has one.
 
-Modules stay folders of their own on `main` (`p2p-store/`, ...): they are
+Modules stay folders of their own on `main`, at `<org>/<repo>` since step 9
+(`pear-full-square/p2p-store/`, ...): they are
 split into their product repositories. A step's folder records what was
 done with them.
 
