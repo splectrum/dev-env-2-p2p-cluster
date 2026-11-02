@@ -1,6 +1,6 @@
 # Handover: where the phase stands, and how to continue
 
-Written 2026-11-01 after step 7, for the next session (or after
+Written 2026-11-01 after step 7, updated 2026-11-02 after step 8, for the next session (or after
 compaction). Read this first, then `rules.md` (single concern first), then
 `notes/plan.md`. Everything below is on `main`.
 
@@ -20,6 +20,7 @@ Phase 2, the P2P swarm (the request: `pending/phase-2/request.md` on
 | 5. A node joining | done | `steps/5-node-joining/` |
 | 6. A node on another host | done (simulated on one machine) | `steps/6-other-host/` |
 | 7. Splectral and data in topics | done | `steps/7-splectral/` |
+| 8. Liveness | done | `steps/8-liveness/` |
 
 **What runs today.**
 - A swarm manager on the host does genesis and adds nodes. Every node,
@@ -41,6 +42,12 @@ Phase 2, the P2P swarm (the request: `pending/phase-2/request.md` on
   activity live, with the step 6 scenario as a demo, live and replayed,
   tested in headless Chromium. To run it locally:
   `steps/7-splectral/local-machine.md` (with a prompt for Claude Code).
+- **Liveness** (step 8): p2p-rns holds a 15 s lease per node, renewed by
+  the node's heartbeat; a silent node is flagged absent (records kept,
+  flagged), present again when heard; a graceful stop leaves. Requesters
+  refuse an absent node at once. Splectral shows presence; the scenario
+  "A node goes quiet" (`base-demo-liveness`) freezes and thaws node-1.
+  `steps/8-liveness/6-validation/demo.sh` runs it like step 7's.
 
 ## The design, where it is written
 
@@ -74,13 +81,14 @@ Every module has its product repository; every validated change is merged
   platform (`splectral-contract`, `-model`, `-transport`, `-server`,
   `-shell`, `-replay`, `-scenario`, `-timeline`, `-p2p-watchers`,
   `-p2p-actions`, `-p2p-observer`).
-- **`splectral`**: `base-view-map`, `base-demo-other-host`.
+- **`splectral`**: `base-view-map`, `base-demo-other-host`;
+  `base-demo-liveness` waiting for its repository (to be created by the
+  human, then its first merge).
 
 ## Decisions waiting on the human
 
 1. **What comes next.** The plan's steps are done. Candidates, from what
    is carried forward:
-   - liveness;
    - the nodes' audit cores (with Splectral's `repository` and `swarm`
      sources), so Splectral works across real machines;
    - interaction in Splectral;
@@ -90,12 +98,15 @@ Every module has its product repository; every validated change is merged
    overlay or the LAN (`steps/6-other-host/local-machine.md`).
 3. **The human runs Splectral locally** (`steps/7-splectral/local-machine.md`):
    what they find may set the next step.
+4. **Create `splectral/base-demo-liveness`** (step 8's application), so
+   its first merge can follow.
 
 ## Carried forward (open, not built)
 
-- **Liveness**: p2p-rns in code keeps a gone node's registration, and
-  peers wait on its address (step 6). To build: a registration held while
-  connected (or a lease), and leaving on a graceful stop.
+- **Liveness, what is left** (step 8): how long an absent node keeps its
+  name (a second, longer timeout taking it out); the lease per swarm (a
+  setting, 15 s today); step 7's scenario rerun with liveness; a link to an
+  absent node drawn as open until the connection closes.
 - **The nodes' audit cores**, and Splectral's `repository` and `swarm`
   sources: other hosts' nodes seen through the swarm (step 7).
 - **Splectral**:
