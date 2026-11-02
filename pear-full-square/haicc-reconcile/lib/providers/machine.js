@@ -2,7 +2,7 @@
 // and how to fix it, and never touch the machine.
 //   os       { platform: 'linux', arch: 'x64' }
 //   docker   { native: true }              Docker Engine, rootful, not Docker Desktop
-//   node     { atLeast: 22 }               the major version
+//   nodejs   { atLeast: 22 }               Node.js, its major version
 //   bare     { runtime: '1.36.0' }         Bare's runtime: the binary images are built with
 //   subnet   { cidr: '172.34.0.0/24', network }   free, or held by that Docker network
 //   udp      { network: 'bridge' }         a container reaches the host's address on it by UDP
@@ -39,7 +39,7 @@ export const docker = {
     : 'Docker Desktop and rootless Docker are not enough: the managers on the host must reach the networks\' addresses; use Docker Engine, rootful (in WSL2, inside the distribution)'
 }
 
-export const node = {
+export const nodejs = {
   observe: () => ({ version: process.versions.node }),
   compare: (r, a) => Number(a.version.split('.')[0]) >= (r.want.atLeast ?? 0) ? { status: 'met', detail: a } : { status: 'different', detail: a },
   hint: r => `Node.js ${r.want.atLeast} or later is needed`

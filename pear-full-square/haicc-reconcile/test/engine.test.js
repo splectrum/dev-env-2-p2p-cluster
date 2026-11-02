@@ -67,7 +67,7 @@ test('a declaration error: a cycle, an unknown need, a duplicate name', async ()
   await assert.rejects(e.check([{ kind: 'nothing', want: {} }]), /no provider/)
 })
 
-test('the generic providers: folder (made, owned, removed), port (free, taken, ours), os and node', async () => {
+test('the generic providers: folder (made, owned, removed), port (free, taken, ours), os and nodejs', async () => {
   const w = mkdtempSync(join(tmpdir(), 'haicc-'))
   const e = createEngine({ providers, owner: 'test' })
   const f = { name: 'work', kind: 'folder', want: { path: join(w, 'work') } }
@@ -87,7 +87,7 @@ test('the generic providers: folder (made, owned, removed), port (free, taken, o
   assert.match(p.hint, /taken/)
   server.close()
 
-  const [o, n] = await e.check([{ kind: 'os', want: { platform: process.platform } }, { kind: 'node', want: { atLeast: 22 } }])
+  const [o, n] = await e.check([{ kind: 'os', want: { platform: process.platform } }, { kind: 'nodejs', want: { atLeast: 22 } }])
   assert.equal(o.status, 'met')
   assert.equal(n.status, Number(process.versions.node.split('.')[0]) >= 22 ? 'met' : 'different')
 })
