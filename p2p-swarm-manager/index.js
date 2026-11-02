@@ -36,6 +36,7 @@ import { connect } from 'p2p-connect'
 import { openChannel } from 'p2p-channel'
 import { rnsClient } from 'p2p-rns'
 import { swarmTopic } from 'p2p-node'
+import { nodeState, stateOffset } from '../p2p-node-manager/index.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const docker = (...args) => execFileSync('docker', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
@@ -75,7 +76,7 @@ async function startNodeManager (s, node, { vault, timeout = 180000 }) {
   mkdirSync(folder, { recursive: true })
   // The previous run's state is the previous run's: cleared, so only this
   // run's is read.
-  rmSync(join(folder, 'state.json'), { force: true })
+  const from = await stateOffset(folder) // this run's records, from here
   const out = openSync(join(folder, 'manager.out'), 'a')
   const joining = [`--aux-network=${s.aux.network}`, `--aux-gateway=${s.aux.gateway}`, `--aux-port=${node.auxPort}`, `--aux-ip=${node.auxIp}`,
     ...(node.role === 'join' ? [`--master=${s.master.key}`, `--bootstrap=${s.dht.host}:${s.dht.port}`,
@@ -86,7 +87,9 @@ async function startNodeManager (s, node, { vault, timeout = 180000 }) {
   child.unref()
   const t0 = Date.now()
   while (Date.now() - t0 < timeout) {
-    const st = existsSync(join(folder, 'state.json')) ? JSON.parse(readFileSync(join(folder, 'state.json'), 'utf8')) : null
+    // The node's state is its manager's fold (state.json is only a cache,
+    // and may be read half written): this run's records only.
+    const st = await nodeState(folder, from)
     if (st && st.status === 'running') return { ...st, managerPid: child.pid, ms: Date.now() - t0 }
     if (st && st.status === 'exited') throw new Error(`${node.name} exited before it was ready (exit ${st.exitCode})`)
     await sleep(500)
@@ -156,7 +159,7 @@ export async function status ({ folder }) {
   })
   const nodes = await rns.list(`/${s.swarm}/*`)
   const resources = await rns.list(`/${s.swarm}/*/*`)
-  const managers = s.nodes.map(n => existsSync(join(n.folder, 'state.json')) ? JSON.parse(readFileSync(join(n.folder, 'state.json'), 'utf8')) : { name: n.name, status: 'unknown' })
+  const managers = await Promise.all(s.nodes.map(async n => (await nodeState(n.folder)) || { name: n.name, status: 'unknown' }))
   await net.close()
   await d.close()
   // Controlled: the nodes this manager started (through their managers);
@@ -201,7 +204,7 @@ async function stopNodeManager (node, timeout = 60000) {
     if (!existsSync(pidFile)) break
     await sleep(250)
   }
-  return JSON.parse(readFileSync(join(node.folder, 'state.json'), 'utf8'))
+  return nodeState(node.folder)
 }
 
 export async function restart ({ folder, node: name }) {
