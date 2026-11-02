@@ -135,7 +135,9 @@ Every module has its product repository; every validated change is merged
    solution's components, step by step; `vision.md`,
    `notes/splectral.md` open point 4), not asked for now: the demo app
    as a tab with its menu and components as tabs inside it; time on
-   every screen.
+   every screen. Step 10's deployment run by hand too: as recorded, but
+   for the `shadow` phase's check, which reads record files in the
+   filesystem's order (finding 7).
 
 ## Carried forward (open, not built)
 
