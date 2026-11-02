@@ -3,10 +3,10 @@
 #   bare-base:<bare version>   the plain base: debian:bookworm-slim and Bare's
 #                              own binary (from the bare package on this host)
 #   p2p-node:<commit>          the base with the node's code: the modules
-#                              (mycelium-*, p2p-*) and their dependency tree,
+#                              (pear-full-square/: mycelium-*, p2p-*, splectral-*) and their dependency tree,
 #                              without development dependencies, this
 #                              platform's prebuilds only
-#   sh p2p-node-manager/image/build.sh <dev-repository>   prints the node image's tag
+#   sh pear-full-square/p2p-node-manager/image/build.sh <dev-repository>   prints the node image's tag
 # The code crosses the boundary here, from a committed dev state.
 set -eu
 src=$(cd "$1" && pwd)
@@ -21,9 +21,9 @@ mkdir "$work/base" && cp "$here/base.Dockerfile" "$work/base/Dockerfile" && cp "
 docker image inspect "bare-base:$version" >/dev/null 2>&1 || docker build -q -t "bare-base:$version" "$work/base" >/dev/null
 app=$work/node/app
 mkdir -p "$app"
-git -C "$src" archive HEAD $(cd "$src" && ls -d mycelium-* p2p-* splectral-* package.json package-lock.json) | tar -x -C "$app"
-for m in "$app"/mycelium-*; do
-  [ -d "$src/$(basename "$m")/node_modules" ] && cp -a "$src/$(basename "$m")/node_modules" "$m/"
+git -C "$src" archive HEAD pear-full-square package.json package-lock.json | tar -x -C "$app"
+for m in "$app"/pear-full-square/mycelium-*; do
+  [ -d "$src/pear-full-square/$(basename "$m")/node_modules" ] && cp -a "$src/pear-full-square/$(basename "$m")/node_modules" "$m/"
   [ -d "$m/node_modules" ] && (cd "$m" && npm prune -q --omit=dev --offline --no-audit --no-fund >/dev/null)
 done
 cp -a "$src/node_modules" "$app/node_modules"
