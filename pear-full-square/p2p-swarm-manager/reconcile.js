@@ -11,6 +11,7 @@
 // folder; its nodes are that owner's. Extras: running nodes of a declared
 // swarm that no requirement names (strict stops them, if ours).
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { execFileSync } from 'node:child_process'
 import { join } from 'node:path'
 import { genesis, joinNode, start, stop, stopNode, restart, describe } from './index.js'
 import { nodeState } from '../p2p-node-manager/index.js'
@@ -19,13 +20,18 @@ const MARK = '.haicc-owner'
 const ownerOf = folder => existsSync(join(folder, MARK)) ? readFileSync(join(folder, MARK), 'utf8').trim() : null
 const running = async n => (await nodeState(n.folder))?.status === 'running'
 
+const networkExists = name => { try { execFileSync('docker', ['network', 'inspect', name], { stdio: 'ignore' }); return true } catch { return false } }
+
 const swarm = {
   async observe (r) {
     const s = await describe({ folder: r.want.folder })
-    if (!s) return null
+    // Not ours to describe, but its networks are there: a swarm of that
+    // name runs from elsewhere on this host (another project). A conflict:
+    // reported, never touched.
+    if (!s) return networkExists(`p2p-${r.want.swarm}`) ? { conflict: true, swarm: r.want.swarm, owner: null } : null
     return { swarm: s.swarm, nodes: s.nodes.map(n => n.name), running: await running(s.nodes[0]), owner: ownerOf(r.want.folder) }
   },
-  compare: (r, a) => !a ? { status: 'missing' } : a.running ? { status: 'met', detail: { nodes: a.nodes } } : { status: 'different', detail: 'stopped' },
+  compare: (r, a) => !a ? { status: 'missing' } : a.conflict ? { status: 'different', detail: 'another swarm of this name runs here' } : a.running ? { status: 'met', detail: { nodes: a.nodes } } : { status: 'different', detail: 'stopped' },
   async create (r, ctx, a) {
     if (!a) {
       const s = await genesis(r.want)
@@ -37,7 +43,7 @@ const swarm = {
   },
   owned: (a, ctx) => a.owner === ctx.owner,
   async remove (r) { await stop({ folder: r.want.folder }) },
-  hint: () => 'this swarm was not made by this owner: its own manager stops or starts it'
+  hint: (r, a) => a?.conflict ? `a swarm named ${r.want.swarm} runs on this host from elsewhere (another project?): stop it first` : 'this swarm was not made by this owner: its own manager stops or starts it'
 }
 
 const nodeOf = async (folder, name) => {
