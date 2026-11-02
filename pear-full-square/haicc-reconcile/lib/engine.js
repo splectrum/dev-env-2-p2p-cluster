@@ -5,7 +5,7 @@
 //                                              (blocked: a need not met and not fixable)
 //   await e.plan(requirements, { strict })    [{ name, kind, action: create|update|remove }]
 //   await e.apply(requirements, { strict })   { done, failed, blocked, after }
-//   await e.remove(requirements)              what this owner made, taken away, in reverse order
+//   await e.remove(requirements, { only })    what this owner made, taken away, in reverse order
 //
 // A requirement: { name, kind, want, needs: [names] } (name defaults to kind).
 // A provider, one per kind, the only place knowing it:
@@ -147,8 +147,10 @@ export function createEngine ({ providers, owner = 'haicc', record = null }) {
   }
 
   // Teardown: what this owner made, taken away, dependents first.
-  async function remove (requirements) {
-    const reqs = order(named(requirements)).reverse()
+  async function remove (requirements, { only = null } = {}) {
+    // `only`: the names to act on, ordered within the whole declaration
+    // (stopping what runs, keeping the configuration it needs).
+    const reqs = order(named(requirements)).reverse().filter(r => !only || only.includes(r.name))
     const done = []; const failed = []; const kept = []
     for (const r of reqs) {
       const p = providerOf(r)
