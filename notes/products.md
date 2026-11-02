@@ -94,13 +94,14 @@ folders moved to `<org>/<repo>`; splits are of `pear-full-square/<module>`
 since. New, first merges: `haicc-reconcile`, `haicc-deployment`. Changed,
 one join after the move: `p2p-node`, `p2p-node-manager`,
 `p2p-swarm-manager`, `splectral-server`, `-shell`, `-transport`,
-`-scenario`, `-p2p-actions`. Waiting: `haiccing/base-demo-liveness`,
-`haiccing/base-demo-other-host` (this session cannot attach them beside
-the same-named `splectral` components).
+`-scenario`, `-p2p-actions`. The `haiccing` projects
+`base-demo-liveness` and `base-demo-other-host`: their first merges, done
+by the local agent from dev `04bcb84` (after step 10), in the same table.
 
 ## Step 10 (2026-11-02): the deployment on the swarm
 
 Every row in `steps/10-deployment-on-swarm/7-validation/products.md`:
 `p2p-node`, `p2p-node-manager`, `p2p-swarm-manager`, `haicc-reconcile`
 (plain merges), `splectral-p2p-observer` (its join after the move). The
-`haiccing` projects: with the local agent.
+`haiccing` projects: their first merge includes step 10's changes (step 9's
+table).

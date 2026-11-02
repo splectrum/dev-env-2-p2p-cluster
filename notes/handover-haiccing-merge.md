@@ -55,7 +55,7 @@ Work in an empty folder of your own, e.g. `~/haiccing-merge`.
    ```
 
    ```bash
-   git -C <p> pull --allow-unrelated-histories --no-edit ../dev-env-2-p2p-cluster split-<p>
+   git -C <p> pull --no-rebase --allow-unrelated-histories --no-edit ../dev-env-2-p2p-cluster split-<p>
    ```
 
    c. Check: the product holds the folder's files and its LICENSE, and
@@ -66,6 +66,12 @@ Work in an empty folder of your own, e.g. `~/haiccing-merge`.
    ```
 
    Expected files: `LICENSE`, `README.md`, `project.json`.
+
+   `--no-rebase` makes it a merge where git asks how to reconcile divergent
+   branches (git 2.27 and later, without `pull.rebase` set). `--no-edit`
+   names the local path in the message: give the merge a message of the
+   products' form before pushing,
+   `git -C <p> commit --amend -m "Merge <p> from dev-env-2-p2p-cluster <dev commit> (first merge)"`.
 
    d. Push and verify against the remote:
 

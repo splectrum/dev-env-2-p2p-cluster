@@ -124,9 +124,10 @@ Every module has its product repository; every validated change is merged
    - several projects at once; the capability store and small runs; the
      repository-based versions; a real second machine; Pear with fixed
      versions; HAICC's project tool.
-2. **The `haiccing` projects' product merges**: this cloud session cannot
-   attach them beside the same-named `splectral` components. The local
-   agent does them (`notes/handover-haiccing-merge.md`).
+2. **The `haiccing` projects' product merges**: done 2026-11-02 by the
+   local agent, from dev `04bcb84` (step 9's table in
+   `steps/9-click-and-run/8-validation/products.md`). Later merges are
+   plain, from a session that can attach them, or locally the same way.
 3. **The human runs the demos locally** with `demos.md` (step 9's one
    document): what they find may set the next step.
 
