@@ -53,7 +53,8 @@ export const bare = {
     return v ? { runtime: v.replace(/^v/, '') } : null
   },
   compare: (r, a) => !a ? { status: 'missing' } : a.runtime === r.want.runtime ? { status: 'met', detail: a } : { status: 'different', detail: a },
-  hint: (r, a) => `Bare's runtime ${r.want.runtime} is needed${a ? ` (found ${a.runtime})` : ''}: npm i -g bare@1.36.2`
+  // The bare package's version differs from its runtime's: the ones known.
+  hint: (r, a) => `Bare's runtime ${r.want.runtime} is needed${a ? ` (found ${a.runtime})` : ''}: ${{ '1.36.0': 'npm i -g bare@1.36.2' }[r.want.runtime] || 'install the bare package with that runtime (npm i -g bare@<version>)'}`
 }
 
 export const subnet = {

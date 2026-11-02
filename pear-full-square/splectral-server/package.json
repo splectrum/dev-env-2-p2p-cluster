@@ -1,6 +1,6 @@
 {
   "name": "splectral-server",
-  "id": "01843910-d6cc-4ec5-910d-a8bf97f2606a",
+  "id": "14e7e831-6f15-4bdd-b5aa-553ea776d366",
   "description": "The Splectral server: extensions, configuration, sources, topics, actions dispatched and recorded, the app served",
   "type": "module",
   "exports": "./index.js",

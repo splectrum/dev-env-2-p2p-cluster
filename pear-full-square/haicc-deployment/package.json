@@ -1,6 +1,6 @@
 {
   "name": "haicc-deployment",
-  "id": "3da71add-fc94-4db4-9628-959248f46bc2",
+  "id": "1c692b73-22e7-47b2-bcb4-2c9f201e8a1a",
   "description": "A deployment as an object: its declared configuration and lifecycle (deploy, start, stop, teardown) as records, reconciled by haicc-reconcile",
   "type": "module",
   "exports": "./index.js",
