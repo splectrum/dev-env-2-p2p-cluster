@@ -2,7 +2,9 @@
 // shapes inside them (filled when the host controls them, outlined when
 // they joined from elsewhere), their resources beside them, links between
 // nodes, recent activity drawn on top: requests, changes, nodes arriving
-// and leaving. It reads the abstract world only.
+// and leaving. It reads the abstract world only. Presence (the world's
+// view: absent when not heard from within its lease, left when it left)
+// is drawn apart from status: a dashed ring and a word under the name.
 
 const W = 300 // a host's frame
 const NODE_R = 26
@@ -41,10 +43,12 @@ export default function Map ({ state, html }) {
           const res = Object.values(state.resources).filter(r => r.node === n.uri)
           const busy = res.some(r => answered.has(r.uri))
           return html`
-            <g data-node=${n.uri} data-status=${n.status} data-controlled=${n.controlled ? 'yes' : 'no'}>
+            <g data-node=${n.uri} data-status=${n.status} data-presence=${n.presence || 'unknown'} data-controlled=${n.controlled ? 'yes' : 'no'}>
               ${busy ? html`<circle data-request cx=${p.x} cy=${p.y} r=${NODE_R + 10} fill="none" stroke="var(--accent)" stroke-width="3" opacity="0.7" />` : null}
               <circle cx=${p.x} cy=${p.y} r=${NODE_R} fill=${n.controlled ? colour(n) : 'var(--panel)'} stroke=${colour(n)} stroke-width="4" />
+              ${n.presence === 'absent' ? html`<circle data-absent cx=${p.x} cy=${p.y} r=${NODE_R + 6} fill="none" stroke="var(--warn)" stroke-width="3" stroke-dasharray="6 5" />` : null}
               <text x=${p.x} y=${p.y + NODE_R + 18} text-anchor="middle" font-size="13" fill="var(--fg)">${n.uri}</text>
+              ${n.presence === 'absent' || n.presence === 'left' ? html`<text x=${p.x} y=${p.y + NODE_R + 34} text-anchor="middle" font-size="12" fill="var(--warn)">${n.presence}</text>` : null}
               ${res.map((r, k) => html`
                 <g data-resource=${r.uri} data-changed=${changed.has(r.uri) ? 'yes' : 'no'}>
                   <circle cx=${p.x + NODE_R + 26} cy=${p.y - 22 + k * 24} r=${changed.has(r.uri) ? 9 : 6} fill=${changed.has(r.uri) ? 'var(--accent)' : 'var(--line)'} />
@@ -53,6 +57,6 @@ export default function Map ({ state, html }) {
             </g>`
         })}
       </svg>
-      <p class="muted" style=${{ fontSize: '13px' }}>Filled: controlled by its host's manager · outlined: joined from elsewhere · green running, amber starting, grey gone · a ring: a request answered · a blue dot: a resource just changed.</p>
+      <p class="muted" style=${{ fontSize: '13px' }}>Filled: controlled by its host's manager · outlined: joined from elsewhere · green running, amber starting, grey gone · a dashed ring: absent (not heard from within its lease) · a ring: a request answered · a blue dot: a resource just changed.</p>
     </section>`
 }

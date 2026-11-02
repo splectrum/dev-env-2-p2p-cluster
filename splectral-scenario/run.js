@@ -3,6 +3,9 @@
 // A scenario (an extension's JSON, see notes/splectral.md) is steps:
 //   { say }            a message for the people watching
 //   { do, with }       an action, dispatched as any action is
+//   { do, with, refused: true }
+//                      an action expected to be refused: its refusal is
+//                      told as a message; a success fails the step
 //   { await, timeout } wait until the world shows it: '<event kind>' or
 //                      '<event kind>:<uri>' (joined, gone, changed,
 //                      requestAnswered, resource, ...)
@@ -23,6 +26,7 @@ const holds = (snap, pattern) => {
   const [kind, uri] = pattern.split(/:(.+)/)
   if (kind === 'joined') return snap.nodes[uri]?.status === 'running'
   if (kind === 'gone') return snap.nodes[uri]?.status === 'gone'
+  if (kind === 'absent' || kind === 'left' || kind === 'present') return snap.nodes[uri]?.presence === kind
   if (kind === 'resource') return Boolean(snap.resources[uri])
   return false
 }
@@ -49,7 +53,11 @@ export default async function runScenario ({ id }, ctx) {
   for (let i = 0; i < sc.steps.length; i++) {
     const step = sc.steps[i]
     if (step.say) await tell({ kind: 'say', text: step.say, step: i })
-    if (step.do) await ctx.dispatch({ action: step.do, with: step.with || {} })
+    if (step.do && step.refused) {
+      const refusal = await ctx.dispatch({ action: step.do, with: step.with || {} }).then(() => null, err => err.message)
+      if (!refusal) throw new Error(`step ${i}: ${step.do} was expected to be refused`)
+      await tell({ kind: 'say', text: `Refused: ${refusal}`, step: i })
+    } else if (step.do) await ctx.dispatch({ action: step.do, with: step.with || {} })
     if (step.await) await waitFor(ctx.model, step.await, step.timeout ?? 120000)
     await tell({ kind: 'scenarioStep', step: i, done: true })
   }

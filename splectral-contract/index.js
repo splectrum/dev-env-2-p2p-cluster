@@ -2,7 +2,9 @@
 // (notes/splectral.md). What an extension declares, and the abstract world
 // every application works in. Shared by server and browser; no p2p.
 
-export const contractVersion = '0.1.0'
+export const contractVersion = '0.2.0'
+// Minor versions add to the world, never change it: an extension written
+// for 0.1 works on 0.2.
 
 // The abstract world: entities, events and actions, in data names.
 export const world = {
@@ -11,6 +13,9 @@ export const world = {
     nodeStarting: 'a node is starting { uri, host, controlled }',
     joined: 'a node is running { uri, host, key, controlled }',
     gone: 'a node has stopped { uri, exitCode }',
+    absent: 'a node has not been heard from within its lease { uri, since }',
+    present: 'an absent node is heard from again { uri }',
+    left: 'a node has left, gracefully { uri }',
     resource: 'a resource exists { uri, node, type }',
     connected: 'a link opened { from, toKey }',
     disconnected: 'a link closed { from, toKey, bytes }',
@@ -21,7 +26,7 @@ export const world = {
     say: 'a message for the people watching { text }'
   },
   // Action ids are names (rules.md): what scenarios and pages ask for.
-  actions: ['state', 'write', 'send-request', 'stop-node', 'invite', 'start-node-from-invitation']
+  actions: ['state', 'write', 'send-request', 'stop-node', 'invite', 'start-node-from-invitation', 'pause-node', 'resume-node']
 }
 
 const KINDS = ['source', 'mapper', 'page', 'scenario', 'action']
@@ -32,7 +37,8 @@ const ID = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/
 export function checkManifest (m) {
   if (!m || typeof m !== 'object') throw new Error('a manifest is an object')
   if (!ID.test(m.name || '')) throw new Error(`not an extension name: ${m.name}`)
-  if (!/^0\.1(\.|$)/.test(String(m.contract || ''))) throw new Error(`${m.name}: contract ${m.contract} is not ${contractVersion}`)
+  const minor = String(m.contract || '').match(/^0\.(\d+)(\.|$)/)
+  if (!minor || Number(minor[1]) > Number(contractVersion.split('.')[1])) throw new Error(`${m.name}: contract ${m.contract} is not met by ${contractVersion}`)
   for (const p of m.provides || []) {
     if (!KINDS.includes(p.kind)) throw new Error(`${m.name}: unknown kind ${p.kind}`)
     if (!ID.test(p.id || '')) throw new Error(`${m.name}: not an id: ${p.id}`)

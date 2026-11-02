@@ -41,6 +41,10 @@ export default function createMapper () {
     switch (v.kind) {
       case 'connection-opened': return [{ kind: 'connected', from: uri, toKey: v.peer, time: t }]
       case 'connection-closed': return [{ kind: 'disconnected', from: uri, toKey: v.peer, bytes: (v.bytesReceived || 0) + (v.bytesSent || 0), time: t }]
+      // The name service's view of presence (p2p-rns, in the master's log).
+      case 'node-absent': return v.module === 'p2p-rns' ? [{ kind: 'absent', uri: v.uri, since: v.lastSeen + v.leaseMs, time: t }] : []
+      case 'node-present': return v.module === 'p2p-rns' ? [{ kind: 'present', uri: v.uri, time: t }] : []
+      case 'node-left': return v.module === 'p2p-rns' ? [{ kind: 'left', uri: v.uri, time: t }] : []
       case 'request-taken': return [{ kind: 'requestSent', fromKey: v.sender, to: `${uri}/${v.repository || 'node'}`, uri: `${uri}/${v.repository || 'node'}`, name: v.name, time: t }]
       case 'requests-executed': return (v.executed || []).map(name => ({ kind: 'requestAnswered', uri: `${uri}/node`, name, time: t }))
       case 'action-result': {
