@@ -78,3 +78,11 @@ merges: `mycelium-topic`, the Splectral platform (`splectral-contract`,
 `-timeline`, `-p2p-watchers`, `-p2p-actions`, `-p2p-observer`) in
 `pear-full-square`, the applications `base-view-map` and
 `base-demo-other-host` in `splectral`.
+
+## Step 8 (2026-11-02): liveness
+
+Every row in `steps/8-liveness/6-validation/products.md`. Changed, plain
+merges: `p2p-rns`, `p2p-node`, `p2p-node-manager`, `p2p-swarm-manager`,
+`splectral-contract`, `-model`, `-scenario`, `-p2p-watchers`,
+`-p2p-actions` in `pear-full-square`; `base-view-map` in `splectral`. New:
+`base-demo-liveness` (`splectral`), waiting for its repository.
