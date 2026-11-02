@@ -190,9 +190,10 @@ the swarm manager read a cache half written.
 
 ### 9. Click and run — requested
 
-Request: `pending/phase-2/step-9-click-and-run/request.md`. Running
+Request: `pending/phase-2/step-9-click-and-run/request.md` (`120a8f5`). Running
 Splectral and its demos as one command, then clicks: `haicc-reconcile`
-(`haicc-reconcile.md`), setups in Splectral, tabs, the `splectral` command,
+(`haicc-reconcile.md`; configuration apart from running), setups in
+Splectral, Splectral spoken to through topics, tabs, the `splectral` command,
 the local run's fixes.
 
 ## Further down the roadmap
