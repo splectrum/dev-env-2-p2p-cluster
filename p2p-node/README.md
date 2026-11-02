@@ -38,12 +38,19 @@ taken into `pending/default`, executed and answered on `main`.
   code give the same keys, commits and ids after a rebuild;
 - registered in p2p-rns and announced.
 
+**Liveness** (p2p-rns's lease): a joining node renews its registration
+every third of the lease p2p-rns tells it, on the master's current
+connection; a new connection (after a pause, a network gap) is taken again
+and renewed at once, and a registry that forgot the node is told again. On
+a graceful stop it leaves (bounded: 2 s). The master runs p2p-rns (option
+`leaseMs`) and holds no lease.
+
 The store is for RAM (it holds the node's secrets). The primary key comes
 from the node manager on stdin (`cli.js`), never from a file the node
 keeps. Its log (stdout, JSON lines) is every module's audit and its
-metrics at intervals. SIGTERM stops it gracefully.
+metrics at intervals. SIGTERM stops it gracefully (leaving p2p-rns).
 
 A failed start (a name refused, the master unreachable) closes what it
 opened.
 
-`npm test`: 2 tests.
+`npm test`: 3 tests.

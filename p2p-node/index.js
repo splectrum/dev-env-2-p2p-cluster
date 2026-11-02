@@ -26,11 +26,19 @@
 // identity and the names, so a rebuilt node has the same keys, commits and
 // ids.
 //
+// Liveness (p2p-rns's lease): a joining node renews its registration
+// every third of the lease p2p-rns tells it, on the master's current
+// connection (a new connection, after a pause or a network gap, is taken
+// again and renewed at once; a registry that forgot the node, its master
+// restarted, is registered again). On a graceful stop it leaves, bounded in
+// time. The master runs p2p-rns (option `leaseMs`) and holds no lease.
+//
 // The store is meant for RAM (a tmpfs): it holds the node's secrets
 // (step 0). `primaryKey` comes from the node manager, never from a file the
 // node keeps. Instrumentation: every module's events go to the observer
 // (the node's log); the node adds node-started, genesis, live, metrics
-// (every interval), request-taken, requests-executed and node-stopped.
+// (every interval), request-taken, requests-executed, renew-failed,
+// registered-again, left and node-stopped.
 
 import crypto from 'hypercore-crypto'
 import { openStore } from 'p2p-store'
@@ -97,23 +105,35 @@ async function start (opts, opened) {
 
   // The name service: the master runs it; a joining node asks the master.
   let rns, rnsLocal = null
+  let leave = null
   const services = []
   if (role === 'master') {
-    rnsLocal = createRns({ swarm, observer })
-    rnsLocal.registerNode({ owner, name })
+    rnsLocal = createRns({ swarm, observer, ...(opts.leaseMs ? { leaseMs: opts.leaseMs } : {}) })
+    opened.push(async () => rnsLocal.close())
+    rnsLocal.registerNode({ owner, name, local: true })
     const local = rnsLocal
     rns = {
       register: r => local.register({ owner, ...r }),
       resolve: uri => local.resolve(uri)
     }
   }
+  // A joining node's channel to the name service: the master's current
+  // connection's (taken again on each new one).
   let resolveMaster
+  let toMaster = null
   const masterChannel = role === 'join' ? new Promise(resolve => { resolveMaster = resolve }) : null
+  const onMaster = ch => {
+    const first = !toMaster
+    toMaster = rnsClient(ch)
+    if (first) resolveMaster(ch)
+    else ch.opened.then(() => heartbeat?.(), () => {})
+  }
+  let heartbeat = null
 
   net.onConnection((stream, peer) => {
     rep.replicate(stream, { peer: peer.peer })
     if (rnsLocal) openChannel(stream, { name: 'p2p-rns', peer: peer.peer, observer, onrequest: rnsLocal.handler(peer.peer) })
-    else if (peer.peer === opts.master) resolveMaster(openChannel(stream, { name: 'p2p-rns', peer: peer.peer, observer }))
+    else if (peer.peer === opts.master) onMaster(openChannel(stream, { name: 'p2p-rns', peer: peer.peer, observer }))
     for (const s of services) serveRequests(stream, s, peer.peer)
   })
   const serving = new WeakSet()
@@ -152,9 +172,38 @@ async function start (opts, opened) {
     net.connectTo(Buffer.from(opts.master, 'hex'))
     const ch = await masterChannel
     await ch.opened
-    const client = rnsClient(ch)
-    await client.registerNode(name)
-    rns = { register: r => client.register(r), resolve: uri => client.resolve(uri) }
+    const registered = await toMaster.registerNode(name)
+    const resources = []
+    rns = {
+      register: r => { resources.push(r); return toMaster.register(r) },
+      resolve: uri => toMaster.resolve(uri)
+    }
+    // The heartbeat: a third of the lease, bounded by it.
+    const bounded = (p, ms) => Promise.race([p, new Promise((resolve, reject) => setTimeout(() => reject(new Error('no answer')), ms))])
+    let beating = false
+    heartbeat = async () => {
+      if (beating) return
+      beating = true
+      try {
+        await bounded(toMaster.renew(), registered.leaseMs)
+      } catch (err) {
+        if (/not a node/.test(err.message)) {
+          // The registry forgot this node (its master restarted): again.
+          await toMaster.registerNode(name)
+          for (const r of resources) await toMaster.register(r)
+          emit('registered-again', { uri: `/${swarm}/${name}`, resources: resources.length })
+        } else emit('renew-failed', { error: err.message })
+      } finally { beating = false }
+    }
+    const beat = setInterval(() => heartbeat().catch(() => {}), Math.ceil(registered.leaseMs / 3))
+    opened.push(async () => clearInterval(beat))
+    leave = async () => {
+      clearInterval(beat)
+      try {
+        const r = await bounded(toMaster.leave(), 2000)
+        emit('left', { uri: r.left })
+      } catch (err) { emit('left', { uri: null, error: err.message }) }
+    }
   }
 
   // Live: the boot repository cloned into the node's own `node` repository.
@@ -205,6 +254,8 @@ async function start (opts, opened) {
       stopping ??= (async () => {
         clearInterval(timer)
         emit('metrics', metrics())
+        if (leave) await leave()
+        if (rnsLocal) rnsLocal.close()
         await net.close()
         await dht.close()
         if (boot) await boot.close()

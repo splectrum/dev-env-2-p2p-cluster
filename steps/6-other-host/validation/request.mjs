@@ -44,6 +44,7 @@ const to = async key => {
 const { rns } = await to(inv.master)
 const uri = `/${inv.swarm}/${node}/node`
 const record = await rns.resolve(uri)
+if (record?.present === false) { console.log(JSON.stringify({ from: host, uri, refused: 'absent', absentSince: record.absentSince, ms: Date.now() - t0 })); process.exit(1) }
 const outbox = await mrepos({ store }).create('outbox')
 const bundle = await requestBundle(outbox.backend, { 'request.md': `# Request: ${name}\n\nThe node's status, from ${host}.\n\nStatus: node\n` })
 const target = await to(record.owner)

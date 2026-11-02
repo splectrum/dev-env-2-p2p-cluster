@@ -117,3 +117,20 @@ test('a node joins: under its name, from the boot repository; requests to it and
   await again.stop()
   await master.stop()
 })
+
+test('liveness: a joined node renews its lease while it runs, and leaves on a graceful stop', async () => {
+  const events = []
+  const master = await startNode({ role: 'master', swarm: 'test', name: 'master', storage: dir(), primaryKey: crypto.randomBytes(32), host, dhtPort: 49855, code, leaseMs: 300, observer: e => events.push(e) })
+  const n1 = await startNode({ role: 'join', swarm: 'test', name: 'node-1', host, bootstrap: [{ host, port: 49855 }], master: master.key, packages: master.packages, storage: dir(), primaryKey: crypto.randomBytes(32) })
+  // Three leases long: the heartbeat keeps it present.
+  await new Promise(resolve => setTimeout(resolve, 900))
+  assert.equal(master.rns.resolve('/test/node-1').present, true)
+  assert.equal(master.rns.resolve('/test/node-1/node').present, true)
+  assert.ok(master.rns.metrics().renew >= 4, 'renewed')
+  await n1.stop()
+  // Left: out, with its resources; the name free.
+  assert.equal(master.rns.resolve('/test/node-1'), null)
+  assert.equal(master.rns.resolve('/test/node-1/node'), null)
+  assert.deepEqual(events.filter(e => e.module === 'p2p-rns' && /node-(absent|left)/.test(e.kind)).map(e => e.kind), ['node-left'])
+  await master.stop()
+})

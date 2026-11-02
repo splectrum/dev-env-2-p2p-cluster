@@ -1,7 +1,8 @@
 // send-request { from, to, name }: a request to a node's repository, from
 // host `from`, as a peer of the swarm (its address on the data plane: the
 // host's gateway there). The repository resolved by URI, the request sent
-// as a bundle, the response read back from a replica.
+// as a bundle, the response read back from a replica. A node p2p-rns flags
+// absent is refused at once.
 import { readFileSync, mkdtempSync, rmSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
@@ -44,6 +45,8 @@ export default async ({ from, to, name }, ctx) => {
   try {
     const record = await (await reach(inv.master)).rns.resolve(to)
     if (!record) throw new Error(`not in the swarm: ${to}`)
+    // Absent (its lease ran out): refused at once, not waited on.
+    if (record.present === false) throw new Error(`absent: ${to}, since ${new Date(record.absentSince).toISOString()}`)
     const outbox = await mrepos({ store }).create('outbox')
     const bundle = await requestBundle(outbox.backend, { 'request.md': `# Request: ${name}\n\nThe node's status, from ${from}.\n\nStatus: node\n` })
     const answer = await askRequest((await reach(record.owner)).requests, { name, bundle })
