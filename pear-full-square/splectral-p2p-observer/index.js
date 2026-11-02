@@ -40,6 +40,7 @@ export function attachObserver ({ node, input, log }) {
   const handle = async line => {
     let msg
     try { msg = JSON.parse(line) } catch { return emit('action-refused', { why: 'not JSON' }) }
+    if (msg.shadow) return // the node's own (its manager's state), not an action
     const run = actions[msg.action]
     if (!run) return emit('action-result', { id: msg.id, action: msg.action, ok: false, error: `unknown action: ${msg.action}` })
     try {

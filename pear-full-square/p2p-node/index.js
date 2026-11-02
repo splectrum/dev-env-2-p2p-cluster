@@ -250,7 +250,10 @@ async function start (opts, opened) {
     ...(boot ? { bootstrap: boot.metrics() } : {}),
     ...(rnsLocal ? { rns: rnsLocal.metrics() } : {})
   })
-  const status = () => ({ uri: `/${swarm}/${name}`, role, key: owner, packages, connections: net.connections().length, resources: store.resources().length, uptimeMs: Date.now() - t0 })
+  // The manager's state, shadowed (step 10): read-only, as its manager
+  // last told it; the manager is its authority.
+  let managerShadow = null
+  const status = () => ({ uri: `/${swarm}/${name}`, role, key: owner, packages, connections: net.connections().length, resources: store.resources().length, uptimeMs: Date.now() - t0, ...(managerShadow ? { manager: managerShadow } : {}) })
   // The master keeps the swarm's deployment: `Deployment: set` requests to it.
   const deployment = role === 'master' ? {
     swarm,
@@ -280,6 +283,10 @@ async function start (opts, opened) {
     packagesCommit: packages?.commit,
     metrics,
     status,
+    shadow (state) {
+      managerShadow = { status: state.status, container: state.container, image: state.image, ip: state.ip, startedAt: state.startedAt, seen: Date.now() }
+      emit('manager-shadowed', { status: state.status })
+    },
     stop () {
       stopping ??= (async () => {
         clearInterval(timer)

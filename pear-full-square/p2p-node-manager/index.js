@@ -98,6 +98,7 @@ export async function manageNode ({ folder, vault, image, network, ip, swarm, na
     state = reduceNodeState(state, value)
     produced = topics.manager.produce({ value })
     saveState()
+    if (provision && kind !== 'resources') provision.shadow(state)
   }
   const flush = () => produced
   record('starting', { swarm, name, role, container, image, network, ip, memory, storeSize })
@@ -294,6 +295,9 @@ async function provisioner ({ aux, record, secret }) {
       await toNode.opened
       return toNode.request({ op: 'action', action })
     },
+    // The manager's state, for the node's shadow of it (step 10): a
+    // message, read-only on the node's side; dropped while there is no channel.
+    shadow (state) { if (toNode) toNode.opened.then(() => toNode.send({ op: 'shadow', state }), () => {}) },
     async close () { await net.close(); await dht.close() }
   }
 }
