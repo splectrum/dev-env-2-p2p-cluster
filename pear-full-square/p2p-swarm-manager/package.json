@@ -13,7 +13,10 @@
     "p2p-channel": "*",
     "p2p-connect": "*",
     "p2p-dht": "*",
+    "p2p-mrepo": "*",
     "p2p-node": "*",
-    "p2p-rns": "*"
+    "p2p-replicate": "*",
+    "p2p-rns": "*",
+    "p2p-store": "*"
   }
 }
