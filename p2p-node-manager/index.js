@@ -135,12 +135,8 @@ export async function manageNode ({ folder, vault, image, network, ip, swarm, na
   const ready = new Promise((resolve, reject) => { readyResolve = resolve; readyReject = reject })
   ready.catch(() => {})
   child.stderr.pipe(createWriteStream(join(folder, 'node.stderr'), { flags: 'a' }))
-  // The node's log, a line at a time. `docker start -a` stops passing the
-  // container's output on once it stops, so a graceful stop's last lines
-  // (the node leaving, stopped) are taken from `docker logs` after the
-  // exit: the lines past those already taken.
+  // The node's log, a line at a time.
   let rest = ''
-  let taken = 0
   child.stdout.on('data', chunk => {
     rest += chunk.toString()
     let i
@@ -151,7 +147,6 @@ export async function manageNode ({ folder, vault, image, network, ip, swarm, na
     }
   })
   function take (line) {
-      taken++
       let e
       try { e = JSON.parse(line) } catch { produced = topics.node.produce({ value: { text: line } }); return }
       // An observer's result carries its action's correlation in a header.
@@ -209,15 +204,12 @@ export async function manageNode ({ folder, vault, image, network, ip, swarm, na
     if (s) { const j = JSON.parse(s); record('resources', { cpu: j.CPUPerc, memory: j.MemUsage, memoryPercent: j.MemPerc, net: j.NetIO, pids: j.PIDs }) }
   }, sampleEvery)
 
-  const done = new Promise(resolve => child.once('exit', async code => {
+  // 'close', not 'exit': after the node's output is all read (a graceful
+  // stop's last lines, the node leaving, come just before the end).
+  const done = new Promise(resolve => child.once('close', async code => {
     clearInterval(sampler)
     if (stopActions) stopActions()
     if (provision) await provision.close()
-    let logged = []
-    try { logged = execFileSync('docker', ['logs', container], { encoding: 'utf8', maxBuffer: 512 * 1024 * 1024, stdio: ['ignore', 'pipe', 'ignore'] }).split('\n').filter(Boolean) } catch {}
-    const tail = logged.slice(taken)
-    for (const line of tail) take(line)
-    if (tail.length) record('log-tail-taken', { lines: tail.length })
     const inspected = tryDocker('inspect', '--format', '{{json .State}}', container)
     const s = inspected ? JSON.parse(inspected) : {}
     tryDocker('rm', container)
