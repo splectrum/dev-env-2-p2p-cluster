@@ -1,6 +1,6 @@
 # Handover: where the phase stands, and how to continue
 
-Written 2026-11-01 after step 7, updated 2026-11-02 after step 8, for the next session (or after
+Written 2026-11-01 after step 7, updated 2026-11-02 after step 8 and the human's local run, for the next session (or after
 compaction). Read this first, then `rules.md` (single concern first), then
 `notes/plan.md`. Everything below is on `main`.
 
@@ -96,13 +96,30 @@ Every module has its product repository; every validated change is merged
    - a real second machine.
 2. **Step 6 on a real second machine**, if wanted: the data plane needs an
    overlay or the LAN (`steps/6-other-host/local-machine.md`).
-3. **The human runs Splectral locally** (`steps/7-splectral/local-machine.md`):
-   what they find may set the next step.
-4. **Create `splectral/base-demo-liveness`** (step 8's application), so
+3. **The human ran Splectral locally** (2026-11-02, WSL2, Node 24): the
+   demo works live and replayed. Report and findings:
+   `steps/7-splectral/local-machine-run.md`. It leads to the next item.
+4. **One place for the instructions, and an easy launch** (the human is
+   discussing it): today each step has its own `local-machine.md` and
+   `demo.sh`, launching is many commands, requirements are checked by
+   hand, and the demo runs only from this repository. The report's last
+   section gives the input and a possible shape (one entry point:
+   `check`, `install`, `up`, `down`, `replay`, `reset`, `clean`).
+5. **Create `splectral/base-demo-liveness`** (step 8's application), so
    its first merge can follow.
 
 ## Carried forward (open, not built)
 
+- **From the local run** (`steps/7-splectral/local-machine-run.md`):
+  - `steps/6-other-host/validation/other-host.sh` still polls `state.json`
+    with `JSON.parse`, the race step 8 removed from the swarm manager;
+    read the topic, or have the node manager write `state.json` by
+    temporary file and rename;
+  - `steps/1-mycelium/validation/unit-tests.sh` gives `null` counts on
+    Node 24 (spec reporter); make the reporter explicit (TAP) or read
+    both;
+  - nothing checks Bare's version, and the image takes Bare's binary from
+    the global install: a preflight check.
 - **Liveness, what is left** (step 8): how long an absent node keeps its
   name (a second, longer timeout taking it out); the lease per swarm (a
   setting, 15 s today); step 7's scenario rerun with liveness; a link to an

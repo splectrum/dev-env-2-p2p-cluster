@@ -19,7 +19,8 @@ Status: **done** (2026-11-01). Request:
 | `10-validation/` | end to end, recorded; the products | done |
 
 To run it on a machine of your own (local network only), and to watch
-Splectral in a browser: `local-machine.md`.
+Splectral in a browser: `local-machine.md`. The human's first run of it
+(2026-11-02, WSL2, Node 24), with its findings: `local-machine-run.md`.
 
 **Outcome.** The platform's foundations and Splectral as a viewer with its
 first demo, end to end: validation in one place; data in topics of Kafka
