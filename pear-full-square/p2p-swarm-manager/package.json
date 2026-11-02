@@ -1,6 +1,6 @@
 {
   "name": "p2p-swarm-manager",
-  "id": "7d3bde6e-e835-489f-9fc9-b945ce8a07a3",
+  "id": "da9291d8-db86-4048-848d-8d3cbc945a28",
   "description": "A swarm's manager on the host: genesis, the nodes it controls through their node managers, the swarm's record",
   "type": "module",
   "exports": "./index.js",

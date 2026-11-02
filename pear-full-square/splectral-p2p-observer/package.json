@@ -1,6 +1,6 @@
 {
   "name": "splectral-p2p-observer",
-  "id": "b729da77-4d1c-4f5c-96f5-62748cd142f7",
+  "id": "d6f6fd6a-26e7-4782-a43c-a9422c4d85df",
   "description": "A privileged node application: the node's events and state, and named actions, to its own manager only; never a secret",
   "type": "module",
   "exports": "./index.js",
