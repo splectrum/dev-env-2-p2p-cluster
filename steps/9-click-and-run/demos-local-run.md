@@ -82,3 +82,31 @@ feedback is noted for it, not asked for now.
    generous on this machine.
 6. **WSL2 and Node 24** keep working; `check` agrees (Node "22 or later",
    Bare's runtime 1.36.0).
+
+## Step 10's deployment on the swarm, by hand
+
+`notes/local.md` item 3, done by the local agent the same day:
+`steps/10-deployment-on-swarm/7-validation/demo.sh` phases `genesis` to
+`stop-swarm`, in a work folder outside the repository, deleted
+afterwards. Every phase as in the record but one check:
+
+| Phase | Result | Time |
+|---|---|---|
+| `genesis` | the swarm's deployment on the master wants node-1 (commit `0823779`); only the master runs | 21 s |
+| `manual` | shadowed: `deployment`, then `deployment-pending` with `node-1:create`; nothing started | 13 s |
+| `auto` | node-1 brought up | 4 s |
+| `change` | `worker-nodes:create`, `hosts-node-1:remove` applied (commit `757ddfe`); master, worker-1, worker-2 running, node-1 stopped | 30 s (the record: 47 s) |
+| `refused` | "the master is not deployed: it holds the deployment"; the swarm's deployment unchanged | 7 s |
+| `shadow` | master `running`; worker-1 and worker-2 `starting` (the record: all `running`) | |
+| `stop-swarm` | nothing of the swarm left running | 19 s |
+
+7. **The `shadow` phase's check depends on the order the filesystem lists
+   files.** Read in offset order, every node's shadows are right
+   (`starting`, `running`, then `stopping` at the stop). The phase takes
+   `grep -rh ... | tail -1` over the topic's record files, and `grep -r`
+   follows the directory's listing order, which on this filesystem (ext4
+   in WSL) is not the files' order (`...052.json`, `...031.json`,
+   `...010.json`, ...). The last line printed is then not the last
+   record. Reading the topic (as `shadowLog` does, with `mycelium-topic`)
+   or sorting the files first makes it exact. The product is fine; the
+   check is not.

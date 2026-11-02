@@ -71,6 +71,10 @@ report:
 
 ## 3. The deployment on the swarm, by hand (optional)
 
+**Done** 2026-11-02 by the local agent: as recorded, but for the `shadow`
+phase's check, which depends on the filesystem's file order (the report
+in `steps/9-click-and-run/demos-local-run.md`, finding 7).
+
 Step 10's mechanics without a project, as its validation does them
 (`steps/10-deployment-on-swarm/7-validation/demo.sh`, phases `genesis` to
 `stop-swarm`): a swarm handed a deployment at genesis, `watch` in manual
