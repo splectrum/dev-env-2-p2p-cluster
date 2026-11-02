@@ -1,4 +1,5 @@
-// send-request { from, to, name }: a request to a node's repository, from
+// send-request { from, to, name }: a request to a node's repository (named
+// <name>-<a suffix of its own>, unique per request), from
 // host `from`, as a peer of the swarm (its address on the data plane: the
 // host's gateway there). The repository resolved by URI, the request sent
 // as a bundle, the response read back from a replica. A node p2p-rns flags
@@ -19,7 +20,10 @@ import { openRepo } from '../mycelium-git/index.js'
 import { invite } from '../p2p-swarm-manager/index.js'
 import { hostOf, swarmFolderOf } from './lib/hosts.js'
 
-export default async ({ from, to, name }, ctx) => {
+export default async ({ from, to, name: given }, ctx) => {
+  // A request is taken once under its name: the name made unique per
+  // request (the requester's concern), so a scenario can run again.
+  const name = `${given}-${Date.now().toString(36)}`
   const h = hostOf(ctx.config, from)
   const own = swarmFolderOf(h)
   const inv = own ? await invite({ folder: own }) : JSON.parse(readFileSync(join(h.folder, 'invitation.json'), 'utf8'))

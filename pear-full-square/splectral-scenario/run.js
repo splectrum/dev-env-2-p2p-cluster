@@ -52,24 +52,31 @@ export default async function runScenario ({ id }, ctx) {
     if (topic) await topic.produce({ value: event })
   }
   const t0 = Date.now()
-  await tell({ kind: 'say', text: `Scenario: ${sc.title || id}`, step: -1 })
-  // Started for a project: the project brought back to its desired state
-  // first, so the scenario can run again, any number of times.
-  if (ctx.config.project && ctx.has?.('reconcile-project')) {
-    await tell({ kind: 'say', text: 'The project is brought back to its declared state.', step: -1 })
-    await ctx.dispatch({ action: 'reconcile-project' })
-  }
-  for (let i = 0; i < sc.steps.length; i++) {
-    const step = sc.steps[i]
-    if (step.say) await tell({ kind: 'say', text: step.say, step: i })
-    if (step.do && step.refused) {
-      const refusal = await ctx.dispatch({ action: step.do, with: step.with || {} }).then(() => null, err => err.message)
-      if (!refusal) throw new Error(`step ${i}: ${step.do} was expected to be refused`)
-      await tell({ kind: 'say', text: `Refused: ${refusal}`, step: i })
-    } else if (step.do) await ctx.dispatch({ action: step.do, with: step.with || {} })
-    if (step.await) await waitFor(ctx.model, step.await, step.timeout ?? 120000)
-    if (step.hold) await new Promise(resolve => setTimeout(resolve, step.hold))
-    await tell({ kind: 'scenarioStep', step: i, done: true })
+  await tell({ kind: 'say', text: `Scenario: ${sc.title || id}`, step: -1, start: true })
+  // A run always ends with a message at the last step, finished or failed:
+  // the people watching (and a replay) know it is over.
+  try {
+    // Started for a project: the project brought back to its desired state
+    // first, so the scenario can run again, any number of times.
+    if (ctx.config.project && ctx.has?.('reconcile-project')) {
+      await tell({ kind: 'say', text: 'The project is brought back to its declared state.', step: -1 })
+      await ctx.dispatch({ action: 'reconcile-project' })
+    }
+    for (let i = 0; i < sc.steps.length; i++) {
+      const step = sc.steps[i]
+      if (step.say) await tell({ kind: 'say', text: step.say, step: i })
+      if (step.do && step.refused) {
+        const refusal = await ctx.dispatch({ action: step.do, with: step.with || {} }).then(() => null, err => err.message)
+        if (!refusal) throw new Error(`step ${i}: ${step.do} was expected to be refused`)
+        await tell({ kind: 'say', text: `Refused: ${refusal}`, step: i })
+      } else if (step.do) await ctx.dispatch({ action: step.do, with: step.with || {} })
+      if (step.await) await waitFor(ctx.model, step.await, step.timeout ?? 120000)
+      if (step.hold) await new Promise(resolve => setTimeout(resolve, step.hold))
+      await tell({ kind: 'scenarioStep', step: i, done: true })
+    }
+  } catch (err) {
+    await tell({ kind: 'say', text: `Scenario stopped: ${err.message}`, step: sc.steps.length, failed: true })
+    throw err
   }
   await tell({ kind: 'say', text: 'Scenario finished.', step: sc.steps.length })
   return { id, steps: sc.steps.length, ms: Date.now() - t0 }
