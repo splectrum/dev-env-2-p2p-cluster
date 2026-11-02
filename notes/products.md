@@ -86,3 +86,14 @@ merges: `p2p-rns`, `p2p-node`, `p2p-node-manager`, `p2p-swarm-manager`,
 `splectral-contract`, `-model`, `-scenario`, `-p2p-watchers`,
 `-p2p-actions` in `pear-full-square`; `base-view-map` in `splectral`. New:
 `base-demo-liveness` (`splectral`), its first merge.
+
+## Step 9 (2026-11-02): click and run
+
+Every row in `steps/9-click-and-run/8-validation/products.md`. The
+folders moved to `<org>/<repo>`; splits are of `pear-full-square/<module>`
+since. New, first merges: `haicc-reconcile`, `haicc-deployment`. Changed,
+one join after the move: `p2p-node`, `p2p-node-manager`,
+`p2p-swarm-manager`, `splectral-server`, `-shell`, `-transport`,
+`-scenario`, `-p2p-actions`. Waiting: `haiccing/base-demo-liveness`,
+`haiccing/base-demo-other-host` (this session cannot attach them beside
+the same-named `splectral` components).

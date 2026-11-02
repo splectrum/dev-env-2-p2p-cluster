@@ -1,6 +1,6 @@
 # Handover: where the phase stands, and how to continue
 
-Written 2026-11-01 after step 7, updated 2026-11-02 after step 8 and the human's local run, for the next session (or after
+Written 2026-11-01 after step 7, updated 2026-11-02 after step 8, the human's local run and step 9, for the next session (or after
 compaction). Read this first, then `rules.md` (single concern first), then
 `notes/plan.md`. Everything below is on `main`.
 
@@ -21,6 +21,7 @@ Phase 2, the P2P swarm (the request: `pending/phase-2/request.md` on
 | 6. A node on another host | done (simulated on one machine) | `steps/6-other-host/` |
 | 7. Splectral and data in topics | done | `steps/7-splectral/` |
 | 8. Liveness | done | `steps/8-liveness/` |
+| 9. Click and run | done | `steps/9-click-and-run/` |
 
 **What runs today.**
 - A swarm manager on the host does genesis and adds nodes. Every node,
@@ -48,6 +49,17 @@ Phase 2, the P2P swarm (the request: `pending/phase-2/request.md` on
   refuse an absent node at once. Splectral shows presence; the scenario
   "A node goes quiet" (`base-demo-liveness`) freezes and thaws node-1.
   `steps/8-liveness/6-validation/demo.sh` runs it like step 7's.
+- **Click and run** (step 9): a demo is a HAICC project
+  (`haiccing/base-demo-liveness`, `base-demo-other-host`): `sh haicc
+  start <project>` checks the machine, deploys and starts a test cluster
+  with Splectral on top; Run in the browser, Run again any time (the
+  project reconciled first); `stop`, `teardown`. `haicc-reconcile` (check,
+  plan, make it so; non-strict by default, only what it owns) and
+  `haicc-deployment` (the lifecycle as records). Splectral is spoken to
+  through topics, has tabs, knows its project. How to run: `demos.md`.
+- **The folders are `<org>/<repo>`** (step 9): `pear-full-square/` the
+  engines (all code), `splectral/` the components, `haiccing/` the
+  projects, each folder its product repository.
 
 ## The design, where it is written
 
@@ -86,40 +98,38 @@ Every module has its product repository; every validated change is merged
 
 ## Decisions waiting on the human
 
-1. **What comes next.** The plan's steps are done. Candidates, from what
-   is carried forward:
+1. **What comes next.** Named in the plan: **step 10, the deployment on
+   the swarm** (the swarm's part of a deployment as a repository on the
+   master; the managers the authority for the substrate, a 100% split but
+   for auto mode; nodes shadowing their managers). Other candidates:
    - the nodes' audit cores (with Splectral's `repository` and `swarm`
      sources), so Splectral works across real machines;
-   - interaction in Splectral;
-   - the repository-based versions;
-   - a real second machine.
-2. **Step 6 on a real second machine**, if wanted: the data plane needs an
-   overlay or the LAN (`steps/6-other-host/local-machine.md`).
-3. **The human ran Splectral locally** (2026-11-02, WSL2, Node 24): the
-   demo works live and replayed. Report and findings:
-   `steps/7-splectral/local-machine-run.md`. It leads to the next item.
-4. **One place for the instructions, and an easy launch** (the human is
-   discussing it): today each step has its own `local-machine.md` and
-   `demo.sh`, launching is many commands, requirements are checked by
-   hand, and the demo runs only from this repository. The report's last
-   section gives the input and a possible shape (one entry point:
-   `check`, `install`, `up`, `down`, `replay`, `reset`, `clean`).
+   - interaction in Splectral (identities and permissions: Splectral's
+     actions now start and stop swarms);
+   - several projects at once (addresses allocated);
+   - the repository-based versions; a real second machine; Pear, when
+     versions are fixed.
+2. **The `haiccing` projects' product merges**: this cloud session cannot
+   attach them beside the same-named `splectral` components. From a
+   session started with them as sources, or by hand
+   (`steps/9-click-and-run/8-validation/products.md`).
+3. **The human runs the demos locally** with `demos.md` (step 9's one
+   document): what they find may set the next step.
 
 ## Carried forward (open, not built)
 
-- **From the local run** (`steps/7-splectral/local-machine-run.md`):
-  - `steps/6-other-host/validation/other-host.sh` still polls `state.json`
-    with `JSON.parse`, the race step 8 removed from the swarm manager;
-    read the topic, or have the node manager write `state.json` by
-    temporary file and rename;
-  - `steps/1-mycelium/validation/unit-tests.sh` gives `null` counts on
-    Node 24 (spec reporter); make the reporter explicit (TAP) or read
-    both;
-  - nothing checks Bare's version, and the image takes Bare's binary from
-    the global install: a preflight check.
+- **From step 9** (all three of the local run's fixes are done):
+  - a reconcile does not notice that a running swarm's image is older
+    than the code (the image requirement builds the new one; the swarm
+    keeps running the old until restarted);
+  - selected requirements by node type and configuration (the shape is
+    there: `type`, `config`);
+  - Splectral's world is rebuilt from the managers' topics at its start,
+    not from its runs: a restarted Splectral shows a scenario's runs from
+    then on.
 - **Liveness, what is left** (step 8): how long an absent node keeps its
   name (a second, longer timeout taking it out); the lease per swarm (a
-  setting, 15 s today); step 7's scenario rerun with liveness; a link to an
+  setting, 15 s today);  a link to an
   absent node drawn as open until the connection closes.
 - **The nodes' audit cores**, and Splectral's `repository` and `swarm`
   sources: other hosts' nodes seen through the swarm (step 7).
@@ -238,12 +248,15 @@ Every module has its product repository; every validated change is merged
   records go into `steps/<step>/<part>/record/`.
 - Images: `pear-full-square/p2p-node-manager/image/build.sh .` builds `bare-base:1.36.0`
   and `p2p-node:<commit>` from a committed tree.
-- Swarms for a try: `node pear-full-square/p2p-swarm-manager/cli.js genesis --swarm=demo
-  --folder=<w>/demo-swarm --nodes=<w> --vault=<w>/vault --code=.`, then
-  `join --folder=... --node=node-1`, `status`, `invite`, `stop`. Always
-  stop: containers and networks stay otherwise. Splectral on a running
-  swarm: `steps/7-splectral/10-validation/demo.sh` (phases in its header;
-  it runs at step 7's commits, before the move to `<org>/<repo>`).
+- A demo for a try: `sh haicc start base-demo-liveness
+  --work=<scratch>/live` (then `stop`, `teardown`; one project at a time).
+  Its validation: `steps/9-click-and-run/8-validation/demo.sh` (phases in
+  its header). A swarm on its own: `node
+  pear-full-square/p2p-swarm-manager/cli.js genesis|join|start|stop-node|status|stop
+  ...`. Always stop or tear down: containers and networks stay otherwise.
+- This session cannot attach two repositories of the same name from
+  different organisations (it checks them out by name): the `haiccing`
+  projects' merges go through another session or by hand.
 
 ## To continue
 
