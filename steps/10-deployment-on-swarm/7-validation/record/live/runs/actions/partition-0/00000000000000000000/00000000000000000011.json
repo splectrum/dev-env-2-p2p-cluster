@@ -1,0 +1,1 @@
+{"value":{"action":"resume-node","with":{"node":"/hosts/node-1"},"ok":true,"error":null,"ms":100,"result":{"node":"/hosts/node-1","resumed":true}}}

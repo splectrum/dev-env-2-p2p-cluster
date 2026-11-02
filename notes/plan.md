@@ -197,7 +197,7 @@ engine, configuration apart from running, the lifecycle), Splectral as
 part of a project and spoken to through topics, tabs, the demo projects,
 the local run's fixes. Record: `steps/9-click-and-run/`.
 
-### 10. The deployment on the swarm — requested
+### 10. The deployment on the swarm — done
 
 Request: `pending/phase-2/step-10-deployment-on-swarm/request.md` (`b67fae5`).
 
@@ -227,7 +227,7 @@ is built and proven:
 | 1. contract suite and test-run model on a persisted Hyperdrive under Bare | steps 1 and 3 |
 | 2. two Bare nodes in containers, Hyperswarm, a replicated repository | steps 2, 3, 4 and 5 |
 | 3. a node from a plain Bare base through a bootstrap repository, packages loaded lazily | steps 4 and 5 (packages in code first) |
-| 4. a deployment repository bringing up a seed and a joining node, recording them | steps 4 and 5, in code first; the deployment repository: step 10 |
+| 4. a deployment repository bringing up a seed and a joining node, recording them | steps 4 and 5, in code first; the deployment repository: step 10 (record: `steps/10-deployment-on-swarm/`) |
 | 5. every step recorded and rerunnable, metrics at the boundary, small runs | every step; small runs with the capability store, further down |
 
 ## Not in this phase

@@ -1,0 +1,1 @@
+{"value":{"action":"run-scenario","with":{"id":"other-host"},"ok":true,"error":null,"ms":25523,"client":"browser","result":{"id":"other-host","steps":8,"ms":25513}},"headers":[{"key":"correlation","value":"browser:21206978-f648-42db-b925-48c5c3b9eb3b"}]}

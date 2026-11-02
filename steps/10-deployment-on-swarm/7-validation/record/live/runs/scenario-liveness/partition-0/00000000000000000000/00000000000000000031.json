@@ -1,0 +1,1 @@
+{"value":{"time":1793643941432,"scenario":"liveness","kind":"say","text":"node-1 is thawed. Its next heartbeat reaches the master, and it is present again.","step":4}}

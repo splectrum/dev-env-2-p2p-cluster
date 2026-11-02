@@ -1,0 +1,1 @@
+{"value":{"action":"start-node-from-invitation","with":{"host":"host-b","name":"remote-1","ip":"172.34.0.100","auxSubnet":"172.36.0"},"ok":true,"error":null,"ms":12408,"result":{"uri":"/hosts/remote-1","ms":12407}}}
