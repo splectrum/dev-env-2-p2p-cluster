@@ -1,0 +1,1 @@
+{"value":{"verb":"start","time":1793641104362,"phase":"check","name":"splectral","kind":"splectral-server","status":"blocked","fixable":false,"detail":{"needs":["ui-port"]}}}

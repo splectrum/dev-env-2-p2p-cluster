@@ -1,0 +1,1 @@
+{"value":{"action":"send-request","with":{"from":"host-a","to":"/hosts/node-1/node","name":"status-after-resume"},"ok":true,"error":null,"ms":527,"result":{"to":"/hosts/node-1/node","name":"status-after-resume-mvzjjjvl","answer":"Status given.","main":"ad7f0a97b0b8b9512b8886fd581cb8006c6750a7","ms":511}}}

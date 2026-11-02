@@ -1,0 +1,1 @@
+{"value":{"verb":"start","time":1793641101825,"phase":"apply","name":"swarm","kind":"swarm","action":"none","status":"different","hint":"a swarm named hosts runs on this host from elsewhere (another project?): stop it first"}}
