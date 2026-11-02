@@ -118,6 +118,9 @@ async function startNodeManager (s, node, { vault, timeout = 180000 }) {
 
 export async function genesis ({ swarm, folder, nodes, vault, code, subnet = '172.34.0', auxSubnet = '172.35.0', deployment = null }) {
   mkdirSync(folder, { recursive: true })
+  // Its owner (haicc's mark): this manager, unless a project made it (the
+  // project's provider marks it its own). What is owned may be stopped.
+  if (!existsSync(join(folder, '.haicc-owner'))) writeFileSync(join(folder, '.haicc-owner'), 'p2p-swarm-manager\n')
   const { record, write } = await swarmRecord(folder)
   const t0 = Date.now()
   record('genesis-started', { swarm })

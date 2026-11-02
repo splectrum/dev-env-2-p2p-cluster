@@ -63,13 +63,18 @@ const node = {
   owned: (a, ctx) => a.owner === ctx.owner,
   async remove (r, ctx, a) { await stopNode({ folder: a.swarm, node: a.name }) },
   hint: () => 'this node was not made by this owner',
-  async extras (reqs) {
+  async extras (all) {
+    // The swarms named by node and nodes requirements; a node named, or
+    // covered by a selection's prefix, is not an extra.
+    const reqs = all.filter(r => r.kind === 'node' || r.kind === 'nodes')
     const out = []
-    const named = new Set(reqs.map(r => `${r.want.swarm}|${r.want.name}`))
+    const named = new Set(reqs.filter(r => r.kind === 'node').map(r => `${r.want.swarm}|${r.want.name}`))
+    const selected = reqs.filter(r => r.kind === 'nodes').map(r => [r.want.swarm, r.want.prefix ?? 'node-'])
     for (const folder of new Set(reqs.map(r => r.want.swarm))) {
       const s = await describe({ folder })
       for (const n of s?.nodes || []) {
         if (n.role === 'master' || named.has(`${folder}|${n.name}`)) continue
+        if (selected.some(([f, prefix]) => f === folder && n.name.startsWith(prefix))) continue
         if (await running(n)) out.push({ name: `${s.swarm}-${n.name}`, actual: { swarm: folder, name: n.name, running: true, owner: ownerOf(folder) } })
       }
     }

@@ -119,6 +119,7 @@ export async function watch ({ folder, auto = false, every = 3000, onRound = nul
   const engine = createEngine({ providers, owner: ownerOf(folder) })
   let stopped = false
   let lastApplied = null
+  let reported = null // manual mode: the commit last reported (each once, the first at the start)
   const loop = (async () => {
     while (!stopped) {
       try {
@@ -132,7 +133,8 @@ export async function watch ({ folder, auto = false, every = 3000, onRound = nul
             await log.produce({ value: { module: 'p2p-swarm-manager', kind: 'deployment-applied', time: Date.now(), commit: seen.commit, done: r.done.map(x => `${x.name}:${x.action}`), failed: r.failed.map(x => x.name) } })
             lastApplied = seen.commit
           }
-        } else if (changed) {
+        } else if (seen.commit !== reported) {
+          reported = seen.commit
           const plan = await engine.plan(reqs, { strict: true })
           await log.produce({ value: { module: 'p2p-swarm-manager', kind: 'deployment-pending', time: Date.now(), commit: seen.commit, mode: 'manual', wouldDo: plan.map(x => `${x.name}:${x.action}`) } })
         }
