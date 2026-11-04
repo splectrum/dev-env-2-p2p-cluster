@@ -112,6 +112,11 @@ Every module has its product repository; every validated change is merged
 
 ## Decisions waiting on the human
 
+0. **The direction agreed for the next phase** (`notes/packages.md`):
+   packages (`prerequisites`, `mycelium`, `splectral`, `haicc`; third-party
+   code imported once; latest versions for now), cascading click and runs
+   as `haiccing` projects with their own tests, then an Android skeleton
+   node (a Termux probe, by the local agent). Its request is to be written.
 1. **What comes next: phase 2's request is met** (steps 0 to 10; the
    mapping in `notes/plan.md`). The next phase is the human's call.
    Candidates, from what is carried forward:
