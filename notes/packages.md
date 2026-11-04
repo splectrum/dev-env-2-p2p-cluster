@@ -31,6 +31,16 @@ packages; nothing depends on outside software once a package is made.
   side), with room to loosen later: each project deriving its own root,
   then products depending on each other by name rather than by path.
 
+## Testing: always within the package
+
+Agreed 2026-11-04.
+- **Tests live in a module and in its package**: a module's own tests,
+  and the package's tests of its modules together.
+- **They always run with the package.** When a module is updated: the
+  package is deployed, the module overwritten with its new version, then
+  the module's and the package's tests run. A module is never validated
+  on its own, only in the package it is used in.
+
 ## Cascading click and runs
 
 Every layer is a `haiccing` project, a click and run of its own, whose
