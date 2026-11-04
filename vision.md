@@ -135,8 +135,9 @@ further yet.
 
 ## Packages
 
-Modules are used as packages: sets referenced as one unit (`prerequisites`,
-everything below mycelium; `mycelium`; `splectral`; `haicc`). Third-party
+Modules are used as packages: sets referenced as one unit (below
+mycelium, `third-party` and ours, `p2p`; then `mycelium`; `splectral`;
+`haicc`). Third-party
 code comes in once, at the boundary, and is ours from then on. Projects
 layer as cascading click and runs (`notes/packages.md`).
 

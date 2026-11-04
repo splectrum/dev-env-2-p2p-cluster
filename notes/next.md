@@ -113,7 +113,7 @@ Every module has its product repository; every validated change is merged
 ## Decisions waiting on the human
 
 0. **The direction agreed for the next phase** (`notes/packages.md`):
-   packages (`prerequisites`, `mycelium`, `splectral`, `haicc`; third-party
+   packages (`third-party`, `p2p`, `mycelium`, `splectral`, `haicc`; third-party
    code imported once; latest versions for now), cascading click and runs
    as `haiccing` projects with their own tests, then an Android skeleton
    node (a Termux probe, by the local agent). Its request is to be written.
