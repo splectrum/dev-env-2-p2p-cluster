@@ -1,0 +1,88 @@
+{
+ "name": "other-host",
+ "menu": [
+  "A node on another host",
+  "Timeline",
+  "Map",
+  "Node: /hosts/master",
+  "Node: /hosts/node-1"
+ ],
+ "tabs": [
+  "splectral-scenario/scenario/other-host",
+  "base-view-map/map"
+ ],
+ "first": {
+  "run": 1,
+  "outcome": "ok",
+  "stepsDone": true,
+  "says": [
+   "Scenario: A node on another host",
+   "The project is brought back to its declared state.",
+   "Host A runs the swarm: the master and node-1, both controlled by host A's manager.",
+   "Host A gives host B an invitation: public facts only, no secret.",
+   "Host B's own manager starts its node from the invitation, provisions it from host B's vault, on host B's own management network.",
+   "remote-1 is part of the swarm, reached by name, but host A does not control it: it is outlined on the map.",
+   "A request from host A crosses to remote-1's repository: in as a bundle, out on its main.",
+   "remote-1 writes a note in its own repository: activity its replicas see.",
+   "Host B's manager stops remote-1, gracefully.",
+   "The swarm runs on: a request from host A to node-1 is still answered.",
+   "Scenario finished."
+  ],
+  "runsShown": null,
+  "ms": 55356
+ },
+ "second": {
+  "run": 2,
+  "outcome": "ok",
+  "stepsDone": true,
+  "says": [
+   "Scenario: A node on another host",
+   "The project is brought back to its declared state.",
+   "Host A runs the swarm: the master and node-1, both controlled by host A's manager.",
+   "Host A gives host B an invitation: public facts only, no secret.",
+   "Host B's own manager starts its node from the invitation, provisions it from host B's vault, on host B's own management network.",
+   "remote-1 is part of the swarm, reached by name, but host A does not control it: it is outlined on the map.",
+   "A request from host A crosses to remote-1's repository: in as a bundle, out on its main.",
+   "remote-1 writes a note in its own repository: activity its replicas see.",
+   "Host B's manager stops remote-1, gracefully.",
+   "The swarm runs on: a request from host A to node-1 is still answered.",
+   "Scenario finished."
+  ],
+  "runsShown": "2",
+  "ms": 22766
+ },
+ "nodes": [
+  {
+   "uri": "/hosts/master",
+   "status": "running",
+   "presence": "present"
+  },
+  {
+   "uri": "/hosts/node-1",
+   "status": "running",
+   "presence": "present"
+  },
+  {
+   "uri": "/hosts/remote-1",
+   "status": "gone",
+   "presence": "left"
+  }
+ ],
+ "timelineKinds": [
+  "actionResult",
+  "changed",
+  "connected",
+  "disconnected",
+  "gone",
+  "joined",
+  "left",
+  "nodeStarting",
+  "requestAnswered",
+  "requestSent",
+  "resource",
+  "say",
+  "scenarioStep"
+ ],
+ "pageErrors": [],
+ "ms": 79410
+}

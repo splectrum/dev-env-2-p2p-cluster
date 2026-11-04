@@ -3,7 +3,6 @@ start base-demo-other-host: done  (work: <scratch>/home-demos/.haicc/base-demo-o
   machine: all 8 met
   create  host-a
   create  host-a-vault
-  create  image
   create  host-b
   create  host-b-vault
   create  splectral-config
