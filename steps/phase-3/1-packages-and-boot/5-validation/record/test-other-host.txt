@@ -1,0 +1,8 @@
+sh: 0: getcwd() failed: No such file or directory
+  ok     demo-other-host: base-demo-other-host/test (1/1)
+status base-demo-other-host: done  (work: <scratch>/home-demos/.haicc/base-demo-other-host)
+  machine: all 8 met
+  running splectral  http://127.0.0.1:4400
+  desired: running
+  ok     http://127.0.0.1:4400: 200
+test base-demo-other-host: passed

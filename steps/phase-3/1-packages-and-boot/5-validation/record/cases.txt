@@ -10,3 +10,6 @@ ui-liveness exit=0 115s
 test-liveness exit=0 3s
 teardown-liveness exit=0 9s
 run-other-host exit=0 22s
+ui-other-host exit=0 83s
+test-other-host exit=0 2s
+teardown-other-host exit=0 5s
