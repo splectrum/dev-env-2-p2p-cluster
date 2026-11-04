@@ -16,7 +16,7 @@ d=$root/pear-full-square/haicc-deployment
 # The dependencies, for this layout: an existing clone from before the move
 # to <org>/<repo> folders, or one never installed, says so here.
 if ! (cd "$root" && node --input-type=module -e "await import('p2p-dht'); await import('p2p-swarm-manager')" >/dev/null 2>&1); then
-  echo "the dependencies are not installed for this layout: run demos.md section 2 (npm install at the root, and in pear-full-square/mycelium-git, -layer, -repo)"
+  echo "the dependencies are not installed for this layout: run demos.md section 2 (npm install at the root)"
   exit 2
 fi
 set +e
