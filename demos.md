@@ -50,6 +50,16 @@ docker pull debian:bookworm-slim
 From here the machine can be offline. (`PUPPETEER_SKIP_DOWNLOAD=1` stops
 a git dependency's preparation from fetching a browser.)
 
+**An existing clone from before step 9** (when the modules moved to
+`pear-full-square/<module>`): run this section again; `sh haicc` says so
+if you don't. The old top-level folders left behind (`mycelium-git/`,
+`mycelium-layer/`, `mycelium-repo/`, holding only their `node_modules`)
+can be removed:
+
+```bash
+rm -rf mycelium-git mycelium-layer mycelium-repo
+```
+
 ## 3. A demo
 
 ```bash
