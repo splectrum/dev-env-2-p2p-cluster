@@ -78,14 +78,38 @@ what was built there.
 
 **Two stages** (agreed 2026-11-04): the boot is **folder-based** (git
 into a host folder, nothing more); the **p2p version does the heavy
-lifting**: each package a Hyperdrive kept current by replication and
-mirrored to the same host folder (Holepunch's `localdrive` and
-`mirror-drive`, as Pear keeps an app's files), only the differences
-applied; code always runs from the folder. **The container the same way**:
+lifting**: the swarm's code repository (below), kept current by
+replication and mirrored to the folder code runs from (Holepunch's
+`localdrive` and `mirror-drive`, as Pear keeps an app's files), only the
+differences applied; code always runs from the folder.
+
+**One code repository per swarm** (the human's simplification, for the
+no-versions scenario: always the latest at install): a mycelium
+repository on the master whose capability branch is the register of what
+is installed, synced to every node. An install needing a dependency not
+there requests it from the master, which installs it from its package
+(`haiccing`) and commits; the change replicates to all. One tree, one
+writer, one commit: every node runs the same, consistent set. It
+generalises the master's `packages` repository (steps 4 and 5); the
+`haiccing` package repositories stay the source installs come from, and
+the boot's, before there is a swarm. **The container the same way**:
 a node's boot already takes its code by replication from the master's
 packages repository and extracts it; with packages, it is the same
 mechanism as the host's, writing only what changed, the image keeping
 Bare and the boot only.
+
+## Folders on a machine
+
+One root, each repository its own folder, laid out by fully qualified
+name (`<root>/<org>/<repo>`). A package lays its modules into the root at
+module level (`<root>/<org>/<module>`), the third-party code once
+(`<root>/node_modules`): no module in two packages, so no collisions and
+no duplication; the package manager records which package owns which
+folders, so a package is still updated or removed as one unit. Folders
+are units of storage and update; processes are by function (the Splectral
+server, a watcher, a node manager each), importing from whichever folders
+they need. Packages get folders of their own outright once modules import
+each other by name.
 
 ## Sizes (measured 2026-11-04, pruned for Linux x64)
 
