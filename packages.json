@@ -1,0 +1,70 @@
+{
+  "description": "The packages (haiccing/base-package-<name>), as the package manager writes them from this repository's modules: each a set of modules, self-contained, with what it requires. third-party is imported from the workspace's installed tree (pkgm import); the others are written from the modules (pkgm write).",
+  "packages": {
+    "third-party": {
+      "description": "The third-party code below mycelium, not ours: Bare's runtime and modules, the Holepunch stack, isomorphic-git, React and htm. Imported once from the development workspace (the one contact with npm), Linux x64 only, recorded in third-party.json.",
+      "license": "SEE third-party.json",
+      "exclude": ["p2p-git"]
+    },
+    "mycelium": {
+      "description": "The repository layer: layered git repositories (mycelium-git, -layer, -repo), topics, URIs and paths; with p2p-git, git on Hyperdrive, which mycelium-git runs on.",
+      "requires": ["third-party"],
+      "modules": [
+        "pear-full-square/mycelium-uri",
+        "pear-full-square/mycelium-xpath",
+        "pear-full-square/mycelium-topic",
+        "pear-full-square/mycelium-git",
+        "pear-full-square/mycelium-layer",
+        "pear-full-square/mycelium-repo",
+        { "path": "pear-full-square/p2p-git", "from": "node_modules/p2p-git" }
+      ]
+    },
+    "haicc": {
+      "description": "HAICC: declare what a project needs, check it, make it so (haicc-reconcile), and its lifecycle (haicc-deployment). The entry package.",
+      "requires": ["mycelium"],
+      "modules": [
+        "pear-full-square/haicc-reconcile",
+        "pear-full-square/haicc-deployment"
+      ]
+    },
+    "pkgm": {
+      "description": "The package manager: packages as self-contained folders, installed into the host's install folder, tested within the package. Node's built-ins only.",
+      "modules": [
+        "pear-full-square/pkgm-base-manager"
+      ]
+    },
+    "p2p": {
+      "description": "The p2p substrate, ours: store, discovery, connections, replication, channels, repositories on Hypercore, the name service, the node and its managers.",
+      "requires": ["mycelium", "haicc"],
+      "modules": [
+        "pear-full-square/p2p-store",
+        "pear-full-square/p2p-dht",
+        "pear-full-square/p2p-connect",
+        "pear-full-square/p2p-replicate",
+        "pear-full-square/p2p-channel",
+        "pear-full-square/p2p-mrepo",
+        "pear-full-square/p2p-rns",
+        "pear-full-square/p2p-node",
+        "pear-full-square/p2p-node-manager",
+        "pear-full-square/p2p-swarm-manager"
+      ]
+    },
+    "splectral": {
+      "description": "The Splectral platform: the server, its shell, the contract and model, transports, and the extensions for p2p swarms (watchers, actions, observer), scenarios, the timeline and replay.",
+      "requires": ["p2p"],
+      "modules": [
+        "pear-full-square/splectral-contract",
+        "pear-full-square/splectral-model",
+        "pear-full-square/splectral-transport",
+        "pear-full-square/splectral-server",
+        "pear-full-square/splectral-shell",
+        "pear-full-square/splectral-p2p-observer",
+        "pear-full-square/splectral-p2p-watchers",
+        "pear-full-square/splectral-p2p-actions",
+        "pear-full-square/splectral-scenario",
+        "pear-full-square/splectral-timeline",
+        "pear-full-square/splectral-replay"
+      ]
+    }
+  }
+}
