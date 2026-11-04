@@ -123,6 +123,16 @@ depends on nothing outside itself.
 - **`p2p-propagate`**: later, a desired state (node types and their
   configurations) carried across a swarm, each node reconciling its part.
 
+## Authority, configurable
+
+The split of authority between the swarm (its configuration, on the
+master) and the managers (the substrate: containers, networks, ...) is the
+current default, and the one implemented. It will be configurable: the
+human sees scenarios for other settings, for example a passive swarm whose
+configuration a host manages (the swarm cannot manage itself), or an (IoT)
+node in a swarm where the node or the swarm manages the OS. Not designed
+further yet.
+
 ## Releases and Pear
 
 - Pear (Holepunch's runtime and platform for p2p applications: staged,
