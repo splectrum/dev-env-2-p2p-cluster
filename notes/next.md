@@ -137,7 +137,11 @@ Every module has its product repository; every validated change is merged
    as a tab with its menu and components as tabs inside it; time on
    every screen. Step 10's deployment run by hand too: as recorded, but
    for the `shadow` phase's check, which reads record files in the
-   filesystem's order (finding 7).
+   filesystem's order (finding 7). Findings 1 to 4 and 7 fixed on
+   2026-11-04 (`steps/10-deployment-on-swarm/8-local-run-fixes/`): `sh
+   haicc` says when the dependencies don't resolve, the lockfile is clean,
+   `demos.md` covers existing clones, the summary says the machine is all
+   met, the shadow check reads the topic in order.
 
 ## Carried forward (open, not built)
 
