@@ -133,6 +133,13 @@ configuration a host manages (the swarm cannot manage itself), or an (IoT)
 node in a swarm where the node or the swarm manages the OS. Not designed
 further yet.
 
+## Packages
+
+Modules are used as packages: sets referenced as one unit (`prerequisites`,
+everything below mycelium; `mycelium`; `splectral`; `haicc`). Third-party
+code comes in once, at the boundary, and is ours from then on. Projects
+layer as cascading click and runs (`notes/packages.md`).
+
 ## Releases and Pear
 
 - Pear (Holepunch's runtime and platform for p2p applications: staged,
