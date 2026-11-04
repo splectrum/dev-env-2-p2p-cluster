@@ -92,7 +92,13 @@ there requests it from the master, which installs it from its package
 writer, one commit: every node runs the same, consistent set. It
 generalises the master's `packages` repository (steps 4 and 5); the
 `haiccing` package repositories stay the source installs come from, and
-the boot's, before there is a swarm. **The container the same way**:
+the boot's, before there is a swarm.
+
+**On deploy, missing packages added** (the human, 2026-11-04): when a
+manager deploys, the package manager adds the packages the deployment
+needs that the swarm's code repository lacks. So the code is there once,
+in layers of that repository; every node is provisioned the same, from
+it; and the package manager's scope is global: the swarm, not a machine. **The container the same way**:
 a node's boot already takes its code by replication from the master's
 packages repository and extracts it; with packages, it is the same
 mechanism as the host's, writing only what changed, the image keeping
