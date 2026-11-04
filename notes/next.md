@@ -116,7 +116,8 @@ Every module has its product repository; every validated change is merged
    packages (`third-party`, `p2p`, `mycelium`, `splectral`, `haicc`; third-party
    code imported once; latest versions for now), cascading click and runs
    as `haiccing` projects with their own tests, then an Android skeleton
-   node (a Termux probe, by the local agent). Its request is to be written.
+   node (a Termux probe, by the local agent). Phase 3, step 1 requested:
+   `pending/phase-3/step-1-packages-and-boot/request.md` (`d5fbbcc`).
 1. **What comes next: phase 2's request is met** (steps 0 to 10; the
    mapping in `notes/plan.md`). The next phase is the human's call.
    Candidates, from what is carried forward:

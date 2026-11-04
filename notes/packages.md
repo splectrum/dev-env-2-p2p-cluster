@@ -26,10 +26,15 @@ packages; nothing depends on outside software once a package is made.
   of its modules (our products' `main`, the last import). Versions, and
   their release (Pear's main use for us), come later.
 - **Platforms**: a package with native code is made per platform; Linux
-  x64 first. Android arm64 next (below); only `third-party` has native code today.
+  x64 first, and then only its binaries. Bare's runtime belongs to
+  `third-party` too, so the node image needs no global install. Android arm64 next (below); only `third-party` has native code today.
 - One root for now (this repository's workspace root, the modules side by
-  side), with room to loosen later: each project deriving its own root,
-  then products depending on each other by name rather than by path.
+  side, fully qualified: `<org>/<repo>`), with room to loosen later: each
+  project deriving its own root, then products depending on each other by
+  name rather than by path.
+- **Pinning** comes as soon as there is a working system; until then the
+  packages are written as a consistent set (tested together, at their
+  latest).
 
 ## Testing: always within the package
 
@@ -70,6 +75,33 @@ a node is (`p2p-node/boot.js`):
 Packages are built and tested in the development repository, with the
 proper package manager run in place; elsewhere a machine only boots from
 what was built there.
+
+**Two stages** (agreed 2026-11-04): the boot is **folder-based** (git
+into a host folder, nothing more); the **p2p version does the heavy
+lifting**: each package a Hyperdrive kept current by replication and
+mirrored to the same host folder (Holepunch's `localdrive` and
+`mirror-drive`, as Pear keeps an app's files), only the differences
+applied; code always runs from the folder. **The container the same way**:
+a node's boot already takes its code by replication from the master's
+packages repository and extracts it; with packages, it is the same
+mechanism as the host's, writing only what changed, the image keeping
+Bare and the boot only.
+
+## Sizes (measured 2026-11-04, pruned for Linux x64)
+
+| Package | Size |
+|---|---|
+| `haicc` | 0.1 MB |
+| `splectral` | 0.2 MB |
+| `mycelium` | 0.4 MB |
+| `p2p` | 1.3 MB (0.3 MB modules, `p2p-git` 1.0 MB) |
+| `third-party` | about 40 MB, 1,913 files: native binaries 30.5 MB (`rocksdb-native` 19.5 MB, `sodium-native` 2.1 MB, `udx-native` 0.5 MB, the `bare-*` modules), React, react-dom and htm 5.0 MB, other JavaScript about 5 MB |
+
+An update adds only the files that changed: our modules a few KB; the
+third-party package only at an import, and only the modules whose versions
+changed. The `mycelium-*` modules' separate installs held another 24 MB of
+duplicates (a second Corestore, Hyperdrive, isomorphic-git, `rocksdb-native`,
+`p2p-git`): gone once they join the one workspace.
 
 **Other aspects of booting** (to be designed with the first version):
 - **its own prerequisites** (Node, git) checked by the boot itself, with
