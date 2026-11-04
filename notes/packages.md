@@ -11,7 +11,7 @@ packages; nothing depends on outside software once a package is made.
 | Package | Holds |
 |---|---|
 | `third-party` | below mycelium, not ours: bare and holepunch, isomorphic-git, react and htm; changes only by a recorded import |
-| `p2p` | below mycelium, ours: the p2p substrate (the series, rns, mrepo, the node, the managers) and `p2p-git` (git on Hyperdrive; developed in its own repository, `pear-full-square/p2p-git`, today a git dependency pinned at `d7d154d`) |
+| `p2p` | below mycelium, ours: the p2p substrate (the series, rns, mrepo, the node, the managers) and `p2p-git` (git on Hyperdrive; developed in its own repository, `pear-full-square/p2p-git`, used at its latest) |
 | `mycelium` | the repository layer |
 | `splectral` | the platform |
 | `haicc` | reconcile, deployment |

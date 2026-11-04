@@ -13,7 +13,7 @@
   "license": "MIT",
   "dependencies": {
     "hypercore-crypto": "3.7.0",
-    "p2p-git": "github:pear-full-square/p2p-git#d7d154d043dbc293eacde2b6bb1feba1e8ca9588",
+    "p2p-git": "github:pear-full-square/p2p-git",
     "p2p-store": "*"
   },
   "devDependencies": {
