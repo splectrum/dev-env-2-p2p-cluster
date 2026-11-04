@@ -46,23 +46,26 @@ Agreed 2026-11-04.
 Agreed 2026-11-04. Managing packages is an application of its own
 (`pkgm`, code in `pear-full-square`), not part of HAICC: HAICC uses it
 through its provider. The packages are its data: `haiccing/base-package-<name>`,
-each a mycelium repository (git now): `main` its declaration and tests,
-`capability/default` its assembled code, each assembly a commit recording
-its modules' commits and any overrides.
+**self-contained**: each holds its code, ready to run, with its tests.
+Nothing is assembled at use, so nothing has to be pinned: a package is
+taken as its repository has it (the latest). The development repository
+writes a package's code into its repository when its modules change and
+the package's tests pass.
 
 The package manager needs packages itself, so it is booted in stages, as
 a node is (`p2p-node/boot.js`):
 
 1. **`pkgm-boot`**: simple, minimal dependencies (Node's built-ins and
-   the git command line; nothing of ours but itself). It copies the code
-   of the packages the proper package manager needs (their
-   `capability/default`) into a folder on the host, checks each is the
-   commit asked for, and runs the proper package manager from there with
-   its dependencies. It builds nothing, and steps aside.
-2. **The proper package manager** (`pkgm-base-*`, built on mycelium):
-   assembling with overrides (an updated module tested within its
-   package), the tests, the third-party import, fetching the remaining
-   packages; its provider for HAICC's cascade.
+   the git command line; nothing of ours but itself). It takes the code of
+   the packages the proper package manager needs from their `haiccing`
+   repositories into a folder on the host, and runs the proper package
+   manager from there with its dependencies. It builds and checks
+   nothing, and steps aside.
+2. **The proper package manager** (`pkgm-base-*`, built on mycelium)
+   installs itself, and the other packages, on the p2p layer (mycelium
+   repositories there), and from then on manages them: overrides (an
+   updated module tested within its package), the tests, the third-party
+   import; its provider for HAICC's cascade.
 
 Packages are built and tested in the development repository, with the
 proper package manager run in place; elsewhere a machine only boots from
@@ -75,8 +78,7 @@ what was built there.
   default; a local mirror (a folder, a git server on the LAN) for an
   air-gapped machine;
 - **idempotent**: packages already on the host and current are not
-  fetched again; a newer `capability/default` is (latest versions, for
-  now);
+  fetched again; a newer one is (latest, for now);
 - **whole or nothing**: a package fetched into a temporary folder and
   moved in place, so a failed boot leaves no half package;
 - **one host folder of packages shared by projects** (`~/.haicc/packages`),
@@ -85,7 +87,8 @@ what was built there.
 - **the boot kept tiny and stable**: it is copied into every project that
   boots; it says its version, and a project can ask for a newer one;
 - **no secrets**: the boot never touches a vault;
-- **trust**: today the commit asked for; later signed releases (Pear);
+- **trust**: today the `haiccing` repositories as they are; later signed
+  releases (Pear);
 - later, the node's own boot could use the same package code.
 
 ## Cascading click and runs
