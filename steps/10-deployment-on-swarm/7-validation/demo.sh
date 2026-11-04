@@ -45,7 +45,9 @@ case $3 in
     printf '%s\n%s\n' "$out" "$now" | node -e "const [a,b]=require('fs').readFileSync(0,'utf8').trim().split('\n').map(JSON.parse); console.log(JSON.stringify({ refused: a.error, unchanged: b.result.deployment }))" ;;
   shadow)
     # Nodes shadow their managers: each running node holds its manager's state.
-    for n in master worker-1 worker-2; do printf '%s ' "$n:$(grep -rh '"kind":"manager-shadowed"' $w/s/hosts-$n/topics/node | tail -1 | grep -o '"status":"[a-z]*"')"; done | node -e "console.log(JSON.stringify({ lastShadowed: require('fs').readFileSync(0,'utf8').trim().split(' ') }))" ;;
+    # Read in the topic's order (mycelium-topic), not the files' (found locally:
+    # grep -r follows the directory's listing, not the offsets).
+    node -e "import('./pear-full-square/mycelium-topic/index.js').then(async ({openTopic,folderStorage})=>{ const out=[]; for (const n of ['master','worker-1','worker-2']) { const t=await openTopic({storage:folderStorage('$w/s/hosts-'+n+'/topics/node')}); out.push(n+':'+(await t.fold((at,r)=>r.value.kind==='manager-shadowed'?r.value.status:at,null))) } console.log(JSON.stringify({ lastShadowed: out })) })" ;;
   stop-swarm)
     kill "$(cat $s/watch.pid)"; waitFor "[ ! -f $s/watch.pid ]"
     node $sm stop --folder=$s > /dev/null; echo "{\"running\":\"$(running)\"}" ;;
