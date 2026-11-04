@@ -55,6 +55,9 @@ feedback is noted for it, not asked for now.
 
 ## Findings
 
+Findings 1 to 4 and 7 fixed on 2026-11-04
+(`steps/10-deployment-on-swarm/8-local-run-fixes/`).
+
 1. **An existing clone after the move to `<org>/<repo>` folders.** `check`
    failed with `Cannot find package 'p2p-dht' imported from
    .../pear-full-square/p2p-swarm-manager/index.js`: the workspaces moved,

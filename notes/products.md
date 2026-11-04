@@ -105,3 +105,8 @@ Every row in `steps/10-deployment-on-swarm/7-validation/products.md`:
 (plain merges), `splectral-p2p-observer` (its join after the move). The
 `haiccing` projects: their first merge includes step 10's changes (step 9's
 table).
+
+## Fixes from the demos' local run (2026-11-04)
+
+`haicc-deployment` (its readable summary): split `9ca4ff0`, product
+`415cf3a`, a plain merge, verified. `steps/10-deployment-on-swarm/8-local-run-fixes/`.
