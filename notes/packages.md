@@ -11,8 +11,8 @@ packages; nothing depends on outside software once a package is made.
 | Package | Holds |
 |---|---|
 | `third-party` | below mycelium, not ours: bare and holepunch, isomorphic-git, react and htm; changes only by a recorded import |
-| `p2p` | below mycelium, ours: the p2p substrate (the series, rns, mrepo, the node, the managers) and `p2p-git` (git on Hyperdrive; developed in its own repository, `pear-full-square/p2p-git`, used at its latest) |
-| `mycelium` | the repository layer |
+| `p2p` | ours: the p2p substrate (the series, rns, mrepo, the node, the managers) |
+| `mycelium` | the repository layer, with `p2p-git` (git on Hyperdrive, which `mycelium-git` runs on; developed in its own repository, `pear-full-square/p2p-git`, used at its latest). Moved here from `p2p` when built (part 1): the `p2p` modules use `mycelium-*`, so the two packages would have required each other |
 | `splectral` | the platform |
 | `haicc` | reconcile, deployment |
 
@@ -143,7 +143,7 @@ each other by name.
 | `splectral` | 0.2 MB |
 | `mycelium` | 0.4 MB |
 | `p2p` | 1.3 MB (0.3 MB modules, `p2p-git` 1.0 MB) |
-| `third-party` | about 40 MB, 1,913 files: native binaries 30.5 MB (`rocksdb-native` 19.5 MB, `sodium-native` 2.1 MB, `udx-native` 0.5 MB, the `bare-*` modules), React, react-dom and htm 5.0 MB, other JavaScript about 5 MB |
+| `third-party` | 144 MB as imported (part 1), 1,822 files: Bare's runtime 97 MB (with debug information; left out of this first measure), and native binaries 30.5 MB (`rocksdb-native` 19.5 MB, `sodium-native` 2.1 MB, `udx-native` 0.5 MB, the `bare-*` modules), React, react-dom and htm 5.0 MB, other JavaScript about 5 MB |
 
 An update adds only the files that changed: our modules a few KB; the
 third-party package only at an import, and only the modules whose versions

@@ -7,7 +7,7 @@ Status: **in progress**. Request:
 | Part | What | Status |
 |---|---|---|
 | `0-workspace/` | the mycelium modules in the one workspace | done |
-| `1-pkgm/` | the package manager, basic | |
+| `1-pkgm/` | the package manager, basic | done |
 | `2-packages/` | the packages | |
 | `3-boot/` | booting: HAICC's (step 0) and the package manager's | |
 | `4-run/` | the demo projects' scripts, `haicc run`, `haicc test` | |
