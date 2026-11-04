@@ -134,6 +134,34 @@ changed. The `mycelium-*` modules' separate installs held another 24 MB of
 duplicates (a second Corestore, Hyperdrive, isomorphic-git, `rocksdb-native`,
 `p2p-git`): gone once they join the one workspace.
 
+**Step 0, the host's prerequisites** (agreed 2026-11-05): in plain shell,
+before Node exists, part of `pkgm-base-boot`, run first by `sh haicc run`.
+- `host.sh check`: each prerequisite with the version found, the version
+  required, ok or not, and what `fix` would do; it changes nothing. The
+  required versions in one file, read by check and fix alike: Linux
+  x86-64; Node.js 22 or later; git 2.25 or later; Docker Engine, rootful,
+  native, running; the user in the `docker` group. (The shell twin of
+  `haicc-reconcile`'s machine providers.)
+- `host.sh fix`, only with the human's yes, asking before anything
+  needing `sudo`: Node.js, the official release for Linux x64, into a
+  folder of ours (`~/.haicc/node`, no `sudo`; Ubuntu's own is too old);
+  git with `apt`; Docker Engine with `apt`, the `docker` group, the
+  daemon started (saying what needs a new login); checked again after
+  each fix.
+- Bare is not a host prerequisite: its runtime comes in `third-party`,
+  and the node image takes it from there.
+
+**From scratch** (agreed 2026-11-05): the entry repository (a project's,
+or `pkgm-base-boot`) works as a plain folder copy (cloned, a zip, copied
+over): nothing before the boot relies on git. Its readme gives a script
+for a bare machine with only `curl` and `tar`: the repository's archive
+fetched and unpacked, then `sh haicc run` (step 0, then the boot, which
+then uses git). Since code may then come from the package folder rather
+than a git tree, the node image is built from a folder too.
+
+**Names**: `pear-full-square/pkgm-base-boot` and `pkgm-base-manager` (the
+human, leaving room for more sophisticated versions).
+
 **Other aspects of booting** (to be designed with the first version):
 - **its own prerequisites** (Node, git) checked by the boot itself, with
   hints: `haicc-reconcile` is not there yet;
