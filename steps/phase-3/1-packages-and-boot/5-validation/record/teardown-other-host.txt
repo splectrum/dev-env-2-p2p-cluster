@@ -1,0 +1,13 @@
+sh: 0: getcwd() failed: No such file or directory
+teardown base-demo-other-host: done  (work: <scratch>/home-demos/.haicc/base-demo-other-host)
+  removed swarm-watcher
+  removed swarm
+  removed splectral
+  removed splectral-config
+  removed host-b-vault
+  removed host-b
+  removed host-a-vault
+  removed host-a
+  removed package-demo-other-host
+  desired: nothing
+left:
