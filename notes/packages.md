@@ -60,12 +60,13 @@ the package's tests pass.
 The package manager needs packages itself, so it is booted in stages, as
 a node is (`p2p-node/boot.js`):
 
-1. **`pkgm-boot`**: simple, minimal dependencies (Node's built-ins and
-   the git command line; nothing of ours but itself). It takes the code of
-   the packages the proper package manager needs from their `haiccing`
-   repositories into a folder on the host, and runs the proper package
-   manager from there with its dependencies. It builds and checks
-   nothing, and steps aside.
+1. **`pkgm-boot`** (simplified by the human, 2026-11-05): it only copies
+   the package manager's code from its `haiccing` repository
+   (`base-package-pkgm`) into the manager's folder on the host, and runs
+   it. Node's built-ins and the git command line; nothing of ours but
+   itself. The running package manager does the rest. So the package
+   manager's package is self-contained with what it needs to run: its
+   basic version itself needs only Node's built-ins and git.
 2. **The proper package manager** (`pkgm-base-*`, built on mycelium)
    installs itself, and the other packages, on the p2p layer (mycelium
    repositories there), and from then on manages them: overrides (an
