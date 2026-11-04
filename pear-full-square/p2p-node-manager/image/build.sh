@@ -3,7 +3,7 @@
 #   bare-base:<bare version>   the plain base: debian:bookworm-slim and Bare's
 #                              own binary (from the bare package on this host)
 #   p2p-node:<commit>          the base with the node's code: the modules
-#                              (pear-full-square/: mycelium-*, p2p-*, splectral-*) and their dependency tree,
+#                              (pear-full-square/: mycelium-*, p2p-*, splectral-*, haicc-*) and their one dependency tree,
 #                              without development dependencies, this
 #                              platform's prebuilds only
 #   sh pear-full-square/p2p-node-manager/image/build.sh <dev-repository>   prints the node image's tag
@@ -22,10 +22,6 @@ docker image inspect "bare-base:$version" >/dev/null 2>&1 || docker build -q -t 
 app=$work/node/app
 mkdir -p "$app"
 git -C "$src" archive HEAD pear-full-square package.json package-lock.json | tar -x -C "$app"
-for m in "$app"/pear-full-square/mycelium-*; do
-  [ -d "$src/pear-full-square/$(basename "$m")/node_modules" ] && cp -a "$src/pear-full-square/$(basename "$m")/node_modules" "$m/"
-  [ -d "$m/node_modules" ] && (cd "$m" && npm prune -q --omit=dev --offline --no-audit --no-fund >/dev/null)
-done
 cp -a "$src/node_modules" "$app/node_modules"
 (cd "$app" && npm prune -q --omit=dev --offline --no-audit --no-fund >/dev/null)
 platform=$(node -p 'process.platform + "-" + process.arch')

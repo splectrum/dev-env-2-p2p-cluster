@@ -40,24 +40,21 @@ PUPPETEER_SKIP_DOWNLOAD=1 npm install
 ```
 
 ```bash
-for m in mycelium-git mycelium-layer mycelium-repo; do (cd pear-full-square/$m && PUPPETEER_SKIP_DOWNLOAD=1 npm install); done
-```
-
-```bash
 docker pull debian:bookworm-slim
 ```
 
 From here the machine can be offline. (`PUPPETEER_SKIP_DOWNLOAD=1` stops
 a git dependency's preparation from fetching a browser.)
 
-**An existing clone from before step 9** (when the modules moved to
-`pear-full-square/<module>`): run this section again; `sh haicc` says so
-if you don't. The old top-level folders left behind (`mycelium-git/`,
-`mycelium-layer/`, `mycelium-repo/`, holding only their `node_modules`)
-can be removed:
+**An existing clone** from before the modules moved to
+`pear-full-square/<module>` (step 9), or before they became one workspace
+(phase 3): run this section again; `sh haicc` says so if you don't. What
+the old layouts left behind (the top-level `mycelium-git/`,
+`mycelium-layer/`, `mycelium-repo/`, and their `node_modules` under
+`pear-full-square/`) can be removed:
 
 ```bash
-rm -rf mycelium-git mycelium-layer mycelium-repo
+rm -rf mycelium-git mycelium-layer mycelium-repo pear-full-square/mycelium-*/node_modules
 ```
 
 ## 3. A demo
