@@ -1,7 +1,8 @@
 #!/bin/sh
 # Build the images a node runs from:
 #   bare-base:<bare version>   the plain base: debian:bookworm-slim and Bare's
-#                              own binary (from the bare package on this host)
+#                              own binary (bare-runtime: the third-party package's,
+#                              or the development workspace's)
 #   p2p-node:<commit>          the base with the node's code: the modules
 #                              (pear-full-square/: mycelium-*, p2p-*, splectral-*, haicc-*) and their one dependency tree,
 #                              without development dependencies, this
@@ -25,7 +26,7 @@ if [ -f "$src/.pkgm/installed.json" ]; then
   [ -f "$meta" ] || { echo "no third-party package installed in $src" >&2; exit 2; }
   version=$(node -p "require('$meta').pkgm.bare")
   binary=$src/$(node -p "require('$meta').pkgm.runtime")
-  mkdir "$work/base" && cp "$here/base.Dockerfile" "$work/base/Dockerfile" && cp "$binary" "$work/base/bare"
+  mkdir "$work/base" && cp "$here/base.Dockerfile" "$work/base/Dockerfile" && cp "$binary" "$work/base/bare" && chmod 755 "$work/base/bare"
   docker image inspect "bare-base:$version" >/dev/null 2>&1 || docker build -q -t "bare-base:$version" "$work/base" >/dev/null
   if ! docker image inspect "$tag" >/dev/null 2>&1; then
     app=$work/node/app
@@ -44,9 +45,11 @@ if [ -f "$src/.pkgm/installed.json" ]; then
 fi
 [ -z "$(git -C "$src" status --porcelain -- . ":!steps/*/*/record/*")" ] || { echo "dev tree has uncommitted changes; commit first" >&2; exit 2; }
 commit=$(git -C "$src" rev-parse --short HEAD)
-version=$(bare --version | sed 's/^v//')
-binary=$(npm root -g)/bare/node_modules/bare-runtime-linux-x64/bin/bare
-mkdir "$work/base" && cp "$here/base.Dockerfile" "$work/base/Dockerfile" && cp "$binary" "$work/base/bare"
+# Bare's runtime from the workspace (bare-runtime, as the third-party package has it).
+rt=$src/node_modules/bare-runtime-$(node -p 'process.platform + "-" + process.arch')
+version=$(node -p "require('$rt/package.json').version")
+binary=$rt/bin/bare
+mkdir "$work/base" && cp "$here/base.Dockerfile" "$work/base/Dockerfile" && cp "$binary" "$work/base/bare" && chmod 755 "$work/base/bare"
 docker image inspect "bare-base:$version" >/dev/null 2>&1 || docker build -q -t "bare-base:$version" "$work/base" >/dev/null
 app=$work/node/app
 mkdir -p "$app"
@@ -58,6 +61,7 @@ find "$app" -type d -name prebuilds -path '*node_modules*' | while read -r p; do
   for b in "$p"/*; do [ "$(basename "$b")" = "$platform" ] || rm -rf "$b"; done
 done
 find "$app" -type d -name test -prune -exec rm -rf {} +
+rm -rf "$app/node_modules/bare-runtime"*
 cp "$here/node.Dockerfile" "$work/node/Dockerfile"
 docker build -q --build-arg BASE="bare-base:$version" -t "p2p-node:$commit" "$work/node" >/dev/null
 echo "p2p-node:$commit"

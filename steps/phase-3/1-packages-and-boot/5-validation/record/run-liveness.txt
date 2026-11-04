@@ -1,0 +1,32 @@
+haicc-base-boot 0.1.0: step 0, the host's prerequisites
+prerequisite     found                        required       ok   fix would
+os               linux-x86_64                 linux-x86_64   yes  
+node             v22.22.0                     22 or later    yes  
+git              2.43.0                       2.25 or later  yes  
+docker           29.9.2                       engine         yes  
+docker-running   yes                          yes            yes  
+docker-rootful   yes                          yes            yes  
+docker-native    yes                          yes            yes  
+docker-group     root                         yes            yes  
+pkgm-base-boot 0.1.0: the package manager into <scratch>/home-demos/.haicc/packages
+  pkgm: installed
+pkgm is ready: <scratch>/home-demos/.haicc/bin/pkgm
+  third-party: installed
+  mycelium: installed
+  haicc: installed
+haicc is ready: <scratch>/home-demos/.haicc/bin/haicc (for your shell: export PATH=<scratch>/home-demos/.haicc/bin:$PATH)
+  installed package p2p
+  installed package splectral
+  installed package demo-liveness
+start base-demo-liveness: done  (work: <scratch>/home-demos/.haicc/base-demo-liveness)
+  machine: all 7 met
+  create  host-a
+  create  host-a-vault
+  create  image
+  create  splectral-config
+  create  splectral  http://127.0.0.1:4400
+  create  swarm
+  create  swarm-watcher
+  running splectral  http://127.0.0.1:4400
+
+open http://127.0.0.1:4400

@@ -57,7 +57,7 @@ From the development repository's `packages.json`: each package's modules
 `p2p-git` from `node_modules`). All are staged, installed together into a
 scratch folder (the third-party package from `--out`, as last imported)
 and tested; only when every package's tests pass are they written, each
-into its folder in `--out` (a clone's `.git` kept).
+into its folder in `--out` (a clone's `.git` and `LICENSE` kept).
 
 **The import** takes the development workspace's installed tree
 (`node_modules`, from its `package-lock.json`): our own modules left out,

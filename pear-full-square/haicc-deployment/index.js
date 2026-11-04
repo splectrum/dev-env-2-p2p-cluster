@@ -12,11 +12,17 @@
 // A project file (`project.json`): { owner, providers: [modules],
 // configuration: [requirements], running: [requirements], strict }.
 // "{here}" is the project's folder, "{work}" the deployment's work folder
-// (where its state and everything it makes live). Every verb is a record in
+// (where its state and everything it makes live), "{packages}" the install
+// folder the code runs from ($HAICC_PACKAGES, or $HAICC_HOME/packages; in
+// the development repository, its root). `packages`: [names], the
+// project's packages, installed by the package manager from the project's
+// siblings: requirements of kind `package`, first in its configuration
+// (where the install folder is the package manager's). Every verb is a record in
 // the deployment's lifecycle topic; the desired state is their fold. What
 // the engine checks and does goes to its reconcile topic.
-import { readFileSync, mkdirSync } from 'node:fs'
+import { readFileSync, mkdirSync, existsSync } from 'node:fs'
 import { dirname, resolve, join } from 'node:path'
+import { homedir } from 'node:os'
 import { pathToFileURL } from 'node:url'
 import { createEngine, providers as builtin } from '../haicc-reconcile/index.js'
 import { openTopic, folderStorage } from '../mycelium-topic/index.js'
@@ -27,20 +33,29 @@ const VERBS = { deploy: { deployed: true, running: false }, start: { deployed: t
 export const desiredOf = records => records.reduce((s, r) => VERBS[r.value.verb] ? { ...s, ...VERBS[r.value.verb], since: r.value.time, last: r.value.verb } : s, { deployed: false, running: false, since: null, last: null })
 
 // The boundary: a project file read and checked once.
-export async function readProject (file, work) {
+export const haiccHome = () => process.env.HAICC_HOME || join(homedir(), '.haicc')
+export const packagesFolder = () => resolve(process.env.HAICC_PACKAGES || join(haiccHome(), 'packages'))
+
+export async function readProject (file, work, { packages = packagesFolder(), from = null } = {}) {
   const here = dirname(resolve(file))
-  const p = JSON.parse(readFileSync(file, 'utf8').replaceAll('{here}', here).replaceAll('{work}', work))
+  const p = JSON.parse(readFileSync(file, 'utf8').replaceAll('{here}', here).replaceAll('{work}', work).replaceAll('{packages}', packages))
   validateName(p.owner, 'project owner')
   for (const r of [...(p.configuration || []), ...(p.running || [])]) validateName(r.name || r.kind, 'requirement name')
   const providers = { ...builtin }
+  const configuration = p.configuration || []
+  const installer = join(packages, 'pear-full-square', 'pkgm-base-manager', 'reconcile.js')
+  if (p.packages?.length && existsSync(join(packages, '.pkgm')) && existsSync(installer)) {
+    Object.assign(providers, (await import(pathToFileURL(installer).href)).providers)
+    configuration.unshift(...p.packages.map(n => ({ name: `package-${n}`, kind: 'package', want: { name: n, from: from || dirname(here), into: packages } })))
+  }
   for (const m of p.providers || []) Object.assign(providers, (await import(pathToFileURL(resolve(here, m)).href)).providers)
-  return { owner: p.owner, strict: Boolean(p.strict), configuration: p.configuration || [], running: p.running || [], providers, file: resolve(file), title: p.title || p.owner }
+  return { owner: p.owner, strict: Boolean(p.strict), configuration, running: p.running || [], packages: p.packages || [], providers, file: resolve(file), title: p.title || p.owner }
 }
 
-export async function openDeployment ({ project: file, work }) {
+export async function openDeployment ({ project: file, work, packages, from }) {
   work = resolve(work)
   mkdirSync(join(work, 'deployment'), { recursive: true })
-  const p = await readProject(file, work)
+  const p = await readProject(file, work, { packages, from })
   const lifecycle = await openTopic({ storage: folderStorage(join(work, 'deployment', 'topics', 'lifecycle')) })
   const log = await openTopic({ storage: folderStorage(join(work, 'deployment', 'topics', 'reconcile')) })
   let verb = null

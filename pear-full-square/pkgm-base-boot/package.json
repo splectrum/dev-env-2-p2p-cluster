@@ -1,0 +1,9 @@
+{
+  "name": "pkgm-base-boot",
+  "id": "c2a9d7e4-5f13-4b6a-8e0c-71d3f5a2b948",
+  "description": "The package manager's boot, in plain shell: the package manager installed from its package into the host's install folder, by itself. Kicked alone, HAICC's boot first",
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "license": "MIT"
+}

@@ -1,0 +1,11 @@
+# The host's prerequisites, read by step0.sh check and fix alike.
+# name           required        for     (boot: HAICC needs it to boot;
+#                                          swarm: a swarm on this host needs it)
+os               linux-x86_64    boot
+node             22              boot
+git              2.25            boot
+docker           engine          swarm
+docker-running   yes             swarm
+docker-rootful   yes             swarm
+docker-native    yes             swarm
+docker-group     yes             swarm

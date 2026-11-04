@@ -1,0 +1,7 @@
+  ok     demo-liveness: base-demo-liveness/test (1/1)
+status base-demo-liveness: done  (work: <scratch>/home-demos/.haicc/base-demo-liveness)
+  machine: all 7 met
+  running splectral  http://127.0.0.1:4400
+  desired: running
+  ok     http://127.0.0.1:4400: 200
+test base-demo-liveness: passed

@@ -1,0 +1,86 @@
+{
+ "name": "liveness",
+ "menu": [
+  "A node goes quiet",
+  "Timeline",
+  "Map",
+  "Node: /hosts/master",
+  "Node: /hosts/node-1"
+ ],
+ "tabs": [
+  "splectral-scenario/scenario/liveness",
+  "base-view-map/map"
+ ],
+ "first": {
+  "run": 1,
+  "outcome": "ok",
+  "stepsDone": true,
+  "says": [
+   "Scenario: A node goes quiet",
+   "The project is brought back to its declared state.",
+   "Host A runs the swarm: the master, which keeps the names, and node-1, which renews its lease with the master every few seconds.",
+   "node-1 is frozen: its container paused. It says nothing, and no graceful path sees it.",
+   "The master hears nothing from node-1. When its lease runs out, node-1 is flagged absent: a dashed ring. Its name and records stay, flagged.",
+   "A request to node-1 now is refused at once, not left waiting on its address.",
+   "Refused: absent: /hosts/node-1/node, since 2026-11-04T22:26:02.724Z",
+   "node-1 is thawed. Its next heartbeat reaches the master, and it is present again.",
+   "A request to node-1 is answered again.",
+   "node-1 is stopped gracefully: it leaves the master's names first, so its name is free at once.",
+   "The swarm runs on: a request to the master's own repository is answered.",
+   "Scenario finished."
+  ],
+  "runsShown": null,
+  "ms": 77281
+ },
+ "second": {
+  "run": 2,
+  "outcome": "ok",
+  "stepsDone": true,
+  "says": [
+   "Scenario: A node goes quiet",
+   "The project is brought back to its declared state.",
+   "Host A runs the swarm: the master, which keeps the names, and node-1, which renews its lease with the master every few seconds.",
+   "node-1 is frozen: its container paused. It says nothing, and no graceful path sees it.",
+   "The master hears nothing from node-1. When its lease runs out, node-1 is flagged absent: a dashed ring. Its name and records stay, flagged.",
+   "A request to node-1 now is refused at once, not left waiting on its address.",
+   "Refused: absent: /hosts/node-1/node, since 2026-11-04T22:27:14.413Z",
+   "node-1 is thawed. Its next heartbeat reaches the master, and it is present again.",
+   "A request to node-1 is answered again.",
+   "node-1 is stopped gracefully: it leaves the master's names first, so its name is free at once.",
+   "The swarm runs on: a request to the master's own repository is answered.",
+   "Scenario finished."
+  ],
+  "runsShown": "2",
+  "ms": 35293
+ },
+ "nodes": [
+  {
+   "uri": "/hosts/master",
+   "status": "running",
+   "presence": "present"
+  },
+  {
+   "uri": "/hosts/node-1",
+   "status": "starting",
+   "presence": "left"
+  }
+ ],
+ "timelineKinds": [
+  "absent",
+  "actionResult",
+  "connected",
+  "disconnected",
+  "gone",
+  "joined",
+  "left",
+  "nodeStarting",
+  "present",
+  "requestAnswered",
+  "requestSent",
+  "resource",
+  "say",
+  "scenarioStep"
+ ],
+ "pageErrors": [],
+ "ms": 114349
+}

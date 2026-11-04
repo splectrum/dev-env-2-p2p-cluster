@@ -30,13 +30,17 @@ export const repoName = name => PREFIX + name
 
 // Where a package's repository is, among folders of repositories side by
 // side (plain, or laid out fully qualified: <folder>/haiccing/<repo>).
+// A package's repository is base-package-<name>, or base-<name> for a
+// project carrying its own components (a demo: base-demo-liveness).
 export function findPackage (name, from) {
   for (const f of [].concat(from)) {
-    for (const p of [join(f, repoName(name)), join(f, ORG, repoName(name))]) if (existsSync(join(p, 'package.json'))) return resolve(p)
+    for (const repo of [repoName(name), `base-${name}`]) {
+      for (const p of [join(f, repo), join(f, ORG, repo)]) if (existsSync(join(p, 'package.json')) && manifest(p)?.package === name) return resolve(p)
+    }
   }
   return null
 }
-export const manifest = dir => readJson(join(dir, 'package.json')).pkgm
+export const manifest = dir => readJson(join(dir, 'package.json')).pkgm || null
 const missing = (name, from) => new Error(`missing: ${ORG}/${repoName(name)} is not beside the others (looked in ${[].concat(from).join(', ')}); get it from https://github.com/${ORG}/${repoName(name)} (a clone, or its archive unpacked beside the others)`)
 
 // ---- the install folder ---------------------------------------------------
@@ -146,7 +150,7 @@ export function testPackage (name, { into, log = () => {} }) {
     if (script && existsSync(join(into, f, 'test'))) run(f, 'sh', ['-c', script], join(into, f))
   }
   const tests = existsSync(join(meta, 'test')) ? readdirSync(join(meta, 'test')).filter(n => n.endsWith('.test.js')).sort() : []
-  if (tests.length) run(`${repoName(name)}/test`, process.execPath, ['--test', ...tests.map(t => join(meta, 'test', t))], meta)
+  if (tests.length) run(`${readJson(join(meta, 'package.json')).name || repoName(name)}/test`, process.execPath, ['--test', ...tests.map(t => join(meta, 'test', t))], meta)
   return { package: name, ok: runs.every(r => r.ok), runs }
 }
 
@@ -157,15 +161,16 @@ export const readDefinitions = dev => readJson(join(dev, 'packages.json'))
 // Write a package's folder: its manifest, readme and tests, with its
 // content already in place; the hash over its content.
 function finish (dir, name, def, folders, extra = {}) {
-  const hash = hashTree(dir, folders)
-  const pkg = { name: repoName(name), description: def.description, private: true, license: def.license || 'MIT', pkgm: { package: name, requires: def.requires || [], folders, hash, ...extra } }
+  const hash = hashTree(dir, [...folders, ...(extra.root || []), ...(existsSync(join(dir, 'test')) ? ['test'] : [])])
+  const pkg = { name: def.repo || repoName(name), description: def.description, private: true, license: def.license || 'MIT', pkgm: { package: name, requires: def.requires || [], folders, hash, ...extra } }
   writeJson(join(dir, 'package.json'), pkg)
-  writeFileSync(join(dir, 'README.md'), readme(name, def, pkg.pkgm))
+  // A readme of its own (a project's), or one written from the definition.
+  if (!(extra.root || []).includes('README.md')) writeFileSync(join(dir, 'README.md'), readme(name, def, pkg.pkgm))
   return pkg.pkgm
 }
 
 function readme (name, def, m) {
-  const lines = [`# ${repoName(name)}`, '', def.description, '',
+  const lines = [`# ${def.repo || repoName(name)}`, '', def.description, '',
     `A package: self-contained, its code ready to run, laid out as it is installed. Written by the package manager (\`pear-full-square/pkgm-base-manager\`) from the development repository; do not edit here.`, '',
     `- requires: ${m.requires.length ? m.requires.map(r => `\`${ORG}/${repoName(r)}\``).join(', ') : 'nothing'}`,
     ...(m.platform ? [`- platform: ${m.platform}`] : []),
@@ -194,7 +199,7 @@ export function importThirdParty ({ dev, out, log = () => {} }) {
   const lock = readJson(join(dev, 'package-lock.json'))
   const dir = join(out, repoName('third-party'))
   mkdirSync(dir, { recursive: true })
-  for (const n of readdirSync(dir)) if (n !== '.git') remove(join(dir, n))
+  for (const n of readdirSync(dir)) if (n !== '.git' && n !== 'LICENSE') remove(join(dir, n))
   const top = []
   const nm = join(dev, 'node_modules')
   for (const n of readdirSync(nm).sort()) {
@@ -240,7 +245,7 @@ export function writePackages ({ dev, out, only = null, keep = false, log = () =
     const manifests = {}
     for (const name of names) {
       const def = defs.packages[name]
-      const dir = join(staged, repoName(name))
+      const dir = join(staged, def.repo || repoName(name))
       const folders = []
       for (const mod of def.modules) {
         const { path, from } = typeof mod === 'string' ? { path: mod, from: mod } : mod
@@ -261,10 +266,11 @@ export function writePackages ({ dev, out, only = null, keep = false, log = () =
     if (failed.length) return { ok: false, written: [], results, scratch: keep ? scratch : null }
     const written = []
     for (const name of only ? [].concat(only) : names) {
-      const dir = join(out, repoName(name))
+      const repo = defs.packages[name].repo || repoName(name)
+      const dir = join(out, repo)
       mkdirSync(dir, { recursive: true })
-      for (const n of readdirSync(dir)) if (n !== '.git') remove(join(dir, n))
-      for (const n of readdirSync(join(staged, repoName(name)))) copy(join(staged, repoName(name), n), join(dir, n))
+      for (const n of readdirSync(dir)) if (n !== '.git' && n !== 'LICENSE') remove(join(dir, n))
+      for (const n of readdirSync(join(staged, repo))) copy(join(staged, repo, n), join(dir, n))
       written.push({ package: name, dir, hash: manifests[name].hash })
       log({ kind: 'written', package: name, dir, hash: manifests[name].hash.slice(0, 12) })
     }

@@ -2,10 +2,13 @@
   "owner": "base-demo-other-host",
   "title": "A node on another host",
   "description": "A two-host test cluster: host A runs the swarm (master, node-1); host B has its own manager and vault and nothing running. With Splectral and the other-host scenario: a node joins from host B by invitation. The swarm keeps its part of the deployment (node-1); its manager, in auto mode, brings it up.",
+  "packages": [
+    "demo-other-host"
+  ],
   "providers": [
-    "{here}/../../pear-full-square/p2p-swarm-manager/reconcile.js",
-    "{here}/../../pear-full-square/p2p-node-manager/reconcile.js",
-    "{here}/../../pear-full-square/splectral-server/reconcile.js"
+    "{packages}/pear-full-square/p2p-swarm-manager/reconcile.js",
+    "{packages}/pear-full-square/p2p-node-manager/reconcile.js",
+    "{packages}/pear-full-square/splectral-server/reconcile.js"
   ],
   "strict": true,
   "configuration": [
@@ -26,12 +29,6 @@
       "kind": "nodejs",
       "want": {
         "atLeast": 22
-      }
-    },
-    {
-      "kind": "bare",
-      "want": {
-        "runtime": "1.36.0"
       }
     },
     {
@@ -91,11 +88,10 @@
     {
       "kind": "image",
       "want": {
-        "code": "{here}/../.."
+        "code": "{packages}"
       },
       "needs": [
-        "docker",
-        "bare"
+        "docker"
       ]
     },
     {
@@ -133,14 +129,14 @@
           "host": "127.0.0.1",
           "runs": "runs",
           "extensions": [
-            "{here}/../../pear-full-square/splectral-p2p-watchers",
-            "{here}/../../pear-full-square/splectral-p2p-actions",
-            "{here}/../../pear-full-square/splectral-scenario",
-            "{here}/../../pear-full-square/splectral-timeline",
-            "{here}/../../pear-full-square/splectral-replay",
-            "{here}/../../pear-full-square/haicc-deployment",
-            "{here}/../../splectral/base-view-map",
-            "{here}/../../splectral/base-demo-other-host"
+            "{packages}/pear-full-square/splectral-p2p-watchers",
+            "{packages}/pear-full-square/splectral-p2p-actions",
+            "{packages}/pear-full-square/splectral-scenario",
+            "{packages}/pear-full-square/splectral-timeline",
+            "{packages}/pear-full-square/splectral-replay",
+            "{packages}/pear-full-square/haicc-deployment",
+            "{packages}/splectral/base-view-map",
+            "{packages}/splectral/base-demo-other-host"
           ],
           "sources": [
             {
@@ -193,7 +189,7 @@
         "folder": "{work}/a/hosts-swarm",
         "nodes": "{work}/a",
         "vault": "{work}/a-vault",
-        "code": "{here}/../..",
+        "code": "{packages}",
         "deployment": {
           "swarm": "hosts",
           "nodes": [

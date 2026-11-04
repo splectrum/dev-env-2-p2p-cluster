@@ -1,0 +1,12 @@
+import exit=0 1s
+write exit=0 52s
+step0-bare-debian exit=1 1s
+step0-fix-node exit=0 3s
+kick-pkgm-alone exit=0 1s
+kick-haicc-missing exit=0 1s
+kick-haicc-alone exit=0 2s
+run-liveness exit=0 26s
+ui-liveness exit=0 115s
+test-liveness exit=0 3s
+teardown-liveness exit=0 9s
+run-other-host exit=0 22s

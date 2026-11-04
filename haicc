@@ -13,6 +13,8 @@ file=$root/haiccing/$project/project.json
 [ -f "$file" ] || { echo "no project: $project (haiccing/$project/project.json)"; exit 2; }
 [ "$verb" = check ] && verb=status
 d=$root/pear-full-square/haicc-deployment
+# The code runs from this repository ({packages} in a project is its root).
+HAICC_PACKAGES=$root; export HAICC_PACKAGES
 # The dependencies, for this layout: an existing clone from before the move
 # to <org>/<repo> folders, or one never installed, says so here.
 if ! (cd "$root" && node --input-type=module -e "await import('p2p-dht'); await import('p2p-swarm-manager')" >/dev/null 2>&1); then
