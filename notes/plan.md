@@ -206,8 +206,17 @@ replicated; the managers the authority for the substrate, a 100% split but
 for auto mode; nodes shadowing their managers (`node-pattern.md`,
 authority). The roadmap's "swarm's record as a deployment repository".
 
-**Phase 2's request is met** (steps 0 to 10; the mapping below). Paused
-2026-11-02 for the human's local look (`local.md`).
+**Phase 2's request is met** (steps 0 to 10; the mapping below).
+
+## Phase 3 (begun 2026-11-05)
+
+Design: `packages.md`. Its own request is written as its scope settles.
+
+- **Step 1, packages and the boot** — requested
+  (`pending/phase-3/step-1-packages-and-boot/request.md`), part 0 done.
+  Record: `steps/phase-3/1-packages-and-boot/`.
+- Then, as agreed: the p2p version (one code repository per swarm),
+  pinning once the system works, Android (a Termux probe).
 
 ## Further down the roadmap
 
