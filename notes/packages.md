@@ -57,21 +57,38 @@ taken as its repository has it (the latest). The development repository
 writes a package's code into its repository when its modules change and
 the package's tests pass.
 
-The package manager needs packages itself, so it is booted in stages, as
-a node is (`p2p-node/boot.js`):
+**Booting** (agreed with the human, 2026-11-05; it replaces the stages
+written before):
 
-1. **`pkgm-boot`** (simplified by the human, 2026-11-05): it only copies
-   the package manager's code from its `haiccing` repository
-   (`base-package-pkgm`) into the manager's folder on the host, and runs
-   it. Node's built-ins and the git command line; nothing of ours but
-   itself. The running package manager does the rest. So the package
-   manager's package is self-contained with what it needs to run: its
-   basic version itself needs only Node's built-ins and git.
-2. **The proper package manager** (`pkgm-base-*`, built on mycelium)
-   installs itself, and the other packages, on the p2p layer (mycelium
-   repositories there), and from then on manages them: overrides (an
-   updated module tested within its package), the tests, the third-party
-   import; its provider for HAICC's cascade.
+- **A folder of `haiccing` repositories side by side**, as in the
+  organisation, is the starting point: at least `base-package-haicc` and
+  `base-package-pkgm`, with the packages a project needs beside them. It
+  may be a clone of each, or a plain folder copy: nothing in booting
+  relies on git.
+- **Boot is only between HAICC and the package manager.** Their two
+  packages each carry a boot, in plain shell:
+  - **HAICC's boot** (`base-package-haicc`): the host's prerequisites
+    (step 0, below);
+  - **the package manager's boot** (`base-package-pkgm`): installs the
+    package manager into the host's install folder.
+- **What a kick runs**:
+  - kicking the package manager (its shell script): HAICC's boot, then
+    the package manager's boot and install; then it exits;
+  - kicking HAICC (its shell script): HAICC's boot, the package manager's
+    boot, the package manager's install, then HAICC's install (by the
+    package manager); then it exits. `haicc` is then available
+    (`~/.haicc/bin/haicc`).
+- **A higher-level package** (a demo project, any `haiccing` repository
+  above them) has no boot: its script kicks HAICC if HAICC is not
+  installed yet, assuming its prerequisite repositories are its siblings
+  in the folder, and then calls HAICC the proper way (`haicc run
+  <project>`, `haicc install <package>`), which installs and runs what
+  it needs through the package manager.
+- **Idempotent**: a kick finding the package manager or HAICC installed
+  and current skips to what is left.
+- **Missing siblings are said, not guessed**: which repository is missing
+  from the folder, and where to get it; fetching from the organisation
+  with git is an explicit option.
 
 Packages are built and tested in the development repository, with the
 proper package manager run in place; elsewhere a machine only boots from
@@ -134,65 +151,60 @@ changed. The `mycelium-*` modules' separate installs held another 24 MB of
 duplicates (a second Corestore, Hyperdrive, isomorphic-git, `rocksdb-native`,
 `p2p-git`): gone once they join the one workspace.
 
-**Step 0, the host's prerequisites** (agreed 2026-11-05): in plain shell,
-before Node exists, part of `pkgm-base-boot`, run first by `sh haicc run`.
-- `host.sh check`: each prerequisite with the version found, the version
+**Step 0, the host's prerequisites** (agreed 2026-11-05): HAICC's boot, in
+plain shell, before Node exists.
+- `check`: each prerequisite with the version found, the version
   required, ok or not, and what `fix` would do; it changes nothing. The
   required versions in one file, read by check and fix alike: Linux
   x86-64; Node.js 22 or later; git 2.25 or later; Docker Engine, rootful,
   native, running; the user in the `docker` group. (The shell twin of
   `haicc-reconcile`'s machine providers.)
-- `host.sh fix`, only with the human's yes, asking before anything
-  needing `sudo`: Node.js, the official release for Linux x64, into a
-  folder of ours (`~/.haicc/node`, no `sudo`; Ubuntu's own is too old);
-  git with `apt`; Docker Engine with `apt`, the `docker` group, the
-  daemon started (saying what needs a new login); checked again after
-  each fix.
+- `fix`, only with the human's yes, asking before anything needing
+  `sudo`: Node.js, the official release for Linux x64, into a folder of
+  ours (`~/.haicc/node`, no `sudo`; Ubuntu's own is too old); git with
+  `apt`; Docker Engine with `apt`, the `docker` group, the daemon started
+  (saying what needs a new login); checked again after each fix.
 - Bare is not a host prerequisite: its runtime comes in `third-party`,
   and the node image takes it from there.
 
-**From scratch** (agreed 2026-11-05): the entry repository (a project's,
-or `pkgm-base-boot`) works as a plain folder copy (cloned, a zip, copied
-over): nothing before the boot relies on git. Its readme gives a script
-for a bare machine with only `curl` and `tar`: the repository's archive
-fetched and unpacked, then `sh haicc run` (step 0, then the boot, which
-then uses git). Since code may then come from the package folder rather
-than a git tree, the node image is built from a folder too.
+**From scratch**: each `haiccing` repository's readme gives a script for a
+bare machine with only `curl` and `tar`: the repositories needed fetched
+as archives and unpacked side by side, then the kick. Since code then
+comes from the install folder rather than a git tree, the node image is
+built from a folder too.
 
-**Names**: `pear-full-square/pkgm-base-boot` and `pkgm-base-manager` (the
-human, leaving room for more sophisticated versions).
+**Names**: the boots' and the package manager's code in
+`pear-full-square/pkgm-base-boot` and `pkgm-base-manager` (the human,
+leaving room for more sophisticated versions); HAICC's boot with HAICC's
+code in `pear-full-square` (a `haicc-` module). The packages:
+`haiccing/base-package-haicc` (the entry), `-pkgm`, `-third-party`,
+`-p2p`, `-mycelium`, `-splectral`.
 
-**Other aspects of booting** (to be designed with the first version):
-- **its own prerequisites** (Node, git) checked by the boot itself, with
-  hints: `haicc-reconcile` is not there yet;
-- **where it fetches from**: the package repositories on GitHub by
-  default; a local mirror (a folder, a git server on the LAN) for an
-  air-gapped machine;
-- **idempotent**: packages already on the host and current are not
-  fetched again; a newer one is (latest, for now);
-- **whole or nothing**: a package fetched into a temporary folder and
-  moved in place, so a failed boot leaves no half package;
-- **one host folder of packages shared by projects** (`~/.haicc/packages`),
-  each project's workspace using them;
+**Other aspects of booting**:
+- **one install folder on the host** (`~/.haicc/packages`), shared by
+  projects, laid out fully qualified (see "Folders on a machine");
+- **whole or nothing**: a package installed into a temporary folder and
+  moved in place, so a failed install leaves no half package;
 - **the platform**: `third-party` for the host's platform;
-- **the boot kept tiny and stable**: it is copied into every project that
-  boots; it says its version, and a project can ask for a newer one;
-- **no secrets**: the boot never touches a vault;
-- **trust**: today the `haiccing` repositories as they are; later signed
-  releases (Pear);
-- later, the node's own boot could use the same package code.
+- **the boots kept tiny and stable** (plain shell; they say their
+  version);
+- **no secrets**: boot never touches a vault;
+- **trust**: today the repositories as they are; later signed releases
+  (Pear);
+- later, a node's own boot could use the same package code.
 
 ## Cascading click and runs
 
 Every layer is a `haiccing` project, a click and run of its own, whose
 prerequisites (other projects, strict or not) are a state reconciled like
 any requirement. Bootstrapping and layering, one step at a time: `start`
-on a project brings up the layers below it. The click and run is
-`haicc run <project>`: boot if needed, deploy and start what the project
-needs, open the browser; the lifecycle verbs (`deploy`, `start`, `stop`,
+on a project brings up the layers below it. The click and run is a
+project's script: it kicks HAICC if needed (booting), then `haicc run
+<project>`: deploy and start what the project needs, open the browser; the lifecycle verbs (`deploy`, `start`, `stop`,
 `teardown`) stay for each step on its own.
 
-1. a workspace: the packages a project needs, assembled (no install);
+1. a workspace: the packages a project needs, installed by the package
+   manager from their side-by-side repositories (no npm);
 2. a swarm host: the node image, a swarm on this host;
 3. a demo: Splectral with its components, and its scenario.
 
