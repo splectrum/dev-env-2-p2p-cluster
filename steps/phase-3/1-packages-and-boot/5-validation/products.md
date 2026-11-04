@@ -19,9 +19,11 @@ LICENSE; every push verified.
 | `mycelium-repo` | `pear-full-square/mycelium-repo` | `61de898` | `cf733c9` | first merge (created by the human; description updated) |
 
 `mycelium-xpath` already equals its folder. Not here:
-- **The `haiccing` repositories** (the six packages and the two demo
-  projects, now written by the package manager): written and committed
-  by `publish.sh --no-push` in the session (from dev `e146c4c`); the push
-  refused (403: the Claude GitHub App has no access to `haiccing`). Pushed
-  from the session once the App is installed there, or by the local agent
-  (`notes/handover-packages.md`).
+- **The `haiccing` repositories**, written by the package manager from dev
+  `e146c4c`: the six packages pushed from the session
+  (`base-package-haicc` `505f0e3`, `-pkgm` `5d9edc7`, `-third-party`
+  `4144c11`, `-mycelium` `853c91a`, `-p2p` `0771ec3`, `-splectral`
+  `db6c4c7`), each GitHub archive identical to what was written, exec bits
+  included. The two demo projects by the local agent
+  (`notes/handover-packages.md`): their names are held in the session by
+  `splectral/base-demo-*`.

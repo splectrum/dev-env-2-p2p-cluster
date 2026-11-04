@@ -25,12 +25,12 @@ design `notes/packages.md`, the request
   scenarios twice in the browser, `haicc test`, teardown; each kick alone;
   step 0 on a bare Debian and Node.js fixed for real.
 
-**Waiting on the local agent**: publishing the eight `haiccing`
-repositories (`notes/handover-packages.md`: `publish.sh`), since this
-session cannot push there; then the from-scratch run, recorded in
-`5-validation/local-run.md`. `haiccing/base-package-splectral` was not
-visible to the session (to check it exists). The products `mycelium-layer`
-and `mycelium-repo` have no repository the session can see.
+**Waiting on the local agent** (`notes/handover-packages.md`): the six
+packages are published from the session; the two demo projects
+(`haiccing/base-demo-*`) are published locally (`publish.sh`), since the
+session holds those names for `splectral/base-demo-*`; then the
+from-scratch run against GitHub's archives, recorded in
+`5-validation/local-run.md`.
 
 **Then** (`notes/packages.md`, "Later"): the p2p version (one code
 repository per swarm, mirrored to the folder code runs from), pinning once
