@@ -4,11 +4,15 @@
     "third-party": {
       "description": "The third-party code below mycelium, not ours: Bare's runtime and modules, the Holepunch stack, isomorphic-git, React and htm. Imported once from the development workspace (the one contact with npm), Linux x64 only, recorded in third-party.json.",
       "license": "SEE third-party.json",
-      "exclude": ["p2p-git"]
+      "exclude": [
+        "p2p-git"
+      ]
     },
     "mycelium": {
       "description": "The repository layer: layered git repositories (mycelium-git, -layer, -repo), topics, URIs and paths; with p2p-git, git on Hyperdrive, which mycelium-git runs on.",
-      "requires": ["third-party"],
+      "requires": [
+        "third-party"
+      ],
       "modules": [
         "pear-full-square/mycelium-uri",
         "pear-full-square/mycelium-xpath",
@@ -16,26 +20,87 @@
         "pear-full-square/mycelium-git",
         "pear-full-square/mycelium-layer",
         "pear-full-square/mycelium-repo",
-        { "path": "pear-full-square/p2p-git", "from": "node_modules/p2p-git" }
+        {
+          "path": "pear-full-square/p2p-git",
+          "from": "node_modules/p2p-git"
+        }
       ]
     },
     "haicc": {
       "description": "HAICC: declare what a project needs, check it, make it so (haicc-reconcile), and its lifecycle (haicc-deployment). The entry package.",
-      "requires": ["mycelium"],
+      "requires": [
+        "mycelium"
+      ],
       "modules": [
         "pear-full-square/haicc-reconcile",
-        "pear-full-square/haicc-deployment"
+        "pear-full-square/haicc-deployment",
+        "pear-full-square/haicc-base-boot"
+      ],
+      "root": {
+        "kick.sh": "pear-full-square/haicc-base-boot/kick.sh"
+      },
+      "readme": [
+        "## Kicking HAICC",
+        "",
+        "From a folder of `haiccing` repositories side by side (clones, or plain copies), at least this one, `base-package-pkgm` and what HAICC requires (`base-package-mycelium`, `base-package-third-party`):",
+        "",
+        "```sh",
+        "sh base-package-haicc/kick.sh            # step 0 (the host's prerequisites), the package manager, HAICC",
+        "sh base-package-haicc/pear-full-square/haicc-base-boot/step0.sh check   # only look",
+        "```",
+        "",
+        "Step 0 checks the host (Linux x86-64; Node.js 22 or later; git 2.25 or later; for a swarm, Docker Engine, rootful, native, running, and the user in the `docker` group) and fixes what is missing only with your yes (`--yes` to agree beforehand): Node.js into `~/.haicc/node` (no sudo), git and Docker Engine with `apt`. Then `haicc` is in `~/.haicc/bin`. A project (a demo) needs no kick: its `run.sh` kicks HAICC if needed.",
+        "",
+        "## From scratch",
+        "",
+        "On a machine with only `curl` and `tar` (Linux x86-64): the repositories fetched as archives and unpacked side by side, then the kick.",
+        "",
+        "```sh",
+        "mkdir -p ~/haiccing && cd ~/haiccing",
+        "for r in base-package-haicc base-package-pkgm base-package-mycelium base-package-third-party; do",
+        "  curl -fsSL https://github.com/haiccing/$r/archive/refs/heads/main.tar.gz | tar -xz && mv $r-main $r",
+        "done",
+        "sh base-package-haicc/kick.sh",
+        "```"
       ]
     },
     "pkgm": {
       "description": "The package manager: packages as self-contained folders, installed into the host's install folder, tested within the package. Node's built-ins only.",
       "modules": [
-        "pear-full-square/pkgm-base-manager"
+        "pear-full-square/pkgm-base-manager",
+        "pear-full-square/pkgm-base-boot"
+      ],
+      "root": {
+        "kick.sh": "pear-full-square/pkgm-base-boot/kick.sh"
+      },
+      "readme": [
+        "## Kicking the package manager",
+        "",
+        "From a folder of `haiccing` repositories side by side, this one and `base-package-haicc` (whose boot does step 0, the host's prerequisites):",
+        "",
+        "```sh",
+        "sh base-package-pkgm/kick.sh   # step 0, then the package manager into ~/.haicc/packages; ~/.haicc/bin/pkgm",
+        "```",
+        "",
+        "## From scratch",
+        "",
+        "On a machine with only `curl` and `tar` (Linux x86-64): the repositories fetched as archives and unpacked side by side, then the kick.",
+        "",
+        "```sh",
+        "mkdir -p ~/haiccing && cd ~/haiccing",
+        "for r in base-package-haicc base-package-pkgm; do",
+        "  curl -fsSL https://github.com/haiccing/$r/archive/refs/heads/main.tar.gz | tar -xz && mv $r-main $r",
+        "done",
+        "sh base-package-pkgm/kick.sh",
+        "```"
       ]
     },
     "p2p": {
       "description": "The p2p substrate, ours: store, discovery, connections, replication, channels, repositories on Hypercore, the name service, the node and its managers.",
-      "requires": ["mycelium", "haicc"],
+      "requires": [
+        "mycelium",
+        "haicc"
+      ],
       "modules": [
         "pear-full-square/p2p-store",
         "pear-full-square/p2p-dht",
@@ -50,8 +115,10 @@
       ]
     },
     "splectral": {
-      "description": "The Splectral platform: the server, its shell, the contract and model, transports, and the extensions for p2p swarms (watchers, actions, observer), scenarios, the timeline and replay.",
-      "requires": ["p2p"],
+      "description": "The Splectral platform: the server, its shell, the contract and model, transports, and the extensions for p2p swarms (watchers, actions, observer), scenarios, the timeline and replay; the map view (splectral/base-view-map), shared by the demos.",
+      "requires": [
+        "p2p"
+      ],
       "modules": [
         "pear-full-square/splectral-contract",
         "pear-full-square/splectral-model",
@@ -63,8 +130,39 @@
         "pear-full-square/splectral-p2p-actions",
         "pear-full-square/splectral-scenario",
         "pear-full-square/splectral-timeline",
-        "pear-full-square/splectral-replay"
+        "pear-full-square/splectral-replay",
+        "splectral/base-view-map"
       ]
+    },
+    "demo-liveness": {
+      "repo": "base-demo-liveness",
+      "description": "Demo project: A node goes quiet. Its project (project.json), its Splectral component (splectral/base-demo-liveness), and its click and run (run.sh).",
+      "requires": [
+        "splectral"
+      ],
+      "modules": [
+        "splectral/base-demo-liveness"
+      ],
+      "root": {
+        "project.json": "haiccing/base-demo-liveness/project.json",
+        "README.md": "haiccing/base-demo-liveness/README.md",
+        "run.sh": "pear-full-square/haicc-base-boot/run.sh"
+      }
+    },
+    "demo-other-host": {
+      "repo": "base-demo-other-host",
+      "description": "Demo project: A node on another host. Its project (project.json), its Splectral component (splectral/base-demo-other-host), and its click and run (run.sh).",
+      "requires": [
+        "splectral"
+      ],
+      "modules": [
+        "splectral/base-demo-other-host"
+      ],
+      "root": {
+        "project.json": "haiccing/base-demo-other-host/project.json",
+        "README.md": "haiccing/base-demo-other-host/README.md",
+        "run.sh": "pear-full-square/haicc-base-boot/run.sh"
+      }
     }
   }
 }

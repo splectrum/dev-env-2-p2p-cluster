@@ -33,7 +33,9 @@
     "pear-full-square/splectral-p2p-actions",
     "pear-full-square/haicc-reconcile",
     "pear-full-square/haicc-deployment",
-    "pear-full-square/pkgm-base-manager"
+    "pear-full-square/pkgm-base-manager",
+    "pear-full-square/pkgm-base-boot",
+    "pear-full-square/haicc-base-boot"
   ],
   "dependencies": {
     "bare-runtime": "1.36.0",

@@ -212,8 +212,9 @@ authority). The roadmap's "swarm's record as a deployment repository".
 
 Design: `packages.md`. Its own request is written as its scope settles.
 
-- **Step 1, packages and the boot** — requested
-  (`pending/phase-3/step-1-packages-and-boot/request.md`), part 0 done.
+- **Step 1, packages and the boot** — done in the session
+  (`pending/phase-3/step-1-packages-and-boot/request.md`); the `haiccing`
+  repositories published by the local agent (`handover-packages.md`).
   Record: `steps/phase-3/1-packages-and-boot/`.
 - Then, as agreed: the p2p version (one code repository per swarm),
   pinning once the system works, Android (a Termux probe).

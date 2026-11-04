@@ -4,49 +4,37 @@ Written 2026-11-01 after step 7, updated 2026-11-02 after steps 8, 9 and 10 (the
 compaction). Read this first, then `rules.md` (single concern first), then
 `notes/plan.md`. Everything below is on `main`.
 
-## Now: phase 3, step 1, ready to implement (2026-11-05)
+## Now: phase 3, step 1, built; the haiccing repositories to publish
 
-Phase 2 is done (steps 0 to 10, its request met). The human's local look
-came back (the demos "really good"; its fixes made, 2026-11-04). Phase 3
-has begun with its design settled in discussion: **read
-`notes/packages.md` first**, all of it; then the request,
-`pending/phase-3/step-1-packages-and-boot/request.md` on `pending/default`
-(`9d24e26`).
+Phase 3, step 1 (packages and the boot) is built and validated in the
+session: record `steps/phase-3/1-packages-and-boot/` (parts 0 to 5), the
+design `notes/packages.md`, the request
+`pending/phase-3/step-1-packages-and-boot/request.md` on `pending/default`.
 
-In short:
-- **Packages**, self-contained `haiccing` repositories, each a set of
-  modules with its code and tests: `base-package-haicc` (the entry),
-  `-pkgm`, `-third-party` (imported once, Linux x64, Bare's runtime in
-  it), `-p2p` (with `p2p-git`), `-mycelium`, `-splectral`. Latest
-  versions, no pinning until the system works; tested within the package
-  (a module updated: the package deployed, the module overwritten, tested).
-- **Booting only between HAICC and the package manager**, plain shell:
-  HAICC's boot does step 0 (the host's prerequisites, `check` with
-  versions, `fix` with the human's yes); the package manager's boot
-  installs it. Kicking the package manager: HAICC's boot, its own boot and
-  install, exit. Kicking HAICC: HAICC's boot, the package manager's boot
-  and install, HAICC's install, exit. Higher packages (a demo) kick HAICC
-  if needed, then call `haicc run`.
-- **A folder of `haiccing` repositories side by side** (cloned or copied)
-  is the starting point; nothing in booting relies on git.
-- **One install folder** (`~/.haicc/packages`), fully qualified
-  (`<org>/<module>`), each module once, third-party once.
-- **Later** (not in this step): the p2p version (one code repository per
-  swarm on the master, synced to every node's folder; missing packages
-  added on deploy), pinning, Android (a Termux probe by the local agent).
+- **The package manager** (`pear-full-square/pkgm-base-manager`, Node's
+  built-ins only): the third-party import, our packages written from
+  `packages.json` and tested together before any is written, installs into
+  `~/.haicc/packages` with overrides, tests within the package, a provider
+  for HAICC. The node image builds from an install folder.
+- **Booting** (`haicc-base-boot`, `pkgm-base-boot`, plain shell): step 0
+  (`check`, `fix` with a yes), the two kicks, `run.sh` for projects.
+- **`haicc`** (`haicc-deployment/haicc.js`): `run`, `test`, the lifecycle
+  verbs, `install`.
+- **Validated** from plain folder copies and clean homes
+  (`5-validation/run.sh`, its record): both demos' click and run, their
+  scenarios twice in the browser, `haicc test`, teardown; each kick alone;
+  step 0 on a bare Debian and Node.js fixed for real.
 
-**Where the step stands**: part 0 done (the mycelium modules in the one
-workspace, `steps/phase-3/1-packages-and-boot/0-workspace/`). Next: part
-1, the package manager, basic (`pkgm-base-manager`: Node's built-ins and
-git only): the third-party import, writing self-contained packages,
-installing with overrides, its provider for HAICC, the node image built
-from a folder. Then parts 2 to 5 as the request lists them.
+**Waiting on the local agent**: publishing the eight `haiccing`
+repositories (`notes/handover-packages.md`: `publish.sh`), since this
+session cannot push there; then the from-scratch run, recorded in
+`5-validation/local-run.md`. `haiccing/base-package-splectral` was not
+visible to the session (to check it exists). The products `mycelium-layer`
+and `mycelium-repo` have no repository the session can see.
 
-**Repositories**: created by the human: `pear-full-square/pkgm-base-boot`,
-`pear-full-square/pkgm-base-manager`. Still to create (asked of the
-human): `pear-full-square/haicc-base-boot`; `haiccing/base-package-haicc`,
-`-pkgm`, `-third-party`, `-p2p`, `-mycelium`, `-splectral`. Build up to
-the product merges without them.
+**Then** (`notes/packages.md`, "Later"): the p2p version (one code
+repository per swarm, mirrored to the folder code runs from), pinning once
+the system works, Android (a Termux probe by the local agent).
 
 ## Where it stands
 

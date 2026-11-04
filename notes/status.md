@@ -4,6 +4,13 @@ The second development phase: the creation of a P2P cluster, starting with
 p2p-git on Hyperdrive. Request: `pending/phase-2/request.md` on
 `pending/default`.
 
+Status (2026-11-04, evening): **phase 3, step 1 built and validated**
+(`../steps/phase-3/1-packages-and-boot/`): the package manager, the
+packages, booting, the demos' click and run from a folder of `haiccing`
+repositories, a clean home each. The `pear-full-square` products merged;
+the `haiccing` repositories wait for the local agent to publish them
+(`handover-packages.md`), then the from-scratch run.
+
 Status (2026-11-05): **phase 2 done; phase 3 begun.** Its first step,
 packages and the boot, is designed (`packages.md`) and requested; part 0
 done; ready to implement (`next.md`).

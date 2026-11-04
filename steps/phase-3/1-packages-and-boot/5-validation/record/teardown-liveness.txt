@@ -1,0 +1,9 @@
+teardown base-demo-liveness: done  (work: <scratch>/home-demos/.haicc/base-demo-liveness)
+  removed swarm-watcher
+  removed swarm
+  removed splectral
+  removed splectral-config
+  removed host-a-vault
+  removed host-a
+  removed package-demo-liveness
+  desired: nothing

@@ -1,0 +1,9 @@
+prerequisite     found                        required       ok   fix would
+os               linux-x86_64                 linux-x86_64   yes  
+node             -                            22 or later    no   install Node.js 22 (the official release for Linux x64) into /root/.haicc/node, no sudo
+git              -                            2.25 or later  no   install git with apt (sudo)
+docker           -                            engine         no   install Docker Engine with apt (docker.io, sudo)
+docker-running   -                            yes            no   after docker
+docker-rootful   -                            yes            no   after docker-running
+docker-native    -                            yes            no   after docker-running
+docker-group     root                         yes            yes  

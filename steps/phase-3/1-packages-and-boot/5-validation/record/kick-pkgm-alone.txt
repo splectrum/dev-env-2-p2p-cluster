@@ -1,0 +1,18 @@
+haicc-base-boot 0.1.0: step 0, the host's prerequisites
+prerequisite     found                        required       ok   fix would
+os               linux-x86_64                 linux-x86_64   yes  
+node             v22.22.0                     22 or later    yes  
+git              2.43.0                       2.25 or later  yes  
+docker           29.9.2                       engine         yes  
+docker-running   yes                          yes            yes  
+docker-rootful   yes                          yes            yes  
+docker-native    yes                          yes            yes  
+docker-group     root                         yes            yes  
+pkgm-base-boot 0.1.0: the package manager into <scratch>/home-pkgm/.haicc/packages
+  pkgm: installed
+pkgm is ready: <scratch>/home-pkgm/.haicc/bin/pkgm
+again:
+pkgm-base-boot 0.1.0: the package manager into <scratch>/home-pkgm/.haicc/packages
+  pkgm: current
+pkgm is ready: <scratch>/home-pkgm/.haicc/bin/pkgm
+[ 'pkgm' ]
