@@ -15,9 +15,13 @@ LICENSE; every push verified.
 | `mycelium-git` | `pear-full-square/mycelium-git` | `5a16c54` | `cd9b371` | part 0's changes too (`p2p-git` at its latest, its own lockfile gone); joined (a shallow clone) |
 | `p2p-mrepo` | `pear-full-square/p2p-mrepo` | `b280dc1` | `7870720` | part 0's change too (`p2p-git` at its latest); joined |
 
+| `mycelium-layer` | `pear-full-square/mycelium-layer` | `c9ec50b` | `c0d5b8c` | first merge (created by the human; description updated) |
+| `mycelium-repo` | `pear-full-square/mycelium-repo` | `61de898` | `cf733c9` | first merge (created by the human; description updated) |
+
 `mycelium-xpath` already equals its folder. Not here:
-- **`mycelium-layer`, `mycelium-repo`**: no product repository the session
-  can see (to create, if they are to have one).
 - **The `haiccing` repositories** (the six packages and the two demo
-  projects, now written by the package manager): published by the local
-  agent, `notes/handover-packages.md`.
+  projects, now written by the package manager): written and committed
+  by `publish.sh --no-push` in the session (from dev `e146c4c`); the push
+  refused (403: the Claude GitHub App has no access to `haiccing`). Pushed
+  from the session once the App is installed there, or by the local agent
+  (`notes/handover-packages.md`).
