@@ -1,57 +1,54 @@
 # Handover: publishing the haiccing packages (for the local agent)
 
-Written 2026-11-04 after phase 3, step 1. The cloud session cannot push to
-`github.com/haiccing` (the Claude GitHub App is not installed for that
-organisation there; `haiccing/base-package-splectral` is not visible to it
-at all). The `pear-full-square` products are merged from the session; the
-`haiccing` repositories need a machine with push access: the local agent.
+Written 2026-11-04 after phase 3, step 1; updated the same day. The cloud
+session published the six packages (`haiccing/base-package-haicc`, `-pkgm`,
+`-third-party`, `-mycelium`, `-p2p`, `-splectral`), each equal to what it
+wrote and tested here, its GitHub archive checked identical (exec bits
+included). It cannot push the two demo projects: a session checks out
+repositories by name only, and `splectral/base-demo-liveness` and
+`-other-host` already hold those names there. So two tasks are the local
+agent's.
 
-## What to publish
+## 1. Publish the two demo projects
 
-The eight `haiccing` repositories, each written by the package manager
-from this repository (`packages.json`):
-`base-package-third-party`, `-mycelium`, `-haicc`, `-pkgm`, `-p2p`,
-`-splectral`, and the demo projects `base-demo-liveness`,
-`base-demo-other-host` (now packages too: their project, their Splectral
-component and `run.sh`; their content is replaced by what is written, the
-LICENSE kept).
-
-## How
-
-On the local machine, in this repository at `main`:
+`haiccing/base-demo-liveness` and `haiccing/base-demo-other-host`, now
+packages too (their project, their Splectral component, `run.sh`), written
+by the package manager from this repository. On the local machine, in this
+repository at `main`, Linux x86-64 (in WSL2, inside the distribution):
 
 ```sh
 git pull
-npm install          # the third-party import is taken from node_modules (Linux x64)
+npm install
 sh steps/phase-3/1-packages-and-boot/5-validation/publish.sh ~/haiccing-publish
 ```
 
-It clones what is not there, imports the third-party package, writes the
-others (tested together first: nothing is written if a test fails),
-commits each changed repository ("Written by the package manager from
-dev-env-2-p2p-cluster <commit> (hash <hash>)") and pushes. `--no-push`
-looks first.
+It clones the eight repositories, writes them (tested together first:
+nothing is written if a test fails), commits what changed and pushes. The
+six packages show `unchanged`; only the two demos are committed ("Written by
+the package manager from dev-env-2-p2p-cluster <commit> (hash <hash>)",
+their LICENSE kept). `--no-push` looks first.
 
-- **Linux x86-64 only**: the third-party package is this platform's (in
-  WSL2, inside the distribution).
-- `base-package-third-party` is about 144 MB, Bare's runtime one file of
-  97 MB (under GitHub's 100 MB limit; GitHub warns above 50 MB). Its first
-  push takes a while.
-- If `haiccing/base-package-splectral` does not exist yet, create it
-  (empty, with a LICENSE like the others) first.
+## 2. From scratch, against GitHub
 
-## Then: from scratch
-
-With the repositories published, the from-scratch script in a demo's
-readme is the check that matters: on a clean machine or a clean home
-(`HAICC_HOME=$(mktemp -d)` keeps it apart):
+The one check the session leaves to this side: the repositories as anyone
+gets them, GitHub's archives, on a clean home (`HOME=$(mktemp -d)` keeps it
+apart from your own `~/.haicc`):
 
 ```sh
-mkdir -p ~/haiccing && cd ~/haiccing
+mkdir -p ~/haiccing-scratch && cd ~/haiccing-scratch
 for r in base-demo-liveness base-package-haicc base-package-pkgm base-package-third-party base-package-mycelium base-package-p2p base-package-splectral; do
   curl -fsSL https://github.com/haiccing/$r/archive/refs/heads/main.tar.gz | tar -xz && mv $r-main $r
 done
 sh base-demo-liveness/run.sh
 ```
 
-Record what happens in `steps/phase-3/1-packages-and-boot/5-validation/local-run.md`.
+Then Run (and Run again) on the scenario's page, `~/.haicc/bin/haicc test
+base-demo-liveness`, `~/.haicc/bin/haicc teardown base-demo-liveness`; the
+same for `base-demo-other-host` if time allows. Record what happens in
+`steps/phase-3/1-packages-and-boot/5-validation/local-run.md`, commit and
+push.
+
+- `base-package-third-party` is about 144 MB (Bare's runtime one 97 MB
+  file): its archive is the slow one.
+- Step 0 asks before fixing anything on the host; on a machine with
+  everything, it only checks.
