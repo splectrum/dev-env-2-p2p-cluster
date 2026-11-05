@@ -4,7 +4,7 @@ The two tasks of `notes/handover-packages.md`, on the local machine: Linux
 x86-64 in WSL2, Node.js 24.21, Docker 28.3. Dev at `9c480c8`.
 
 **Result: published; both demos ran from GitHub's archives on a clean home;
-one real finding.** `base-demo-liveness`'s scenario failed 1 run in 6: its
+one real finding, open.** `base-demo-liveness`'s scenario failed 1 run in 6: its
 `stop-node` races the swarm manager's auto mode (finding 1). Everything
 else passed.
 
@@ -13,14 +13,15 @@ else passed.
 `publish.sh ~/haiccing-publish --no-push` took 2 min 28 s with all tests
 passing. The six packages `unchanged`, as the handover expected; only the
 two demos committed. Each commit reviewed (8 files, `LICENSE` kept, no
-secrets), then pushed by hand (finding 2), fast-forward, no force:
+secrets), then pushed by hand (finding 2, since fixed), fast-forward, no
+force:
 
 | Repository | Before | After |
 |---|---|---|
 | `haiccing/base-demo-liveness` | `f85b958` | `9e7bb75` |
 | `haiccing/base-demo-other-host` | `a34735f` | `feed429` |
 
-GitHub shows those heads. Not yet on Codeberg: see "Left open".
+GitHub and Codeberg show those heads.
 
 ## 2. From scratch
 
@@ -86,24 +87,24 @@ scenario's `await` on an action's effect has to be subscribed before the
 action runs. Whether a stop by hand should hold auto mode off is a design
 question for the human. A stop that timed out should not report `ok`.
 
-### 2. `publish.sh --no-push` cannot be followed by `publish.sh`
+### 2. `publish.sh --no-push` could not be followed by `publish.sh` (fixed)
 
-`--no-push` commits. The run after it finds nothing to add, says
-`unchanged` and goes on without pushing, so "`--no-push` looks first" leaves
-the commits local. Read from the script, not run: here they were pushed by
-hand. Pushing what is ahead of `origin` in that branch of the loop would
-fix it.
+`--no-push` commits. The run after it found nothing to add, said
+`unchanged` and went on without pushing, so the commits stayed local. Read
+from the script, not run: here they were pushed by hand. A repository with
+nothing to add but commits ahead of `origin` is now pushed. That branch was
+tested on its own against a throwaway remote, not by a full `publish.sh`.
 
-### 3. The browser check needs Playwright, not listed
+### 3. The browser check needed Playwright, not listed (fixed)
 
 `ui.cjs` takes `playwright` from `npm root -g`, not installed on this
 machine; a copy in a temporary folder served, with the browsers already
-cached. Worth a line in the validation's readme.
+cached. Now in the validation's readme.
 
 ## Left open
 
-- Findings 1 to 3 are for the next session (`notes/next.md`).
-- Codeberg: the demo repositories there are as they were until the next
-  `~/codeberg-sync.sh` run.
-- `~/haiccing-publish`, `~/haiccing-scratch` and the clean home
-  `~/haiccing-scratch-home` are left on the machine.
+- Finding 1 is for the next session (`notes/next.md`).
+- `manual-run.sh` was added afterwards, for a run by hand with the browser
+  opening: tested on liveness with `--no-open`, ended by Enter, and by an
+  interrupt during the download and with the demo running; all left
+  nothing behind. Not yet tried: the browser opening, and other-host.
