@@ -30,7 +30,7 @@ docker-running   -                            yes            no   after docker
 docker-rootful   -                            yes            no   after docker-running
 docker-native    -                            yes            no   after docker-running
 docker-group     root                         yes            yes  
-fix: exit 3
+fix: exit 1
 corepack
 node
 npm

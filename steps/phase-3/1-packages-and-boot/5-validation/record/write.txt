@@ -1,91 +1,91 @@
 {"kind":"installed","package":"third-party","hash":"18c763e2dfa4","folders":191,"overrides":[]}
-{"kind":"installed","package":"mycelium","hash":"c08f77954fc8","folders":7,"overrides":[]}
-{"kind":"tested","package":"mycelium","what":"pear-full-square/mycelium-uri","ok":true,"tests":15,"pass":15,"fail":0,"ms":140}
-{"kind":"tested","package":"mycelium","what":"pear-full-square/mycelium-xpath","ok":true,"tests":4,"pass":4,"fail":0,"ms":104}
-{"kind":"tested","package":"mycelium","what":"pear-full-square/mycelium-topic","ok":true,"tests":8,"pass":8,"fail":0,"ms":341}
-{"kind":"tested","package":"mycelium","what":"pear-full-square/mycelium-git","ok":true,"tests":82,"pass":82,"fail":0,"ms":5934}
-{"kind":"tested","package":"mycelium","what":"pear-full-square/mycelium-layer","ok":true,"tests":8,"pass":8,"fail":0,"ms":3311}
-{"kind":"tested","package":"mycelium","what":"pear-full-square/mycelium-repo","ok":true,"tests":3,"pass":3,"fail":0,"ms":1039}
-{"kind":"tested","package":"mycelium","what":"base-package-mycelium/test","ok":true,"tests":7,"pass":7,"fail":0,"ms":251}
-{"kind":"installed","package":"haicc","hash":"586ee9433b83","folders":3,"overrides":[]}
-{"kind":"tested","package":"haicc","what":"pear-full-square/haicc-reconcile","ok":true,"tests":4,"pass":4,"fail":0,"ms":128}
-{"kind":"tested","package":"haicc","what":"pear-full-square/haicc-deployment","ok":true,"tests":1,"pass":1,"fail":0,"ms":160}
-{"kind":"tested","package":"haicc","what":"pear-full-square/haicc-base-boot","ok":true,"tests":4,"pass":4,"fail":0,"ms":491}
-{"kind":"tested","package":"haicc","what":"base-package-haicc/test","ok":true,"tests":3,"pass":3,"fail":0,"ms":140}
-{"kind":"installed","package":"pkgm","hash":"bb144c34e475","folders":2,"overrides":[]}
-{"kind":"tested","package":"pkgm","what":"pear-full-square/pkgm-base-manager","ok":true,"tests":4,"pass":4,"fail":0,"ms":2408}
-{"kind":"tested","package":"pkgm","what":"pear-full-square/pkgm-base-boot","ok":true,"tests":1,"pass":1,"fail":0,"ms":357}
-{"kind":"tested","package":"pkgm","what":"base-package-pkgm/test","ok":true,"tests":2,"pass":2,"fail":0,"ms":133}
+{"kind":"installed","package":"mycelium","hash":"4967f2d428f2","folders":7,"overrides":[]}
+{"kind":"tested","package":"mycelium","what":"pear-full-square/mycelium-uri","ok":true,"tests":15,"pass":15,"fail":0,"ms":108}
+{"kind":"tested","package":"mycelium","what":"pear-full-square/mycelium-xpath","ok":true,"tests":4,"pass":4,"fail":0,"ms":110}
+{"kind":"tested","package":"mycelium","what":"pear-full-square/mycelium-topic","ok":true,"tests":8,"pass":8,"fail":0,"ms":193}
+{"kind":"tested","package":"mycelium","what":"pear-full-square/mycelium-git","ok":true,"tests":82,"pass":82,"fail":0,"ms":5226}
+{"kind":"tested","package":"mycelium","what":"pear-full-square/mycelium-layer","ok":true,"tests":8,"pass":8,"fail":0,"ms":2646}
+{"kind":"tested","package":"mycelium","what":"pear-full-square/mycelium-repo","ok":true,"tests":3,"pass":3,"fail":0,"ms":879}
+{"kind":"tested","package":"mycelium","what":"base-package-mycelium/test","ok":true,"tests":7,"pass":7,"fail":0,"ms":244}
+{"kind":"installed","package":"haicc","hash":"eb12eac8d80b","folders":3,"overrides":[]}
+{"kind":"tested","package":"haicc","what":"pear-full-square/haicc-reconcile","ok":true,"tests":4,"pass":4,"fail":0,"ms":137}
+{"kind":"tested","package":"haicc","what":"pear-full-square/haicc-deployment","ok":true,"tests":1,"pass":1,"fail":0,"ms":134}
+{"kind":"tested","package":"haicc","what":"pear-full-square/haicc-base-boot","ok":true,"tests":4,"pass":4,"fail":0,"ms":370}
+{"kind":"tested","package":"haicc","what":"base-package-haicc/test","ok":true,"tests":3,"pass":3,"fail":0,"ms":105}
+{"kind":"installed","package":"pkgm","hash":"5e032e7338ed","folders":2,"overrides":[]}
+{"kind":"tested","package":"pkgm","what":"pear-full-square/pkgm-base-manager","ok":true,"tests":4,"pass":4,"fail":0,"ms":1944}
+{"kind":"tested","package":"pkgm","what":"pear-full-square/pkgm-base-boot","ok":true,"tests":1,"pass":1,"fail":0,"ms":250}
+{"kind":"tested","package":"pkgm","what":"base-package-pkgm/test","ok":true,"tests":2,"pass":2,"fail":0,"ms":98}
 {"kind":"installed","package":"p2p","hash":"78df82f9c061","folders":10,"overrides":[]}
-{"kind":"tested","package":"p2p","what":"pear-full-square/p2p-store","ok":true,"tests":5,"pass":5,"fail":0,"ms":468}
-{"kind":"tested","package":"p2p","what":"pear-full-square/p2p-dht","ok":true,"tests":1,"pass":1,"fail":0,"ms":169}
-{"kind":"tested","package":"p2p","what":"pear-full-square/p2p-connect","ok":true,"tests":2,"pass":2,"fail":0,"ms":5227}
-{"kind":"tested","package":"p2p","what":"pear-full-square/p2p-replicate","ok":true,"tests":1,"pass":1,"fail":0,"ms":398}
-{"kind":"tested","package":"p2p","what":"pear-full-square/p2p-channel","ok":true,"tests":2,"pass":2,"fail":0,"ms":325}
-{"kind":"tested","package":"p2p","what":"pear-full-square/p2p-mrepo","ok":true,"tests":24,"pass":24,"fail":0,"ms":3509}
-{"kind":"tested","package":"p2p","what":"pear-full-square/p2p-rns","ok":true,"tests":5,"pass":5,"fail":0,"ms":378}
-{"kind":"tested","package":"p2p","what":"pear-full-square/p2p-node","ok":true,"tests":4,"pass":4,"fail":0,"ms":19185}
-{"kind":"tested","package":"p2p","what":"pear-full-square/p2p-node-manager","ok":true,"tests":2,"pass":2,"fail":0,"ms":244}
-{"kind":"tested","package":"p2p","what":"pear-full-square/p2p-swarm-manager","ok":true,"tests":1,"pass":1,"fail":0,"ms":522}
-{"kind":"tested","package":"p2p","what":"base-package-p2p/test","ok":true,"tests":10,"pass":10,"fail":0,"ms":451}
+{"kind":"tested","package":"p2p","what":"pear-full-square/p2p-store","ok":true,"tests":5,"pass":5,"fail":0,"ms":477}
+{"kind":"tested","package":"p2p","what":"pear-full-square/p2p-dht","ok":true,"tests":1,"pass":1,"fail":0,"ms":149}
+{"kind":"tested","package":"p2p","what":"pear-full-square/p2p-connect","ok":true,"tests":2,"pass":2,"fail":0,"ms":5210}
+{"kind":"tested","package":"p2p","what":"pear-full-square/p2p-replicate","ok":true,"tests":1,"pass":1,"fail":0,"ms":328}
+{"kind":"tested","package":"p2p","what":"pear-full-square/p2p-channel","ok":true,"tests":2,"pass":2,"fail":0,"ms":300}
+{"kind":"tested","package":"p2p","what":"pear-full-square/p2p-mrepo","ok":true,"tests":24,"pass":24,"fail":0,"ms":2587}
+{"kind":"tested","package":"p2p","what":"pear-full-square/p2p-rns","ok":true,"tests":5,"pass":5,"fail":0,"ms":305}
+{"kind":"tested","package":"p2p","what":"pear-full-square/p2p-node","ok":true,"tests":4,"pass":4,"fail":0,"ms":17534}
+{"kind":"tested","package":"p2p","what":"pear-full-square/p2p-node-manager","ok":true,"tests":2,"pass":2,"fail":0,"ms":205}
+{"kind":"tested","package":"p2p","what":"pear-full-square/p2p-swarm-manager","ok":true,"tests":1,"pass":1,"fail":0,"ms":373}
+{"kind":"tested","package":"p2p","what":"base-package-p2p/test","ok":true,"tests":10,"pass":10,"fail":0,"ms":354}
 {"kind":"installed","package":"splectral","hash":"c64df39b1ee2","folders":12,"overrides":[]}
-{"kind":"tested","package":"splectral","what":"pear-full-square/splectral-contract","ok":true,"tests":2,"pass":2,"fail":0,"ms":122}
-{"kind":"tested","package":"splectral","what":"pear-full-square/splectral-model","ok":true,"tests":2,"pass":2,"fail":0,"ms":113}
-{"kind":"tested","package":"splectral","what":"pear-full-square/splectral-transport","ok":true,"tests":1,"pass":1,"fail":0,"ms":179}
-{"kind":"tested","package":"splectral","what":"pear-full-square/splectral-server","ok":true,"tests":2,"pass":2,"fail":0,"ms":1859}
-{"kind":"tested","package":"splectral","what":"pear-full-square/splectral-p2p-observer","ok":true,"tests":1,"pass":1,"fail":0,"ms":1159}
-{"kind":"tested","package":"splectral","what":"pear-full-square/splectral-p2p-watchers","ok":true,"tests":2,"pass":2,"fail":0,"ms":110}
-{"kind":"tested","package":"splectral","what":"pear-full-square/splectral-scenario","ok":true,"tests":1,"pass":1,"fail":0,"ms":228}
-{"kind":"tested","package":"splectral","what":"base-package-splectral/test","ok":true,"tests":12,"pass":12,"fail":0,"ms":289}
+{"kind":"tested","package":"splectral","what":"pear-full-square/splectral-contract","ok":true,"tests":2,"pass":2,"fail":0,"ms":93}
+{"kind":"tested","package":"splectral","what":"pear-full-square/splectral-model","ok":true,"tests":2,"pass":2,"fail":0,"ms":89}
+{"kind":"tested","package":"splectral","what":"pear-full-square/splectral-transport","ok":true,"tests":1,"pass":1,"fail":0,"ms":149}
+{"kind":"tested","package":"splectral","what":"pear-full-square/splectral-server","ok":true,"tests":2,"pass":2,"fail":0,"ms":1836}
+{"kind":"tested","package":"splectral","what":"pear-full-square/splectral-p2p-observer","ok":true,"tests":1,"pass":1,"fail":0,"ms":1044}
+{"kind":"tested","package":"splectral","what":"pear-full-square/splectral-p2p-watchers","ok":true,"tests":2,"pass":2,"fail":0,"ms":94}
+{"kind":"tested","package":"splectral","what":"pear-full-square/splectral-scenario","ok":true,"tests":1,"pass":1,"fail":0,"ms":209}
+{"kind":"tested","package":"splectral","what":"base-package-splectral/test","ok":true,"tests":12,"pass":12,"fail":0,"ms":265}
 {"kind":"installed","package":"demo-liveness","hash":"c71b20f9e3a9","folders":1,"overrides":[]}
-{"kind":"tested","package":"demo-liveness","what":"base-demo-liveness/test","ok":true,"tests":1,"pass":1,"fail":0,"ms":114}
+{"kind":"tested","package":"demo-liveness","what":"base-demo-liveness/test","ok":true,"tests":1,"pass":1,"fail":0,"ms":88}
 {"kind":"installed","package":"demo-other-host","hash":"d9563ace0895","folders":1,"overrides":[]}
-{"kind":"tested","package":"demo-other-host","what":"base-demo-other-host/test","ok":true,"tests":1,"pass":1,"fail":0,"ms":102}
-{"kind":"written","package":"mycelium","dir":"<scratch>/out/base-package-mycelium","hash":"c08f77954fc8"}
-{"kind":"written","package":"haicc","dir":"<scratch>/out/base-package-haicc","hash":"586ee9433b83"}
-{"kind":"written","package":"pkgm","dir":"<scratch>/out/base-package-pkgm","hash":"bb144c34e475"}
+{"kind":"tested","package":"demo-other-host","what":"base-demo-other-host/test","ok":true,"tests":1,"pass":1,"fail":0,"ms":85}
+{"kind":"written","package":"mycelium","dir":"<scratch>/out/base-package-mycelium","hash":"4967f2d428f2"}
+{"kind":"written","package":"haicc","dir":"<scratch>/out/base-package-haicc","hash":"eb12eac8d80b"}
+{"kind":"written","package":"pkgm","dir":"<scratch>/out/base-package-pkgm","hash":"5e032e7338ed"}
 {"kind":"written","package":"p2p","dir":"<scratch>/out/base-package-p2p","hash":"78df82f9c061"}
 {"kind":"written","package":"splectral","dir":"<scratch>/out/base-package-splectral","hash":"c64df39b1ee2"}
 {"kind":"written","package":"demo-liveness","dir":"<scratch>/out/base-demo-liveness","hash":"c71b20f9e3a9"}
 {"kind":"written","package":"demo-other-host","dir":"<scratch>/out/base-demo-other-host","hash":"d9563ace0895"}
-ok     mycelium: pear-full-square/mycelium-uri 15/15 140ms
-ok     mycelium: pear-full-square/mycelium-xpath 4/4 104ms
-ok     mycelium: pear-full-square/mycelium-topic 8/8 341ms
-ok     mycelium: pear-full-square/mycelium-git 82/82 5934ms
-ok     mycelium: pear-full-square/mycelium-layer 8/8 3311ms
-ok     mycelium: pear-full-square/mycelium-repo 3/3 1039ms
-ok     mycelium: base-package-mycelium/test 7/7 251ms
-ok     haicc: pear-full-square/haicc-reconcile 4/4 128ms
-ok     haicc: pear-full-square/haicc-deployment 1/1 160ms
-ok     haicc: pear-full-square/haicc-base-boot 4/4 491ms
-ok     haicc: base-package-haicc/test 3/3 140ms
-ok     pkgm: pear-full-square/pkgm-base-manager 4/4 2408ms
-ok     pkgm: pear-full-square/pkgm-base-boot 1/1 357ms
-ok     pkgm: base-package-pkgm/test 2/2 133ms
-ok     p2p: pear-full-square/p2p-store 5/5 468ms
-ok     p2p: pear-full-square/p2p-dht 1/1 169ms
-ok     p2p: pear-full-square/p2p-connect 2/2 5227ms
-ok     p2p: pear-full-square/p2p-replicate 1/1 398ms
-ok     p2p: pear-full-square/p2p-channel 2/2 325ms
-ok     p2p: pear-full-square/p2p-mrepo 24/24 3509ms
-ok     p2p: pear-full-square/p2p-rns 5/5 378ms
-ok     p2p: pear-full-square/p2p-node 4/4 19185ms
-ok     p2p: pear-full-square/p2p-node-manager 2/2 244ms
-ok     p2p: pear-full-square/p2p-swarm-manager 1/1 522ms
-ok     p2p: base-package-p2p/test 10/10 451ms
-ok     splectral: pear-full-square/splectral-contract 2/2 122ms
-ok     splectral: pear-full-square/splectral-model 2/2 113ms
-ok     splectral: pear-full-square/splectral-transport 1/1 179ms
-ok     splectral: pear-full-square/splectral-server 2/2 1859ms
-ok     splectral: pear-full-square/splectral-p2p-observer 1/1 1159ms
-ok     splectral: pear-full-square/splectral-p2p-watchers 2/2 110ms
-ok     splectral: pear-full-square/splectral-scenario 1/1 228ms
-ok     splectral: base-package-splectral/test 12/12 289ms
-ok     demo-liveness: base-demo-liveness/test 1/1 114ms
-ok     demo-other-host: base-demo-other-host/test 1/1 102ms
-written mycelium c08f77954fc8
-written haicc 586ee9433b83
-written pkgm bb144c34e475
+ok     mycelium: pear-full-square/mycelium-uri 15/15 108ms
+ok     mycelium: pear-full-square/mycelium-xpath 4/4 110ms
+ok     mycelium: pear-full-square/mycelium-topic 8/8 193ms
+ok     mycelium: pear-full-square/mycelium-git 82/82 5226ms
+ok     mycelium: pear-full-square/mycelium-layer 8/8 2646ms
+ok     mycelium: pear-full-square/mycelium-repo 3/3 879ms
+ok     mycelium: base-package-mycelium/test 7/7 244ms
+ok     haicc: pear-full-square/haicc-reconcile 4/4 137ms
+ok     haicc: pear-full-square/haicc-deployment 1/1 134ms
+ok     haicc: pear-full-square/haicc-base-boot 4/4 370ms
+ok     haicc: base-package-haicc/test 3/3 105ms
+ok     pkgm: pear-full-square/pkgm-base-manager 4/4 1944ms
+ok     pkgm: pear-full-square/pkgm-base-boot 1/1 250ms
+ok     pkgm: base-package-pkgm/test 2/2 98ms
+ok     p2p: pear-full-square/p2p-store 5/5 477ms
+ok     p2p: pear-full-square/p2p-dht 1/1 149ms
+ok     p2p: pear-full-square/p2p-connect 2/2 5210ms
+ok     p2p: pear-full-square/p2p-replicate 1/1 328ms
+ok     p2p: pear-full-square/p2p-channel 2/2 300ms
+ok     p2p: pear-full-square/p2p-mrepo 24/24 2587ms
+ok     p2p: pear-full-square/p2p-rns 5/5 305ms
+ok     p2p: pear-full-square/p2p-node 4/4 17534ms
+ok     p2p: pear-full-square/p2p-node-manager 2/2 205ms
+ok     p2p: pear-full-square/p2p-swarm-manager 1/1 373ms
+ok     p2p: base-package-p2p/test 10/10 354ms
+ok     splectral: pear-full-square/splectral-contract 2/2 93ms
+ok     splectral: pear-full-square/splectral-model 2/2 89ms
+ok     splectral: pear-full-square/splectral-transport 1/1 149ms
+ok     splectral: pear-full-square/splectral-server 2/2 1836ms
+ok     splectral: pear-full-square/splectral-p2p-observer 1/1 1044ms
+ok     splectral: pear-full-square/splectral-p2p-watchers 2/2 94ms
+ok     splectral: pear-full-square/splectral-scenario 1/1 209ms
+ok     splectral: base-package-splectral/test 12/12 265ms
+ok     demo-liveness: base-demo-liveness/test 1/1 88ms
+ok     demo-other-host: base-demo-other-host/test 1/1 85ms
+written mycelium 4967f2d428f2
+written haicc eb12eac8d80b
+written pkgm 5e032e7338ed
 written p2p 78df82f9c061
 written splectral c64df39b1ee2
 written demo-liveness c71b20f9e3a9

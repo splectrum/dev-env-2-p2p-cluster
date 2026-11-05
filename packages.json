@@ -49,7 +49,7 @@
         "sh base-package-haicc/pear-full-square/haicc-base-boot/step0.sh check   # only look",
         "```",
         "",
-        "Step 0 checks the host (Linux x86-64; Node.js 22 or later; git 2.25 or later; for a swarm, Docker Engine, rootful, native, running, and the user in the `docker` group) and fixes what is missing only with your yes (`--yes` to agree beforehand): Node.js into `~/.haicc/node` (no sudo), git and Docker Engine with `apt`. Then `haicc` is in `~/.haicc/bin`. A project (a demo) needs no kick: its `run.sh` kicks HAICC if needed.",
+        "Step 0 checks the host (Linux x86-64; Node.js 22 or later; git 2.25 or later; Docker Engine, rootful, native, running, and the user in the `docker` group: all needed, since nodes run in Docker containers) and fixes what is missing only with your yes (`--yes` to agree beforehand): Node.js into `~/.haicc/node` (no sudo), git and Docker Engine with `apt`. Then `haicc` is in `~/.haicc/bin`. A project (a demo) needs no kick: its `run.sh` kicks HAICC if needed.",
         "",
         "## From scratch",
         "",

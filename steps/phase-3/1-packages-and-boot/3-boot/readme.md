@@ -5,10 +5,11 @@ kick, the click and run's `run.sh`) and `pear-full-square/pkgm-base-boot`
 (the package manager's boot and kick), plain shell; their readmes say how.
 
 - **Step 0** (`step0.sh check|fix`, `requirements`): each prerequisite
-  with found, required, ok, and what fix would do. What HAICC needs to boot
-  (Linux x86-64, Node.js 22+, git 2.25+) stops the boot; what a swarm needs
-  (Docker Engine, running, rootful, native; the `docker` group) is said
-  and the boot goes on (exit 3). `fix`: only with a yes, from a terminal or
+  with found, required, ok, and what fix would do. All of them are needed
+  to boot (Linux x86-64, Node.js 22+, git 2.25+, Docker Engine running,
+  rootful, native, the `docker` group): nodes always run in Docker
+  containers (the human, 2026-11-05; first built with Docker as a swarm's
+  need only, which let the boot go on, exit 3). `fix`: only with a yes, from a terminal or
   `--yes`; with neither, nothing changes. Node.js, the official release,
   checksum checked, into `~/.haicc/node`.
 - **Kicking the package manager** (`base-package-pkgm/kick.sh`): HAICC's

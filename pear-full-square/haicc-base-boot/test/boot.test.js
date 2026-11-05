@@ -21,7 +21,7 @@ function host (fakes) {
 }
 const row = (out, name) => out.split('\n').find(l => l.startsWith(name + ' '))?.split(/\s{2,}/)
 
-test('check: what HAICC needs to boot missing (exit 1), each with found, required and the fix', () => {
+test('check: Node.js and git too old, Docker missing (exit 1), each with found, required and the fix', () => {
   const h = host({ node: 'echo v20.11.0', git: 'echo git version 2.20.1' })
   try {
     const r = h.run('check')
@@ -34,11 +34,12 @@ test('check: what HAICC needs to boot missing (exit 1), each with found, require
   } finally { rmSync(h.dir, { recursive: true, force: true }) }
 })
 
-test('check: only what a swarm needs missing (exit 3); fix --dry-run says what it would do', () => {
+test('check: only Docker missing still stops the boot (exit 1); fix --dry-run says what it would do', () => {
   const h = host({ node: 'echo v22.3.0', git: 'echo git version 2.43.0' })
   try {
     const r = h.run('check')
-    assert.equal(r.status, 3, r.stdout)
+    assert.equal(r.status, 1, r.stdout)
+    assert.deepEqual(row(r.stdout, 'docker').slice(0, 4), ['docker', '-', 'engine', 'no'])
     assert.equal(row(r.stdout, 'node')[3], 'yes')
     const f = h.run('fix', '--dry-run')
     assert.match(f.stdout, /would: install Docker Engine with apt/)

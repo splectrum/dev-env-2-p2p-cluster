@@ -14,7 +14,7 @@ home folder each (`HAICC_HOME` under the scratch folder). `run.sh
 | `import` | the third-party package: 192 modules, Linux x64, Bare 1.36.0 |
 | `write` | 8 repositories written after 35 test runs passed (each module's tests and each package's own), 52 s |
 | `step0-bare-debian` | a bare Debian container: Node.js, git, Docker each `no` with its fix; exit 1 (HAICC cannot boot) |
-| `step0-fix-node` | a host lacking Node.js and Docker: `fix --yes` installed Node.js v22.23.4 (the official release, checksum checked) into the home, no sudo; Docker's `apt` stubbed in this validation; then exit 3 (only a swarm's needs missing) |
+| `step0-fix-node` | a host lacking Node.js and Docker: `fix --yes` installed Node.js v22.23.4 (the official release, checksum checked) into the home, no sudo; Docker's `apt` stubbed in this validation; then exit 1: Docker still missing, and needed to boot (nodes run in Docker containers; first run, before that change: exit 3) |
 | `kick-pkgm-alone` | only `base-package-haicc` and `-pkgm` beside each other: step 0, the package manager installed; again: `current` |
 | `kick-haicc-missing` | the same two only, kicking HAICC: the package manager installed, then `base-package-mycelium` said missing with a clone and an archive command; exit 1 |
 | `kick-haicc-alone` | HAICC with what it requires: installed; again: all `current` |

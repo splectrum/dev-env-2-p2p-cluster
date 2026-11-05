@@ -8,8 +8,7 @@
 #                                checked again after each
 # Required versions: ./requirements. Node.js goes into $HAICC_HOME/node
 # (~/.haicc/node, no sudo); git and Docker Engine with apt.
-# check exits 0 when all is met, 3 when only what a swarm needs is not,
-# 1 when what HAICC needs to boot is not.
+# check exits 0 when all is met, 1 when not (HAICC cannot boot).
 set -u
 here=$(cd "$(dirname "$0")" && pwd)
 home=${HAICC_HOME:-$HOME/.haicc}
@@ -67,13 +66,13 @@ rows () { grep -v '^#' "$here/requirements" | grep -v '^[[:space:]]*$'; }
 check () {
   worst=0
   printf '%-16s %-28s %-14s %-4s %s\n' prerequisite found required ok 'fix would'
-  rows | while read -r name required for; do
+  rows | while read -r name required; do
     probe "$name" "$required"
     case $name in node) req="$required or later" ;; git) req="$required or later" ;; *) req=$required ;; esac
     printf '%-16s %-28s %-14s %-4s %s\n' "$name" "$found" "$req" "$ok" "${fix:-}"
   done
   # The verdict, again (the loop ran in a subshell).
-  rows | { w=0; while read -r name required for; do probe "$name" "$required"; if [ $ok = no ]; then if [ "$for" = boot ]; then w=1; elif [ $w = 0 ]; then w=3; fi; fi; done; exit $w; }
+  rows | { w=0; while read -r name required; do probe "$name" "$required"; [ $ok = yes ] || w=1; done; exit $w; }
 }
 
 ask () {
@@ -99,7 +98,7 @@ fix_node () {
 
 fix () {
   rows > "${TMPDIR:-/tmp}/haicc-step0.$$"
-  while read -r name required for; do
+  while read -r name required; do
     probe "$name" "$required"
     [ $ok = yes ] && continue
     case $name in
