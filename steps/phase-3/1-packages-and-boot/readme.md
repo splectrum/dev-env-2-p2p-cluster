@@ -12,3 +12,4 @@ Status: **done**; the `haiccing` repositories published and the from-scratch run
 | `3-boot/` | booting: HAICC's (step 0) and the package manager's | done |
 | `4-run/` | the demo projects' scripts, `haicc run`, `haicc test` | done |
 | `5-validation/` | validation and products | done; the from-scratch run: `local-run.md` |
+| `6-work-folder/` | the work folder, one route, logs in files | done |

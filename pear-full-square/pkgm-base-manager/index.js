@@ -13,7 +13,7 @@
 //   installed(into), uninstall(name, { into })
 // Node's built-ins only. Whole or nothing: a package is staged in the
 // install folder, then moved in place; one marked installing is redone.
-import { readFileSync, writeFileSync, existsSync, mkdirSync, renameSync, readdirSync, symlinkSync, lstatSync, chmodSync, mkdtempSync } from 'node:fs'
+import { readFileSync, writeFileSync, appendFileSync, existsSync, mkdirSync, renameSync, readdirSync, symlinkSync, lstatSync, chmodSync, mkdtempSync } from 'node:fs'
 import { join, dirname, resolve, relative, basename } from 'node:path'
 import { tmpdir } from 'node:os'
 import { spawnSync } from 'node:child_process'
@@ -46,6 +46,8 @@ const missing = (name, from) => new Error(`missing: ${ORG}/${repoName(name)} is 
 // ---- the install folder ---------------------------------------------------
 
 const registryFile = into => join(into, '.pkgm', 'installed.json')
+// Every change to the install folder, as a record (installed.json is the state).
+const change = (into, v) => { mkdirSync(join(into, '.pkgm'), { recursive: true }); appendFileSync(join(into, '.pkgm', 'changes.jsonl'), JSON.stringify({ time: new Date().toISOString(), ...v }) + '\n') }
 export const installed = into => existsSync(registryFile(into)) ? readJson(registryFile(into)) : { packages: {} }
 
 // A package, and first what it requires; skipped when installed and
@@ -102,6 +104,7 @@ export function install (name, { from, into, overrides = {}, log = () => {}, don
   reg.packages[name] = { state: 'installed', hash: m.hash, from: dir, folders: m.folders, links, ...(overridden ? { overrides } : {}), at: new Date().toISOString() }
   writeJson(registryFile(into), reg)
   log({ kind: 'installed', package: name, hash: m.hash.slice(0, 12), folders: m.folders.length, overrides: Object.keys(overrides) })
+  change(into, { package: name, action: have ? 'updated' : 'installed', hash: m.hash, ...(have ? { was: have.hash } : {}), from: dir, ...(overridden ? { overrides } : {}) })
   done.push({ package: name, action: have ? 'updated' : 'installed', hash: m.hash, ...(overridden ? { overrides: Object.keys(overrides) } : {}) })
   return done
 }
@@ -116,6 +119,7 @@ export function uninstall (name, { into }) {
   remove(join(into, '.pkgm', 'packages', name))
   delete reg.packages[name]
   writeJson(registryFile(into), reg)
+  change(into, { package: name, action: 'removed', hash: have.hash })
   return true
 }
 

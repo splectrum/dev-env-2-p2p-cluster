@@ -8,6 +8,9 @@
 # Each repository cloned into <folder> if not there (its LICENSE kept),
 # written (third-party by the import, the others tested together first:
 # nothing is written if a test fails), committed when changed, pushed.
+# Then the setup (haicc-setup.sh, base-package-haicc's release) built into
+# <folder>; uploaded as a GitHub release of base-package-haicc when `gh` is
+# there and base-package-haicc changed (tag: its hash), else said.
 set -eu
 dev=$(cd "$(dirname "$0")/../../../.." && pwd)
 folder=$(mkdir -p "$1" && cd "$1" && pwd)
@@ -34,3 +37,12 @@ for r in $repos; do
   [ $push = 1 ] && git push -q origin HEAD
   echo "$r: $(git log --oneline -1)$([ $push = 1 ] && echo ', pushed')"
 done
+cd "$folder"
+sh "$dev/pear-full-square/haicc-base-boot/release.sh" "$folder/base-package-haicc" "$folder/haicc-setup.sh"
+tag=setup-$(node -p "require('$folder/base-package-haicc/package.json').pkgm.hash.slice(0, 12)")
+if [ $push = 1 ] && command -v gh >/dev/null 2>&1; then
+  if gh release view "$tag" -R haiccing/base-package-haicc >/dev/null 2>&1; then echo "release $tag: there already"
+  else gh release create "$tag" "$folder/haicc-setup.sh" -R haiccing/base-package-haicc --title "Setup $tag" --notes "The setup: sh haicc-setup.sh <work folder>, then <work folder>/haiccing/boot. Written from dev-env-2-p2p-cluster $commit." --latest && echo "release $tag: published"; fi
+else
+  echo "release $tag: built ($folder/haicc-setup.sh), not uploaded$([ $push = 1 ] && echo ' (no gh)')"
+fi

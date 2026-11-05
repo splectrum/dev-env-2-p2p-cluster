@@ -7,7 +7,7 @@
 #                                yes (asked before anything needing sudo),
 #                                checked again after each
 # Required versions: ./requirements. Node.js goes into $HAICC_HOME/node
-# (~/.haicc/node, no sudo); git and Docker Engine with apt.
+# (<work>/.haicc/node, no sudo); git and Docker Engine with apt.
 # check exits 0 when all is met, 1 when not (HAICC cannot boot).
 set -u
 here=$(cd "$(dirname "$0")" && pwd)

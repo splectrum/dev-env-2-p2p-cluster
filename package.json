@@ -34,7 +34,6 @@
     "pear-full-square/haicc-reconcile",
     "pear-full-square/haicc-deployment",
     "pear-full-square/pkgm-base-manager",
-    "pear-full-square/pkgm-base-boot",
     "pear-full-square/haicc-base-boot"
   ],
   "dependencies": {

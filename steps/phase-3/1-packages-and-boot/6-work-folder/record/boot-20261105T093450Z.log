@@ -1,0 +1,165 @@
+haicc-base-boot 0.2.0, 2026-11-05T09:34:50Z: the work folder <scratch>/work
+prerequisite     found                        required       ok   fix would
+os               linux-x86_64                 linux-x86_64   yes  
+node             v22.22.0                     22 or later    yes  
+git              2.43.0                       2.25 or later  yes  
+docker           29.9.2                       engine         yes  
+docker-running   yes                          yes            yes  
+docker-rootful   yes                          yes            yes  
+docker-native    yes                          yes            yes  
+docker-group     root                         yes            yes  
+  fetched base-package-pkgm (folder <scratch>/out)
+  fetched base-package-mycelium (folder <scratch>/out)
+  fetched base-package-third-party (folder <scratch>/out)
+  pkgm: installed
+  third-party: installed
+  mycelium: installed
+  haicc: installed
+haicc is ready: <scratch>/work/haicc
+
+haiccing/install:
+
+[4] ./haicc test pkgm
+  ok     pkgm: pear-full-square/pkgm-base-manager (4/4)
+  ok     pkgm: base-package-pkgm/test (1/1)
+test pkgm: passed
+
+[5] ./haicc test third-party
+  ok     third-party: base-package-third-party/test (3/3)
+test third-party: passed
+
+[6] ./haicc test mycelium
+  ok     mycelium: pear-full-square/mycelium-uri (15/15)
+  ok     mycelium: pear-full-square/mycelium-xpath (4/4)
+  ok     mycelium: pear-full-square/mycelium-topic (8/8)
+  ok     mycelium: pear-full-square/mycelium-git (82/82)
+  ok     mycelium: pear-full-square/mycelium-layer (8/8)
+  ok     mycelium: pear-full-square/mycelium-repo (3/3)
+  ok     mycelium: base-package-mycelium/test (7/7)
+test mycelium: passed
+
+[7] ./haicc test haicc
+  ok     haicc: pear-full-square/haicc-reconcile (4/4)
+  ok     haicc: pear-full-square/haicc-deployment (1/1)
+  ok     haicc: pear-full-square/haicc-base-boot (5/5)
+  ok     haicc: base-package-haicc/test (3/3)
+test haicc: passed
+
+[8] ./haicc run base-demo-liveness --no-open
+  fetched base-demo-liveness (folder <scratch>/out)
+  fetched base-package-splectral (folder <scratch>/out)
+  fetched base-package-p2p (folder <scratch>/out)
+  installed package p2p
+  installed package splectral
+  installed package demo-liveness
+start base-demo-liveness: done  (work: <scratch>/work/manager/base-demo-liveness)
+  machine: all 7 met
+  create  host-a
+  create  host-a-vault
+  create  image
+  create  splectral-config
+  create  splectral  http://127.0.0.1:4400
+  create  swarm
+  create  swarm-watcher
+  running splectral  http://127.0.0.1:4400
+
+open http://127.0.0.1:4400
+
+[9] ./haicc test base-demo-liveness
+  ok     demo-liveness: base-demo-liveness/test (1/1)
+status base-demo-liveness: done  (work: <scratch>/work/manager/base-demo-liveness)
+  machine: all 7 met
+  running splectral  http://127.0.0.1:4400
+  desired: running
+  ok     http://127.0.0.1:4400: 200
+test base-demo-liveness: passed
+
+[10] ./haicc teardown base-demo-liveness
+teardown base-demo-liveness: done  (work: <scratch>/work/manager/base-demo-liveness)
+  removed swarm-watcher
+  removed swarm
+  removed splectral
+  removed splectral-config
+  removed host-a-vault
+  removed host-a
+  removed package-demo-liveness
+  desired: nothing
+
+[11] ./haicc test p2p
+  ok     p2p: pear-full-square/p2p-store (5/5)
+  ok     p2p: pear-full-square/p2p-dht (1/1)
+  ok     p2p: pear-full-square/p2p-connect (2/2)
+  ok     p2p: pear-full-square/p2p-replicate (1/1)
+  ok     p2p: pear-full-square/p2p-channel (2/2)
+  ok     p2p: pear-full-square/p2p-mrepo (24/24)
+  ok     p2p: pear-full-square/p2p-rns (5/5)
+  ok     p2p: pear-full-square/p2p-node (4/4)
+  ok     p2p: pear-full-square/p2p-node-manager (2/2)
+  ok     p2p: pear-full-square/p2p-swarm-manager (1/1)
+  ok     p2p: base-package-p2p/test (10/10)
+test p2p: passed
+
+[12] ./haicc test splectral
+  ok     splectral: pear-full-square/splectral-contract (2/2)
+  ok     splectral: pear-full-square/splectral-model (2/2)
+  ok     splectral: pear-full-square/splectral-transport (1/1)
+  ok     splectral: pear-full-square/splectral-server (2/2)
+  ok     splectral: pear-full-square/splectral-p2p-observer (1/1)
+  ok     splectral: pear-full-square/splectral-p2p-watchers (2/2)
+  ok     splectral: pear-full-square/splectral-scenario (1/1)
+  ok     splectral: base-package-splectral/test (12/12)
+test splectral: passed
+
+[13] ./haicc run base-demo-other-host --no-open
+  fetched base-demo-other-host (folder <scratch>/out)
+  installed package demo-other-host
+start base-demo-other-host: done  (work: <scratch>/work/manager/base-demo-other-host)
+  machine: all 8 met
+  create  host-a
+  create  host-a-vault
+  create  image
+  create  host-b
+  create  host-b-vault
+  create  splectral-config
+  create  splectral  http://127.0.0.1:4400
+  create  swarm
+  create  swarm-watcher
+  running splectral  http://127.0.0.1:4400
+
+open http://127.0.0.1:4400
+
+[14] ./haicc test base-demo-other-host
+  ok     demo-other-host: base-demo-other-host/test (1/1)
+status base-demo-other-host: done  (work: <scratch>/work/manager/base-demo-other-host)
+  machine: all 8 met
+  running splectral  http://127.0.0.1:4400
+  desired: running
+  ok     http://127.0.0.1:4400: 200
+test base-demo-other-host: passed
+
+[15] ./haicc teardown base-demo-other-host
+teardown base-demo-other-host: done  (work: <scratch>/work/manager/base-demo-other-host)
+  removed swarm-watcher
+  removed swarm
+  removed splectral
+  removed splectral-config
+  removed host-b-vault
+  removed host-b
+  removed host-a-vault
+  removed host-a
+  removed package-demo-other-host
+  desired: nothing
+
+[16] ./haicc list
+installed (<scratch>/work/.haicc/packages):
+  pkgm  0484594baf7a
+  third-party  18c763e2dfa4
+  mycelium  4967f2d428f2
+  haicc  75e682fe664b
+  p2p  78df82f9c061
+  splectral  c64df39b1ee2
+deployments (<scratch>/work/manager):
+  base-demo-liveness  nothing (last: teardown)
+  base-demo-other-host  nothing (last: teardown)
+
+haiccing/install done
