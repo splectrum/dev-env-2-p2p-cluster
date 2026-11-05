@@ -45,3 +45,8 @@ unchanged).
 from dev `55b9829`; the readmes changed since the self-test's write). The
 demos and the setup's release: the local agent. `pkgm-base-boot`: retired,
 to archive (the human).
+
+**Part 7 (2026-11-05)**, a node's shutdown: products `p2p-swarm-manager`
+`561c633`, `splectral-p2p-actions` `d420d44`, `splectral-scenario` `bbe2908`;
+packages `base-package-p2p` `c71fb51`, `base-package-splectral` `5fcf3d7`
+(from dev `5414ae5`). The demos (their readmes) with the local agent.
