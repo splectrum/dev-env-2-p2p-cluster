@@ -1,14 +1,51 @@
 # haicc-base-boot
 
-HAICC's boot, in plain shell: the host's prerequisites (step 0), then the
-package manager to install HAICC. Kept tiny and stable (it says its
-version, `VERSION`); no secrets.
+HAICC's boot, in plain shell, for a work folder: the host's prerequisites
+(step 0), the repositories fetched, the package manager and HAICC
+installed; then `./haicc` for everything. Kept tiny and stable (it says
+its version, `VERSION`); no secrets. Everything starts here: there is no
+other boot.
 
 ```sh
-sh base-package-haicc/kick.sh [--yes] [--fetch]   # kicking HAICC; ~/.haicc/bin/haicc after
-sh base-package-haicc/pear-full-square/haicc-base-boot/step0.sh check
-sh base-package-haicc/pear-full-square/haicc-base-boot/step0.sh fix [--yes] [--dry-run]
+sh haicc-setup.sh ~/haicc-work [--sources=folder:<path>|github:<org>]   # the setup: extracts haiccing/
+~/haicc-work/haiccing/boot [--yes]                                         # the boot
+cd ~/haicc-work && ./haicc run base-demo-liveness
 ```
+
+## The work folder
+
+```
+<work>/
+  haicc         the launcher, written by boot: ./haicc <command>
+  haiccing/     boot (the stub), sources, [install], the repositories
+  .haicc/       the install: node/, packages/, log/
+  manager/      the deployments, one folder per project (fixed, for now)
+```
+
+- **The setup** (`release.sh` makes it from `base-package-haicc` as
+  written): one self-extracting file, `sh` and `tar` only, extracting
+  `haiccing/boot`, `haiccing/sources` and `haiccing/base-package-haicc/`.
+- **`haiccing/boot`**: a stub naming its setup (`base-package-haicc`),
+  executable. It runs `boot.sh`: step 0; the package manager's and HAICC's
+  repositories, with what HAICC requires, fetched (`fetch.sh`); the package
+  manager installed by its own code, HAICC by the package manager, into
+  `.haicc`; `./haicc` written. Then `haiccing/install` if there (one
+  `haicc` command a line, stopping at the first failure), or the next
+  commands said. Again: what is current is left as it is.
+- **`haiccing/sources`**: where repositories come from, one a line, the
+  first having one wins: `folder <path>` (plain copies), `github <org>`
+  (archives). Later, a package swarm's repository synced to a folder.
+- **The self-test** is an install file: `selftest.install` (every
+  package's tests, each demo run, tested, torn down), copied to
+  `haiccing/install` in a fresh work folder.
+
+## Logged
+
+Boot's output: `.haicc/log/boot-<time>.log`. Every repository fetched,
+and from where: `.haicc/log/sources.jsonl`. Every `./haicc` command, its
+input, output and outcome: `.haicc/log/commands.jsonl`. Every package
+change: `.haicc/packages/.pkgm/changes.jsonl`. A deployment's lifecycle
+and reconcile: its topics, in `manager/<project>/deployment/`.
 
 ## Step 0, the host's prerequisites
 
@@ -23,24 +60,8 @@ containers.
 - `fix`: each fix only with your yes (asked on the terminal; with no
   terminal, nothing changes unless `--yes`), asking before anything needing
   `sudo`: Node.js, the official release for Linux x64, checksum checked,
-  into `~/.haicc/node` (no `sudo`); git and Docker Engine (`docker.io`)
+  into `.haicc/node` (no `sudo`); git and Docker Engine (`docker.io`)
   with `apt`; the daemon started; the `docker` group (it holds from the
-  next login: kick again after it). Each checked again after its fix. What cannot be fixed
+  next login: boot again after it). Each checked again after its fix. What cannot be fixed
   here (another platform, rootless Docker, Docker Desktop) is said.
 
-## Kicking HAICC
-
-From a folder of `haiccing` repositories side by side, cloned or plain
-copies (nothing relies on git): HAICC's boot (step 0), the package
-manager's boot and install (`base-package-pkgm`), then HAICC's install by
-the package manager, with what it requires (`base-package-mycelium`,
-`base-package-third-party`); then it exits, and `~/.haicc/bin/haicc` is
-there. A repository missing beside the others is said, with where to get
-it; `--fetch` gets it from `github.com/haiccing` (git, or `curl` and
-`tar`).
-
-## Higher packages
-
-A project (a demo, any `haiccing` repository above these) has no boot:
-its `run.sh` (`run.sh` here, copied into each) kicks HAICC if it is not
-installed yet, then calls `haicc run <project>`.

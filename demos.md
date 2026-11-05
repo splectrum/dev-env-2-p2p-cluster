@@ -14,23 +14,25 @@ internet while a demo runs.
 This replaces the steps' instructions (`steps/6-other-host/local-machine.md`,
 `steps/7-splectral/local-machine.md`), which stay as records of their steps.
 
-## Without this repository: from the `haiccing` repositories
+## Without this repository: a work folder
 
-Since phase 3, step 1, each demo is its own repository in `haiccing`, with
-the packages it needs beside it: no development repository, no `npm
-install`. In a folder of them side by side (clones, or plain copies):
+Since phase 3, step 1, each demo is its own repository in `haiccing`, run
+from a work folder: no development repository, no `npm install`. The setup
+(`haicc-setup.sh`, the release of `base-package-haicc`) extracts its
+`haiccing/`; its boot does the rest:
 
 ```bash
-sh base-demo-liveness/run.sh
+sh haicc-setup.sh ~/haicc-work
+~/haicc-work/haiccing/boot
+cd ~/haicc-work && ./haicc run base-demo-liveness
 ```
 
 Step 0 checks the machine first and fixes what is missing only with your
-yes (Node.js into `~/.haicc/node`; git and Docker Engine with `apt`); then
-the package manager and HAICC are installed into `~/.haicc`, the demo's
-packages with them, and the browser opens. The demo's readme has the rest
-(`haicc test`, `stop`, `teardown`) and a from-scratch script (`curl` and
-`tar` only). The sections below are for running the demos from this
-repository, the code as it is here.
+yes (Node.js into the work folder's `.haicc/node`; git and Docker Engine
+with `apt`); the repositories come from `haiccing/sources` (GitHub's by
+default). Everything it does is logged in `.haicc/log/`. The sections
+below are for running the demos from this repository, the code as it is
+here.
 
 ## 1. The machine
 
