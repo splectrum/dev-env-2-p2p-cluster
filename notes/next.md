@@ -28,13 +28,12 @@ design `notes/packages.md`, the request
 **The local agent's run (2026-11-05)**: the two demos published
 (`haiccing/base-demo-liveness` `9e7bb75`, `-other-host` `feed429`), both run
 from GitHub's archives on a clean home. Record:
-`steps/phase-3/1-packages-and-boot/5-validation/local-run.md`. Its findings
-come first:
-1. `stop-node` races the swarm manager's auto mode: `base-demo-liveness`
-   failed 1 run in 6. A design question goes with it for the human: should
-   a stop by hand hold auto mode off?
-2. `publish.sh --no-push` leaves commits a later run does not push.
-3. The browser check needs Playwright, not listed.
+`steps/phase-3/1-packages-and-boot/5-validation/local-run.md`. Its open
+finding comes first:
+`stop-node` races the swarm manager's auto mode: `base-demo-liveness` failed
+1 run in 6. A design question goes with it for the human: should a stop by
+hand hold auto mode off? A run by hand, browser included:
+`5-validation/manual-run.sh`.
 
 **Then** (`notes/packages.md`, "Later"): the p2p version (one code
 repository per swarm, mirrored to the folder code runs from), pinning once

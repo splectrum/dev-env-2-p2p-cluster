@@ -24,7 +24,11 @@ $pkgm write --dev="$dev" --out="$folder" --quiet > "$folder/written.json" || { e
 for r in $repos; do
   cd "$folder/$r"
   git add -A
-  if git diff --cached --quiet; then echo "$r: unchanged"; continue; fi
+  if git diff --cached --quiet; then
+    # Committed by an earlier --no-push: still to go out.
+    if [ $push = 1 ] && [ -n "$(git rev-list '@{u}..HEAD')" ]; then git push -q origin HEAD; echo "$r: $(git log --oneline -1), pushed (committed earlier)"; else echo "$r: unchanged"; fi
+    continue
+  fi
   hash=$(node -p "require('./package.json').pkgm.hash.slice(0, 12)")
   git commit -q -m "Written by the package manager from dev-env-2-p2p-cluster $commit (hash $hash)"
   [ $push = 1 ] && git push -q origin HEAD

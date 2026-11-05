@@ -7,7 +7,7 @@ p2p-git on Hyperdrive. Request: `pending/phase-2/request.md` on
 Status (2026-11-05, local): **the `haiccing` repositories published, the
 from-scratch run done** (`../steps/phase-3/1-packages-and-boot/5-validation/local-run.md`):
 both demos run from GitHub's archives; `base-demo-liveness` failed 1 run in
-6, `stop-node` racing auto mode, with two smaller findings (`next.md`).
+6, `stop-node` racing auto mode (`next.md`).
 
 Status (2026-11-04, evening): **phase 3, step 1 built and validated**
 (`../steps/phase-3/1-packages-and-boot/`): the package manager, the
