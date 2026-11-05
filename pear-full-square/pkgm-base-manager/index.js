@@ -219,13 +219,13 @@ export function importThirdParty ({ dev, out, log = () => {} }) {
     const pj = readJson(join(dir, p, 'package.json'))
     record.push({ path: p, name: pj.name, version: pj.version, license: pj.license || e.license || null, resolved: e.resolved || null, integrity: e.integrity || null })
   }
-  writeJson(join(dir, 'third-party.json'), { platform: platform(), imported: new Date().toISOString().slice(0, 10), modules: record })
+  writeJson(join(dir, 'third-party.json'), { platform: platform(), modules: record })
   const runtime = `node_modules/bare-runtime-${platform()}/bin/bare`
   if (!existsSync(join(dir, runtime))) throw new Error(`no Bare runtime for ${platform()} in the workspace (${runtime}): add bare-runtime to the development repository's dependencies`)
   chmodSync(join(dir, runtime), 0o755)
   const bare = readJson(join(dir, `node_modules/bare-runtime-${platform()}/package.json`)).version
   generatedTests(dir, 'third-party')
-  const m = finish(dir, 'third-party', def, top, { platform: platform(), runtime, bare, imported: { modules: record.length, at: new Date().toISOString().slice(0, 10) } })
+  const m = finish(dir, 'third-party', def, top, { platform: platform(), runtime, bare, imported: { modules: record.length } })
   log({ kind: 'imported', package: 'third-party', modules: record.length, folders: top.length, hash: m.hash.slice(0, 12) })
   return { dir, ...m }
 }
