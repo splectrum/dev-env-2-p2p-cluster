@@ -4,36 +4,36 @@ Written 2026-11-01 after step 7, updated 2026-11-02 after steps 8, 9 and 10 (the
 compaction). Read this first, then `rules.md` (single concern first), then
 `notes/plan.md`. Everything below is on `main`.
 
-## Now: phase 3, step 1, done; the from-scratch run's findings first
+## Now: phase 3, step 1, done with part 6; the local agent's turn
 
-Phase 3, step 1 (packages and the boot) is built and validated in the
-session: record `steps/phase-3/1-packages-and-boot/` (parts 0 to 5), the
-design `notes/packages.md`, the request
-`pending/phase-3/step-1-packages-and-boot/request.md` on `pending/default`.
+Phase 3, step 1 (packages and the boot): record
+`steps/phase-3/1-packages-and-boot/` (parts 0 to 6), design
+`notes/packages.md`, request
+`pending/phase-3/step-1-packages-and-boot/request.md` on `pending/default`
+(part 6 amended `0b57f73`).
 
-- **The package manager** (`pear-full-square/pkgm-base-manager`, Node's
-  built-ins only): the third-party import, our packages written from
-  `packages.json` and tested together before any is written, installs into
-  `~/.haicc/packages` with overrides, tests within the package, a provider
-  for HAICC. The node image builds from an install folder.
-- **Booting** (`haicc-base-boot`, `pkgm-base-boot`, plain shell): step 0
-  (`check`, `fix` with a yes), the two kicks, `run.sh` for projects.
-- **`haicc`** (`haicc-deployment/haicc.js`): `run`, `test`, the lifecycle
-  verbs, `install`.
-- **Validated** from plain folder copies and clean homes
-  (`5-validation/run.sh`, its record): both demos' click and run, their
-  scenarios twice in the browser, `haicc test`, teardown; each kick alone;
-  step 0 on a bare Debian and Node.js fixed for real.
+- **The package manager** (`pkgm-base-manager`, Node's built-ins only):
+  the import, packages written from `packages.json` and tested together,
+  installs with overrides, tests within the package, changes recorded.
+- **The work folder, one route** (part 6): the setup (`haicc-setup.sh`,
+  `base-package-haicc`'s release), `haiccing/boot` (step 0, the
+  repositories fetched from `haiccing/sources`, the package manager and
+  HAICC into `.haicc`), `./haicc` for everything after, `manager/` for the
+  deployments, logs in files from the start. Self-tested from a fresh work
+  folder (`6-work-folder/selftest.sh`, exit 0). `pkgm-base-boot`, the
+  kicks and the demos' `run.sh` retired.
+- **The local agent's first run** (`5-validation/local-run.md`): the demos
+  published, both run from GitHub's archives; one open finding.
 
-**The local agent's run (2026-11-05)**: the two demos published
-(`haiccing/base-demo-liveness` `9e7bb75`, `-other-host` `feed429`), both run
-from GitHub's archives on a clean home. Record:
-`steps/phase-3/1-packages-and-boot/5-validation/local-run.md`. Its open
-finding comes first:
-`stop-node` races the swarm manager's auto mode: `base-demo-liveness` failed
-1 run in 6. A design question goes with it for the human: should a stop by
-hand hold auto mode off? A run by hand, browser included:
-`5-validation/manual-run.sh`.
+**Waiting on the local agent** (`notes/handover-packages.md`, "Again,
+after part 6"): the demos and the setup's release published; a work
+folder from scratch. **The human**: archive `pear-full-square/pkgm-base-boot`.
+
+**Next here**:
+- the local run's finding 1: `stop-node` races the swarm manager's auto
+  mode (`base-demo-liveness` failed 1 run in 6), with a design question for
+  the human: should a stop by hand hold auto mode off?
+- the logs as topics (part 6's follow-on).
 
 **Then** (`notes/packages.md`, "Later"): the p2p version (one code
 repository per swarm, mirrored to the folder code runs from), pinning once
