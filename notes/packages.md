@@ -157,7 +157,8 @@ plain shell, before Node exists.
   required, ok or not, and what `fix` would do; it changes nothing. The
   required versions in one file, read by check and fix alike: Linux
   x86-64; Node.js 22 or later; git 2.25 or later; Docker Engine, rootful,
-  native, running; the user in the `docker` group. (The shell twin of
+  native, running; the user in the `docker` group. All needed to boot:
+  nodes always run in Docker containers. (The shell twin of
   `haicc-reconcile`'s machine providers.)
 - `fix`, only with the human's yes, asking before anything needing
   `sudo`: Node.js, the official release for Linux x64, into a folder of

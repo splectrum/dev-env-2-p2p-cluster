@@ -14,19 +14,18 @@ sh base-package-haicc/pear-full-square/haicc-base-boot/step0.sh fix [--yes] [--d
 
 Before Node exists. The required versions in one file, `requirements`,
 read by check and fix alike: Linux x86-64; Node.js 22 or later; git 2.25
-or later (what HAICC needs to boot); Docker Engine, running, rootful,
-native, and the user in the `docker` group (what a swarm on this host
-needs).
+or later; Docker Engine, running, rootful, native, and the user in the
+`docker` group. All are needed to boot: nodes always run in Docker
+containers.
 - `check`: each with the version found, the version required, ok or not,
-  and what `fix` would do; it changes nothing. Exit 0 when all is met; 3
-  when only what a swarm needs is not (HAICC boots, and says so); 1 when
-  what HAICC needs to boot is not.
+  and what `fix` would do; it changes nothing. Exit 0 when all is met, 1
+  when not (the boot stops).
 - `fix`: each fix only with your yes (asked on the terminal; with no
   terminal, nothing changes unless `--yes`), asking before anything needing
   `sudo`: Node.js, the official release for Linux x64, checksum checked,
   into `~/.haicc/node` (no `sudo`); git and Docker Engine (`docker.io`)
   with `apt`; the daemon started; the `docker` group (it holds from the
-  next login). Each checked again after its fix. What cannot be fixed
+  next login: kick again after it). Each checked again after its fix. What cannot be fixed
   here (another platform, rootless Docker, Docker Desktop) is said.
 
 ## Kicking HAICC
