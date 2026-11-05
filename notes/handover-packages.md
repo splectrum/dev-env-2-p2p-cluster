@@ -64,7 +64,7 @@ demos (theirs: no `run.sh` any more, readmes for the work folder). And
 there is a setup now, `haicc-setup.sh`, base-package-haicc's release.
 
 1. **Publish**, as before: `publish.sh ~/haiccing-publish`. It pushes the two
-   demos, then builds the setup and, with `gh` there, publishes it as a
+   demos (their latest from `main`, part 7's fix in the packages under them), then builds the setup and, with `gh` there, publishes it as a
    GitHub release of `haiccing/base-package-haicc` (tag `setup-<hash>`);
    without `gh`, say so and upload `~/haiccing-publish/haicc-setup.sh` by
    hand.
@@ -86,3 +86,7 @@ there is a setup now, `haicc-setup.sh`, base-package-haicc's release.
 
 For the human: `pear-full-square/pkgm-base-boot` is retired (the
 package manager has no boot of its own now): archive it on GitHub.
+
+Part 7 (a node's shutdown, `7-shutdown/`) fixes finding 1 of the first local
+run: worth Run and Run again a few times on the liveness demo in the new
+work folder, to see it hold on this machine too.
