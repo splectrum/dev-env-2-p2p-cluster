@@ -4,7 +4,7 @@ Written 2026-11-01 after step 7, updated 2026-11-02 after steps 8, 9 and 10 (the
 compaction). Read this first, then `rules.md` (single concern first), then
 `notes/plan.md`. Everything below is on `main`.
 
-## Now: phase 3, step 1, built; the haiccing repositories to publish
+## Now: phase 3, step 1, done; the from-scratch run's findings first
 
 Phase 3, step 1 (packages and the boot) is built and validated in the
 session: record `steps/phase-3/1-packages-and-boot/` (parts 0 to 5), the
@@ -25,12 +25,15 @@ design `notes/packages.md`, the request
   scenarios twice in the browser, `haicc test`, teardown; each kick alone;
   step 0 on a bare Debian and Node.js fixed for real.
 
-**Waiting on the local agent** (`notes/handover-packages.md`): the six
-packages are published from the session; the two demo projects
-(`haiccing/base-demo-*`) are published locally (`publish.sh`), since the
-session holds those names for `splectral/base-demo-*`; then the
-from-scratch run against GitHub's archives, recorded in
-`5-validation/local-run.md`.
+**The local agent's run (2026-11-05)**: the two demos published
+(`haiccing/base-demo-liveness` `9e7bb75`, `-other-host` `feed429`), both run
+from GitHub's archives on a clean home. Record:
+`steps/phase-3/1-packages-and-boot/5-validation/local-run.md`. Its open
+finding comes first:
+`stop-node` races the swarm manager's auto mode: `base-demo-liveness` failed
+1 run in 6. A design question goes with it for the human: should a stop by
+hand hold auto mode off? A run by hand, browser included:
+`5-validation/manual-run.sh`.
 
 **Then** (`notes/packages.md`, "Later"): the p2p version (one code
 repository per swarm, mirrored to the folder code runs from), pinning once

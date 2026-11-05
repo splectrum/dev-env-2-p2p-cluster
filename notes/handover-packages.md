@@ -1,5 +1,8 @@
 # Handover: publishing the haiccing packages (for the local agent)
 
+**Done 2026-11-05**, both tasks: `steps/phase-3/1-packages-and-boot/5-validation/local-run.md`.
+The from-scratch run in one command: `5-validation/manual-run.sh`.
+
 Written 2026-11-04 after phase 3, step 1; updated the same day. The cloud
 session published the six packages (`haiccing/base-package-haicc`, `-pkgm`,
 `-third-party`, `-mycelium`, `-p2p`, `-splectral`), each equal to what it
