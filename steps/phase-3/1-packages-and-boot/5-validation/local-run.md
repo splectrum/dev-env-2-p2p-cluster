@@ -48,6 +48,9 @@ and no p2p network of these demos remained; the port was free again.
 
 ### 1. `stop-node` races auto mode (the liveness scenario fails now and then)
 
+**Fixed** (2026-11-05, `../7-shutdown/`): a node's shutdown with its
+prerequisites, the watcher letting go first (the human's design).
+
 Run 1 ended "not seen within 60000 ms: left:/hosts/node-1", and the page
 showed node-1 green. The stop itself was right; the records of that run:
 
@@ -103,7 +106,7 @@ cached. Now in the validation's readme.
 
 ## Left open
 
-- Finding 1 is for the next session (`notes/next.md`).
+- Finding 1: fixed, `../7-shutdown/`.
 - `manual-run.sh` was added afterwards, for a run by hand with the browser
   opening: tested on liveness with `--no-open`, ended by Enter, and by an
   interrupt during the download and with the demo running; all left

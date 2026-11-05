@@ -398,3 +398,14 @@ substrate for them; otherwise it reports. (`notes/haicc-reconcile.md`.)
 6. **The invitation**: how it travels (a file, a repository, a resource of
    the swarm), whether the master signs it, and address allocation on a
    data plane shared by hosts.
+
+## A node's shutdown (2026-11-05)
+
+Before a node is stopped, every party holding on to it lets go: the
+shutdown is requested (a record), each party acknowledges in its own
+record, and only then is the node stopped; it stays held until released.
+Like programs closing before a computer shuts down. Today the one party is
+the swarm manager's watcher (auto mode would bring the node back); each
+application a node takes part in becomes another. Per node: the swarm runs
+on. Code: `p2p-swarm-manager/shutdown.js`; record:
+`steps/phase-3/1-packages-and-boot/7-shutdown/`.

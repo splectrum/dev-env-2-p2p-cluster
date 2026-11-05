@@ -13,3 +13,4 @@ Status: **done**; the `haiccing` repositories published and the from-scratch run
 | `4-run/` | the demo projects' scripts, `haicc run`, `haicc test` | done |
 | `5-validation/` | validation and products | done; the from-scratch run: `local-run.md` |
 | `6-work-folder/` | the work folder, one route, logs in files | done |
+| `7-shutdown/` | a node's shutdown, with its prerequisites (the local run's finding 1) | done |
