@@ -38,3 +38,10 @@ without its date. Products: `haicc-base-boot` `8ca71ed`,
 `base-package-haicc` `2ae6588`, `base-package-pkgm` `d1394c6`,
 `base-package-third-party` `bc26ec9` (its record only; its content hash
 unchanged).
+
+**Part 6 (2026-11-05)**: products `haicc-base-boot` `c921567`,
+`haicc-deployment` `0b70c09`, `pkgm-base-manager` `456e1d4`; packages
+`base-package-haicc` `9c0539a`, `base-package-pkgm` `bc0f8ed` (written
+from dev `55b9829`; the readmes changed since the self-test's write). The
+demos and the setup's release: the local agent. `pkgm-base-boot`: retired,
+to archive (the human).

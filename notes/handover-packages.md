@@ -55,3 +55,34 @@ push.
   file): its archive is the slow one.
 - Step 0 asks before fixing anything on the host; on a machine with
   everything, it only checks.
+
+## Again, after part 6 (2026-11-05): the work folder
+
+Part 6 (`steps/phase-3/1-packages-and-boot/6-work-folder/`) changed
+`base-package-haicc` and `-pkgm` (pushed from the session) and the two
+demos (theirs: no `run.sh` any more, readmes for the work folder). And
+there is a setup now, `haicc-setup.sh`, base-package-haicc's release.
+
+1. **Publish**, as before: `publish.sh ~/haiccing-publish`. It pushes the two
+   demos, then builds the setup and, with `gh` there, publishes it as a
+   GitHub release of `haiccing/base-package-haicc` (tag `setup-<hash>`);
+   without `gh`, say so and upload `~/haiccing-publish/haicc-setup.sh` by
+   hand.
+2. **A work folder from scratch**, the new route (no development
+   repository; a clean folder, nothing in `$HOME`):
+
+   ```sh
+   curl -fsSL -o haicc-setup.sh https://github.com/haiccing/base-package-haicc/releases/latest/download/haicc-setup.sh
+   sh haicc-setup.sh ~/haicc-work
+   ~/haicc-work/haiccing/boot
+   cd ~/haicc-work && ./haicc run base-demo-liveness
+   ```
+
+   Run and Run again on the page; `./haicc test base-demo-liveness`,
+   `./haicc teardown base-demo-liveness`. Or the whole self-test at once:
+   copy `haiccing/base-package-haicc/pear-full-square/haicc-base-boot/selftest.install`
+   to `haiccing/install` before `haiccing/boot`. Record it in
+   `6-work-folder/local-run.md`, with the logs of `.haicc/log/`.
+
+For the human: `pear-full-square/pkgm-base-boot` is retired (the
+package manager has no boot of its own now): archive it on GitHub.
