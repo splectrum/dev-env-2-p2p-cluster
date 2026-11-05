@@ -62,6 +62,25 @@ repository, no `npm install`.
    `haicc test`, teardown; kicking the package manager alone, and HAICC
    alone; recorded; the products merged.
 
+6. **The work folder, one route** (amended 2026-11-05,
+   `main:notes/packages.md`, "The work folder, one route, one boot"):
+   - a setup: a self-extracting release of `base-package-haicc` (`sh`
+     and `tar`), extracting `haiccing/` with `boot` (an executable stub
+     naming its setup), `sources` and `base-package-haicc`;
+   - `haiccing/boot`, no verbs: step 0, the repositories fetched from
+     `sources` (`folder`, `github`), the package manager and HAICC into
+     `<work>/.haicc`, `<work>/haicc` written; then `haiccing/install` if
+     present;
+   - `./haicc` for everything after; deployments in `<work>/manager/`
+     (one fixed manager folder);
+   - logged from the start, in files: boot's output, every `haicc`
+     command's input, output and outcome, every package change, every
+     repository fetched;
+   - the self-test an `install` file, run in a fresh work folder from the
+     development repository's written packages;
+   - retired: `pkgm-base-boot`, the kicks, the demos' `run.sh`.
+   Then (a follow-on): the logs as topics.
+
 Not in this step: the p2p version (packages as Hyperdrives mirrored to
 the folder, the container's code the same way), pinning, other platforms,
 Android.
