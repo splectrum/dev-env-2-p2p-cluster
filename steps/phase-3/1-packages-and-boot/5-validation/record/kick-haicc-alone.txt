@@ -23,7 +23,7 @@ pkgm is ready: <scratch>/home-haicc/.haicc/bin/pkgm
   haicc: current
 haicc is ready: <scratch>/home-haicc/.haicc/bin/haicc (for your shell: export PATH=<scratch>/home-haicc/.haicc/bin:$PATH)
 haicc, from <scratch>/home-haicc/.haicc/packages
-  pkgm: bb144c34e475
+  pkgm: 5e032e7338ed
   third-party: 18c763e2dfa4
-  mycelium: c08f77954fc8
-  haicc: 586ee9433b83
+  mycelium: 4967f2d428f2
+  haicc: eb12eac8d80b
