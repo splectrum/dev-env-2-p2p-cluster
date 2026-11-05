@@ -1,5 +1,9 @@
 # Part 3: booting
 
+**Superseded by part 6** (`../6-work-folder/`): the kicks, `siblings.sh`, the
+demos' `run.sh` and `pkgm-base-boot` retired for one route, a work folder
+and `haiccing/boot`. Kept as the record of what was built first.
+
 **Done**: `pear-full-square/haicc-base-boot` (HAICC's boot, step 0, the
 kick, the click and run's `run.sh`) and `pear-full-square/pkgm-base-boot`
 (the package manager's boot and kick), plain shell; their readmes say how.
