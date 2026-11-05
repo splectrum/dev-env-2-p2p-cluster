@@ -128,6 +128,10 @@ test('import, write, install, test: the whole flow', () => {
     assert.ok(!existsSync(join(into, 'org/amod')) && !existsSync(join(into, 'node_modules/amod')))
     assert.equal(uninstall('third-party', { into }), true)
     assert.ok(!existsSync(join(into, 'node_modules/dep-x')))
+    // Every change, a record.
+    const changes = readFileSync(join(into, '.pkgm/changes.jsonl'), 'utf8').trim().split('\n').map(l => JSON.parse(l))
+    assert.deepEqual(changes.map(c => `${c.package}:${c.action}`), ['third-party:installed', 'apkg:installed', 'apkg:updated', 'apkg:updated', 'apkg:updated', 'apkg:removed', 'third-party:removed'])
+    assert.deepEqual(Object.keys(changes[3].overrides), ['org/amod'])
   } finally {
     for (const d of [dev, out, into]) rmSync(d, { recursive: true, force: true })
   }

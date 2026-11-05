@@ -36,63 +36,37 @@
         "pear-full-square/haicc-deployment",
         "pear-full-square/haicc-base-boot"
       ],
-      "root": {
-        "kick.sh": "pear-full-square/haicc-base-boot/kick.sh"
-      },
       "readme": [
-        "## Kicking HAICC",
+        "## A work folder",
         "",
-        "From a folder of `haiccing` repositories side by side (clones, or plain copies), at least this one, `base-package-pkgm` and what HAICC requires (`base-package-mycelium`, `base-package-third-party`):",
+        "Everything starts here. The setup, a release of this package (`haicc-setup.sh`, self-extracting: `sh` and `tar` only), extracts a work folder's `haiccing/`; its `boot` does the rest:",
         "",
         "```sh",
-        "sh base-package-haicc/kick.sh            # step 0 (the host's prerequisites), the package manager, HAICC",
-        "sh base-package-haicc/pear-full-square/haicc-base-boot/step0.sh check   # only look",
+        "sh haicc-setup.sh ~/haicc-work                 # haiccing/: boot, sources (github haiccing), base-package-haicc",
+        "~/haicc-work/haiccing/boot                     # step 0, the repositories fetched, the package manager and HAICC into .haicc, ./haicc",
+        "cd ~/haicc-work && ./haicc run base-demo-liveness",
         "```",
         "",
-        "Step 0 checks the host (Linux x86-64; Node.js 22 or later; git 2.25 or later; Docker Engine, rootful, native, running, and the user in the `docker` group: all needed, since nodes run in Docker containers) and fixes what is missing only with your yes (`--yes` to agree beforehand): Node.js into `~/.haicc/node` (no sudo), git and Docker Engine with `apt`. Then `haicc` is in `~/.haicc/bin`. A project (a demo) needs no kick: its `run.sh` kicks HAICC if needed.",
+        "```",
+        "<work>/",
+        "  haicc        the launcher: ./haicc <command>",
+        "  haiccing/    boot, sources, [install], the repositories",
+        "  .haicc/      the install: node/, packages/, log/ (boot's output, every command, every fetch)",
+        "  manager/     the deployments, one folder per project",
+        "```",
         "",
-        "## From scratch",
-        "",
-        "On a machine with only `curl` and `tar` (Linux x86-64): the repositories fetched as archives and unpacked side by side, then the kick.",
-        "",
-        "```sh",
-        "mkdir -p ~/haiccing && cd ~/haiccing",
-        "for r in base-package-haicc base-package-pkgm base-package-mycelium base-package-third-party; do",
-        "  curl -fsSL https://github.com/haiccing/$r/archive/refs/heads/main.tar.gz | tar -xz && mv $r-main $r",
-        "done",
-        "sh base-package-haicc/kick.sh",
-        "```"
+        "Step 0 checks the host (Linux x86-64; Node.js 22 or later; git 2.25 or later; Docker Engine, rootful, native, running, and the user in the `docker` group: all needed, since nodes run in Docker containers) and fixes what is missing only with your yes (`haiccing/boot --yes` to agree beforehand): Node.js into `.haicc/node` (no sudo), git and Docker Engine with `apt`. `haiccing/sources` says where the repositories come from (`folder <path>`, `github <org>`), and `haiccing/install`, if there, is carried on with: one `haicc` command a line (`selftest.install` in `haicc-base-boot` is one)."
       ]
     },
     "pkgm": {
       "description": "The package manager: packages as self-contained folders, installed into the host's install folder, tested within the package. Node's built-ins only.",
       "modules": [
-        "pear-full-square/pkgm-base-manager",
-        "pear-full-square/pkgm-base-boot"
+        "pear-full-square/pkgm-base-manager"
       ],
-      "root": {
-        "kick.sh": "pear-full-square/pkgm-base-boot/kick.sh"
-      },
       "readme": [
-        "## Kicking the package manager",
+        "## Installed",
         "",
-        "From a folder of `haiccing` repositories side by side, this one and `base-package-haicc` (whose boot does step 0, the host's prerequisites):",
-        "",
-        "```sh",
-        "sh base-package-pkgm/kick.sh   # step 0, then the package manager into ~/.haicc/packages; ~/.haicc/bin/pkgm",
-        "```",
-        "",
-        "## From scratch",
-        "",
-        "On a machine with only `curl` and `tar` (Linux x86-64): the repositories fetched as archives and unpacked side by side, then the kick.",
-        "",
-        "```sh",
-        "mkdir -p ~/haiccing && cd ~/haiccing",
-        "for r in base-package-haicc base-package-pkgm; do",
-        "  curl -fsSL https://github.com/haiccing/$r/archive/refs/heads/main.tar.gz | tar -xz && mv $r-main $r",
-        "done",
-        "sh base-package-pkgm/kick.sh",
-        "```"
+        "By HAICC's boot (`haiccing/boot` in a work folder, from `base-package-haicc`), with its own code, into the work folder's `.haicc/packages`; HAICC is then installed by it. There is no boot of its own: everything starts at HAICC."
       ]
     },
     "p2p": {
@@ -136,7 +110,7 @@
     },
     "demo-liveness": {
       "repo": "base-demo-liveness",
-      "description": "Demo project: A node goes quiet. Its project (project.json), its Splectral component (splectral/base-demo-liveness), and its click and run (run.sh).",
+      "description": "Demo project: A node goes quiet. Its project (project.json) and its Splectral component (splectral/base-demo-liveness).",
       "requires": [
         "splectral"
       ],
@@ -145,13 +119,12 @@
       ],
       "root": {
         "project.json": "haiccing/base-demo-liveness/project.json",
-        "README.md": "haiccing/base-demo-liveness/README.md",
-        "run.sh": "pear-full-square/haicc-base-boot/run.sh"
+        "README.md": "haiccing/base-demo-liveness/README.md"
       }
     },
     "demo-other-host": {
       "repo": "base-demo-other-host",
-      "description": "Demo project: A node on another host. Its project (project.json), its Splectral component (splectral/base-demo-other-host), and its click and run (run.sh).",
+      "description": "Demo project: A node on another host. Its project (project.json) and its Splectral component (splectral/base-demo-other-host).",
       "requires": [
         "splectral"
       ],
@@ -160,8 +133,7 @@
       ],
       "root": {
         "project.json": "haiccing/base-demo-other-host/project.json",
-        "README.md": "haiccing/base-demo-other-host/README.md",
-        "run.sh": "pear-full-square/haicc-base-boot/run.sh"
+        "README.md": "haiccing/base-demo-other-host/README.md"
       }
     }
   }

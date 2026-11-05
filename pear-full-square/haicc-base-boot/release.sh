@@ -1,0 +1,54 @@
+#!/bin/sh
+# The setup: a release of base-package-haicc as one self-extracting file
+# (sh and tar only), extracting a work folder's haiccing/: boot (the stub
+# naming this setup), sources, base-package-haicc/.
+#   sh release.sh <base-package-haicc, as written> <out file>
+set -eu
+pkg=$(cd "$1" && pwd)
+out=$2
+name=$(basename "$pkg")
+version=$(cat "$pkg/pear-full-square/haicc-base-boot/VERSION")
+hash=$(node -p "require('$pkg/package.json').pkgm.hash.slice(0, 12)")
+tmp=$(mktemp -d); trap 'rm -rf "$tmp"' EXIT
+mkdir "$tmp/haiccing"
+cp -a "$pkg" "$tmp/haiccing/$name" && rm -rf "$tmp/haiccing/$name/.git"
+cat > "$tmp/haiccing/boot" <<EOS
+#!/bin/sh
+# This work folder's boot: the setup $name. Run it as haiccing/boot.
+exec sh "\$(cd "\$(dirname "\$0")" && pwd)/$name/pear-full-square/haicc-base-boot/boot.sh" "\$@"
+EOS
+chmod 755 "$tmp/haiccing/boot"
+cat > "$tmp/haiccing/sources" <<EOS
+# Where this work folder's repositories come from, in order (the first
+# having one wins): folder <path> (plain copies), github <org> (archives).
+github haiccing
+EOS
+cat > "$out" <<EOS
+#!/bin/sh
+# haicc-setup: the setup $name ($hash, boot $version), self-extracting.
+#   sh haicc-setup.sh [<work folder>] [--sources=folder:<path>|github:<org>]...
+# Extracts <work folder>/haiccing/ (boot, sources, $name); then:
+#   <work folder>/haiccing/boot
+set -eu
+work=.; sources=
+for a in "\$@"; do
+  case \$a in
+    --sources=*) sources="\$sources\$(printf '%s' "\${a#--sources=}" | sed 's/:/ /')
+" ;;
+    -*) sed -n '2,6p' "\$0" | sed 's/^# \\{0,1\\}//'; exit 2 ;;
+    *) work=\$a ;;
+  esac
+done
+mkdir -p "\$work"; work=\$(cd "\$work" && pwd)
+if [ -e "\$work/haiccing/$name" ]; then echo "already set up: \$work/haiccing (next: \$work/haiccing/boot)"; exit 0; fi
+line=\$(awk '/^__PAYLOAD__\$/ { print NR + 1; exit }' "\$0")
+tail -n +"\$line" "\$0" | tar -xzf - -C "\$work"
+if [ -n "\$sources" ]; then { echo "# Where this work folder's repositories come from, in order."; printf '%s' "\$sources"; } > "\$work/haiccing/sources"; fi
+echo "set up: \$work/haiccing ($name $hash); sources: \$(grep -v '^#' "\$work/haiccing/sources" | tr '\n' ';' | sed 's/;\$//')"
+echo "next: \$work/haiccing/boot"
+exit 0
+__PAYLOAD__
+EOS
+tar -czf - -C "$tmp" haiccing >> "$out"
+chmod 755 "$out"
+echo "$out: $name $hash, $(wc -c < "$out") bytes"

@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { mkdtempSync, mkdirSync, writeFileSync, symlinkSync, rmSync, chmodSync, existsSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, symlinkSync, rmSync, chmodSync, existsSync, statSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { tmpdir } from 'node:os'
 import { spawnSync, execFileSync } from 'node:child_process'
@@ -56,16 +56,62 @@ test('fix without a terminal and without --yes changes nothing', () => {
   } finally { rmSync(h.dir, { recursive: true, force: true }) }
 })
 
-test('missing siblings are said, with where to get them', () => {
-  const dir = mkdtempSync(join(tmpdir(), 'siblings-'))
+// A folder of repositories, as a source: a project requiring a package
+// requiring another.
+function source () {
+  const dir = mkdtempSync(join(tmpdir(), 'source-'))
+  const repo = (r, pkgm) => { mkdirSync(join(dir, r), { recursive: true }); writeFileSync(join(dir, r, 'package.json'), JSON.stringify({ name: r, pkgm })) }
+  repo('base-demo-x', { package: 'demo-x', requires: ['b'] })
+  repo('base-package-b', { package: 'b', requires: ['c'] })
+  repo('base-package-c', { package: 'c', requires: [] })
+  mkdirSync(join(dir, 'base-package-c', '.git'))
+  return dir
+}
+
+test('fetch: from a folder source, with what it requires, all the way down; recorded', () => {
+  const src = source()
+  const work = mkdtempSync(join(tmpdir(), 'work-'))
   try {
-    mkdirSync(join(dir, 'base-package-pkgm'))
-    writeFileSync(join(dir, 'base-package-pkgm', 'package.json'), '{}')
-    const r = spawnSync('sh', [join(here, 'siblings.sh'), dir, 'base-package-pkgm', 'base-package-mycelium'], { encoding: 'utf8' })
-    assert.equal(r.status, 1)
-    assert.match(r.stdout, /haiccing\/base-package-mycelium: git clone https:\/\/github.com\/haiccing\/base-package-mycelium/)
-    assert.match(r.stdout, /archive\/refs\/heads\/main.tar.gz \| tar -xz/)
-    assert.doesNotMatch(r.stdout, /base-package-pkgm:/)
-    assert.equal(spawnSync('sh', [join(here, 'siblings.sh'), dir, 'base-package-pkgm']).status, 0)
+    mkdirSync(join(work, 'haiccing'))
+    writeFileSync(join(work, 'haiccing', 'sources'), `# test\nfolder ${join(work, 'nowhere')}\nfolder ${src}\n`)
+    const r = spawnSync('sh', [join(here, 'fetch.sh'), join(work, 'haiccing'), '--requires', 'base-demo-x'], { encoding: 'utf8' })
+    assert.equal(r.status, 0, r.stdout + r.stderr)
+    for (const repo of ['base-demo-x', 'base-package-b', 'base-package-c']) assert.ok(existsSync(join(work, 'haiccing', repo, 'package.json')), repo)
+    assert.ok(!existsSync(join(work, 'haiccing', 'base-package-c', '.git')), 'plain copies, no .git')
+    const log = readFileSync(join(work, '.haicc', 'log', 'sources.jsonl'), 'utf8').trim().split('\n').map(l => JSON.parse(l))
+    assert.deepEqual(log.map(l => [l.repository, l.source, l.outcome]), [['base-demo-x', `folder ${src}`, 'fetched'], ['base-package-b', `folder ${src}`, 'fetched'], ['base-package-c', `folder ${src}`, 'fetched']])
+    // Already there: kept, not fetched again.
+    assert.equal(spawnSync('sh', [join(here, 'fetch.sh'), join(work, 'haiccing'), '--requires', 'base-demo-x']).status, 0)
+    assert.equal(readFileSync(join(work, '.haicc', 'log', 'sources.jsonl'), 'utf8').trim().split('\n').length, 3)
+    // In none of the sources: said, recorded, exit 1.
+    const m = spawnSync('sh', [join(here, 'fetch.sh'), join(work, 'haiccing'), 'base-package-nope'], { encoding: 'utf8' })
+    assert.equal(m.status, 1)
+    assert.match(m.stdout, /base-package-nope: in none of the sources/)
+  } finally { for (const d of [src, work]) rmSync(d, { recursive: true, force: true }) }
+})
+
+test('the setup: a self-extracting release, extracting haiccing/ (boot, sources, the package)', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'release-'))
+  try {
+    // base-package-haicc in miniature: its manifest and this boot.
+    const pkg = join(dir, 'base-package-haicc')
+    mkdirSync(join(pkg, 'pear-full-square'), { recursive: true })
+    execFileSync('cp', ['-a', here, join(pkg, 'pear-full-square', 'haicc-base-boot')])
+    writeFileSync(join(pkg, 'package.json'), JSON.stringify({ name: 'base-package-haicc', pkgm: { package: 'haicc', hash: 'abcdef1234567890' } }))
+    execFileSync('sh', [join(here, 'release.sh'), pkg, join(dir, 'haicc-setup.sh')])
+    const work = join(dir, 'work')
+    const r = spawnSync('sh', [join(dir, 'haicc-setup.sh'), work, `--sources=folder:${dir}/repos`, '--sources=github:haiccing'], { encoding: 'utf8' })
+    assert.equal(r.status, 0, r.stdout + r.stderr)
+    assert.match(r.stdout, /next: .*\/work\/haiccing\/boot/)
+    assert.ok(existsSync(join(work, 'haiccing', 'base-package-haicc', 'pear-full-square', 'haicc-base-boot', 'boot.sh')))
+    // The stub: executable, naming its setup.
+    assert.ok(statSync(join(work, 'haiccing', 'boot')).mode & 0o100)
+    assert.match(readFileSync(join(work, 'haiccing', 'boot'), 'utf8'), /base-package-haicc\/pear-full-square\/haicc-base-boot\/boot\.sh/)
+    assert.deepEqual(readFileSync(join(work, 'haiccing', 'sources'), 'utf8').split('\n').filter(l => l && !l.startsWith('#')), [`folder ${dir}/repos`, 'github haiccing'])
+    // Again: already set up, nothing changed.
+    assert.match(spawnSync('sh', [join(dir, 'haicc-setup.sh'), work], { encoding: 'utf8' }).stdout, /already set up/)
+    // Without --sources: GitHub.
+    spawnSync('sh', [join(dir, 'haicc-setup.sh'), join(dir, 'work2')])
+    assert.deepEqual(readFileSync(join(dir, 'work2', 'haiccing', 'sources'), 'utf8').split('\n').filter(l => l && !l.startsWith('#')), ['github haiccing'])
   } finally { rmSync(dir, { recursive: true, force: true }) }
 })
