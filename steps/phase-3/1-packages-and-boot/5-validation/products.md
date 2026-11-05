@@ -27,3 +27,10 @@ LICENSE; every push verified.
   included. The two demo projects by the local agent
   (`notes/handover-packages.md`): their names are held in the session by
   `splectral/base-demo-*`.
+
+**Then (2026-11-05)**: Docker needed to boot, and the import's record
+without its date. Products: `haicc-base-boot` `8ca71ed`,
+`pkgm-base-manager` `42e2d46`; packages republished:
+`base-package-haicc` `2ae6588`, `base-package-pkgm` `d1394c6`,
+`base-package-third-party` `bc26ec9` (its record only; its content hash
+unchanged).
