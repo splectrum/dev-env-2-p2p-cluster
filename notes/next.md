@@ -30,9 +30,8 @@ after part 6"): the demos and the setup's release published; a work
 folder from scratch. **The human**: archive `pear-full-square/pkgm-base-boot`.
 
 **Next here**:
-- the local run's finding 1: `stop-node` races the swarm manager's auto
-  mode (`base-demo-liveness` failed 1 run in 6), with a design question for
-  the human: should a stop by hand hold auto mode off?
+- (done: the local run's finding 1, a node's shutdown with its
+  prerequisites, `7-shutdown/`)
 - the logs as topics (part 6's follow-on).
 
 **Then** (`notes/packages.md`, "Later"): the p2p version (one code

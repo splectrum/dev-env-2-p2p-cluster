@@ -25,6 +25,7 @@ import { openTopic, folderStorage } from '../mycelium-topic/index.js'
 import { createEngine } from '../haicc-reconcile/index.js'
 import { describe } from './index.js'
 import { providers } from './reconcile.js'
+import { endOffset, letGo } from './shutdown.js'
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -122,6 +123,9 @@ export async function watch ({ folder, auto = false, every = 3000, onRound = nul
   let reported = null // manual mode: the commit last reported (each once, the first at the start)
   const loop = (async () => {
     while (!stopped) {
+      // Shutdown requests there at the start of this round: let go of after
+      // it (the providers leave a held node alone from now on).
+      const upTo = await endOffset(folder).catch(() => 0)
       try {
         const seen = await peer.deployment()
         const changed = await shadow(folder, seen)
@@ -142,6 +146,10 @@ export async function watch ({ folder, auto = false, every = 3000, onRound = nul
       } catch (err) {
         await log.produce({ value: { module: 'p2p-swarm-manager', kind: 'watch-failed', time: Date.now(), error: err.message } })
       }
+      try {
+        const let_ = await letGo(folder, 'swarm-watcher', upTo)
+        if (let_.length) await log.produce({ value: { module: 'p2p-swarm-manager', kind: 'let-go', time: Date.now(), nodes: let_ } })
+      } catch {}
       for (let i = 0; i < every / 100 && !stopped; i++) await sleep(100)
     }
   })()

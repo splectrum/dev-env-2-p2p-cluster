@@ -7,7 +7,9 @@
 //   invite({ folder })                                     what another host is given to join
 //   await restart({ folder, node }), await stop({ folder })
 //   await start({ folder })                                a stopped swarm, as described
-//   await stopNode({ folder, node })                       one node, gracefully
+//   await stopNode({ folder, node })                       one node, gracefully: shut down
+//                                                          (every party let go first), held
+//   await releaseNode({ folder, node })                    held no more: may be kept again
 //   describe({ folder })                                   the swarm as recorded (or null)
 //   genesis({ ..., deployment })                           the swarm's part handed over at genesis
 //   await setDeployment({ folder, deployment }), readDeployment({ folder }), watch({ folder, auto })
@@ -44,6 +46,7 @@ import { rnsClient } from 'p2p-rns'
 import { swarmTopic } from 'p2p-node'
 import { nodeState, stateOffset } from '../p2p-node-manager/index.js'
 import { setDeployment } from './deployment.js'
+import { requestShutdown, release } from './shutdown.js'
 export { setDeployment, readDeployment, watch } from './deployment.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
@@ -217,15 +220,18 @@ export async function invite ({ folder }) {
   return invitation
 }
 
+// The node's manager stopped: the process signalled, waited for (not its
+// pid file, which a next manager would write again).
 async function stopNodeManager (node, timeout = 60000) {
   const pidFile = join(node.folder, 'manager.pid')
   if (!existsSync(pidFile)) return null
   const pid = Number(readFileSync(pidFile, 'utf8'))
   try { process.kill(pid, 'SIGTERM') } catch { return null }
   const t0 = Date.now()
-  while (Date.now() - t0 < timeout) {
-    if (!existsSync(pidFile)) break
-    await sleep(250)
+  const alive = () => { try { process.kill(pid, 0); return true } catch { return false } }
+  while (alive()) {
+    if (Date.now() - t0 > timeout) throw new Error(`${node.name}'s manager (pid ${pid}) did not stop within ${timeout} ms`)
+    await sleep(100)
   }
   return nodeState(node.folder)
 }
@@ -240,6 +246,8 @@ export async function restart ({ folder, node: name }) {
   s.nodes[i] = { ...s.nodes[i], uri: ready.uri, key: ready.key, managerPid: ready.managerPid }
   write(s)
   record('node-restarted', { node: name, key: ready.key, packages: ready.genesis?.packages?.commit, sameKey: ready.key === before?.key, ms: ready.ms })
+  // Started on purpose: a hold on it ends.
+  await release({ folder, node: name, by: 'restart' })
   return { before, after: ready }
 }
 
@@ -264,14 +272,28 @@ export async function start ({ folder }) {
 }
 
 // One node stopped (its manager stops it gracefully); the swarm runs on.
-export async function stopNode ({ folder, node: name }) {
+// Its prerequisite: a shutdown requested and every party holding on to the
+// node let go first (the watcher, in auto mode, would bring it back); held
+// until released (releaseNode, or the project's reconcile). `hold: false`:
+// a stop within the substrate's own work (restart), no shutdown.
+export async function stopNode ({ folder, node: name, by = 'swarm-manager', hold = true }) {
   const { record, read } = await swarmRecord(folder)
   const s = await read()
   const n = s.nodes.find(x => x.name === name)
   if (!n) throw new Error(`no node: ${name}`)
+  if (hold) {
+    const asked = await requestShutdown({ folder, node: name, by })
+    record('node-shutdown-ready', { node: name, request: asked.request, parties: asked.parties, ms: asked.ms })
+  }
   const end = await stopNodeManager(n)
   record('node-stopped', { node: name, exitCode: end?.exitCode })
   return end
+}
+
+// A held node may be kept again (the watcher, in auto mode, brings it back).
+export async function releaseNode ({ folder, node, by = 'swarm-manager' }) {
+  const offset = await release({ folder, node, by })
+  return { node, released: offset !== null }
 }
 
 export async function describe ({ folder }) {

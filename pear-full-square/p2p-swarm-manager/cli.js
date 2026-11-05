@@ -5,7 +5,8 @@
 //   node cli.js status  --folder=<swarm-folder>
 //   node cli.js restart --folder=<swarm-folder> --node=<name>
 //   node cli.js start --folder=<swarm-folder>          a stopped swarm, as described
-//   node cli.js stop-node --folder=<swarm-folder> --node=<name>
+//   node cli.js stop-node --folder=<swarm-folder> --node=<name>   shut down (every party let go first), held
+//   node cli.js release-node --folder=<swarm-folder> --node=<name>   held no more
 //   node cli.js stop    --folder=<swarm-folder>
 //   node cli.js invite  --folder=<swarm-folder>     (the invitation, for another host)
 //   node cli.js deploy  --folder=<swarm-folder> --deployment=<file.json>   the swarm's part set on the swarm
@@ -16,7 +17,7 @@
 
 import { readFileSync, writeFileSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
-import { genesis, joinNode, status, restart, stop, start, stopNode, invite, settled, setDeployment, readDeployment, watch } from './index.js'
+import { genesis, joinNode, status, restart, stop, start, stopNode, releaseNode, invite, settled, setDeployment, readDeployment, watch } from './index.js'
 import { checkDeployment } from 'p2p-node'
 import { validateName } from '../mycelium-uri/index.js'
 
@@ -38,12 +39,12 @@ const ops = {
     await w.stop()
     rmSync(pidFile, { force: true })
     return { stopped: true }
-  }, join: () => joinNode({ folder: flags.folder, node: flags.node }), status, restart: () => restart({ folder: flags.folder, node: flags.node }), stop, start, 'stop-node': () => stopNode({ folder: flags.folder, node: flags.node }), invite }
+  }, join: () => joinNode({ folder: flags.folder, node: flags.node }), status, restart: () => restart({ folder: flags.folder, node: flags.node }), stop, start, 'stop-node': () => stopNode({ folder: flags.folder, node: flags.node, by: 'cli' }), 'release-node': () => releaseNode({ folder: flags.folder, node: flags.node, by: 'cli' }), invite }
 try {
   if (!(op in ops)) throw new Error(`unknown op: ${op}`)
   // The boundary: names from the command line, validated once.
   if (op === 'genesis') validateName(flags.swarm, 'swarm name')
-  if (op === 'join' || op === 'restart' || op === 'stop-node') validateName(flags.node, 'node name')
+  if (op === 'join' || op === 'restart' || op === 'stop-node' || op === 'release-node') validateName(flags.node, 'node name')
   const result = await ops[op](flags)
   await settled()
   console.log(JSON.stringify({ result }))
