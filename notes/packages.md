@@ -122,6 +122,51 @@ packages repository and extracts it; with packages, it is the same
 mechanism as the host's, writing only what changed, the image keeping
 Bare and the boot only.
 
+## The work folder, one route, one boot (agreed 2026-11-05)
+
+It replaces the kicks, the demos' `run.sh` and `~/.haicc` (built first, part
+3): everything starts at HAICC, and lives in one folder.
+
+```
+<work>/
+  haicc                 the launcher, written by boot: ./haicc <command>
+  haiccing/             boot (the stub), sources, [install], the repositories
+  .haicc/               the one install: node/, packages/, log/
+  manager/              the deployments (fixed, for now), one folder per project
+```
+
+- **The setup** is a release of `base-package-haicc`: a self-extracting
+  shell archive (`haicc-setup.sh`: `sh` and `tar` only) that extracts the
+  skeleton: `haiccing/boot`, `haiccing/sources`, `haiccing/base-package-haicc/`.
+  `--sources=folder:<path>` or `github:<org>` sets where the repositories
+  come from (default `github:haiccing`).
+- **`haiccing/boot`**, executable (no `sh` in front), is a thin stub naming
+  its setup's package (`base-package-haicc`; other setups later, their own
+  stub). No verbs: step 0, the repositories it needs fetched from `sources`,
+  the package manager and HAICC installed into `.haicc`, `./haicc`
+  written; then the optional `haiccing/install` (one `haicc` command a
+  line, stopping at the first failure), or the next commands said.
+- **`sources`** (in `haiccing/`, written by the setup): one source a line,
+  in order, the first having a repository wins: `folder <path>` (plain
+  copies; the development repository's written packages, for tests),
+  `github <org>` (archives); later `swarm`, the package swarm's repository
+  synced to a folder. Repositories are fetched as needed: the packages a
+  project requires, all the way down.
+- **`./haicc`**: everything after boot. A project's packages fetched and
+  installed, its deployment in `manager/<project>/`. One fixed manager folder
+  for now; options for swarms later.
+- **Tests inside**: `haicc test <package|project>`; the self-test is an
+  `install` file (packages tested, each demo run, tested, torn down), run
+  by boot in a fresh work folder; the browser run stays outside (Playwright).
+- **Logged from the ground up**, files first (topics as a follow-on):
+  boot's output (`.haicc/log/boot-<time>.log`); every `haicc` command, its
+  input and output and outcome (`.haicc/log/commands.jsonl`); every package
+  change (`.haicc/packages/.pkgm/changes.jsonl`); every repository fetched
+  and from where (`.haicc/log/sources.jsonl`). The deployments' lifecycle and
+  reconcile are topics already.
+- **Retired**: `pkgm-base-boot` and kicking the package manager alone (one
+  line of HAICC's boot installs it); the kicks; the demos' `run.sh`.
+
 ## Folders on a machine
 
 One root, each repository its own folder, laid out by fully qualified
