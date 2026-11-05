@@ -42,6 +42,14 @@ function waitFor (model, pattern, timeout) {
   })
 }
 
+// Listening from now: an action's effect may come while the action is still
+// running (seen then), or show in the world after it (holds then).
+function listen (model, pattern) {
+  let seen = false
+  const off = model.subscribe(e => { if (matches(e, pattern)) seen = true })
+  return { off, get seen () { return seen } }
+}
+
 export default async function runScenario ({ id }, ctx) {
   const sc = ctx.scenarios[id]
   if (!sc) throw new Error(`no scenario: ${id}`)
@@ -65,12 +73,15 @@ export default async function runScenario ({ id }, ctx) {
     for (let i = 0; i < sc.steps.length; i++) {
       const step = sc.steps[i]
       if (step.say) await tell({ kind: 'say', text: step.say, step: i })
+      // Its effect listened for before the action: not missed while it runs.
+      const effect = step.do && step.await ? listen(ctx.model, step.await) : null
       if (step.do && step.refused) {
         const refusal = await ctx.dispatch({ action: step.do, with: step.with || {} }).then(() => null, err => err.message)
         if (!refusal) throw new Error(`step ${i}: ${step.do} was expected to be refused`)
         await tell({ kind: 'say', text: `Refused: ${refusal}`, step: i })
       } else if (step.do) await ctx.dispatch({ action: step.do, with: step.with || {} })
-      if (step.await) await waitFor(ctx.model, step.await, step.timeout ?? 120000)
+      if (effect) effect.off()
+      if (step.await && !effect?.seen) await waitFor(ctx.model, step.await, step.timeout ?? 120000)
       if (step.hold) await new Promise(resolve => setTimeout(resolve, step.hold))
       await tell({ kind: 'scenarioStep', step: i, done: true })
     }
