@@ -38,6 +38,7 @@ yes=; for a in "$@"; do [ "$a" = --yes ] && yes=--yes; done
 echo "haicc-base-boot $(cat "$here/VERSION"): stage 1, the work folder $work"
 
 # 1. Step 0.
+echo "Checking what HAICC needs to run..."
 if ! sh "$here/step0.sh" check; then
   echo
   echo "HAICC needs what is marked 'no' above to run."
@@ -47,8 +48,11 @@ fi
 
 # 2. The root's part of HAICC: this module, copied out at the first boot.
 if [ -f "$install/haicc-base-boot/haicc.js" ]; then
-  echo "  the root's HAICC: there (copied at the first boot)"
+  there=$(cat "$install/haicc-base-boot/VERSION"); this=$(cat "$here/VERSION")
+  if [ "$there" = "$this" ]; then echo "  the root's HAICC: there (copied at the first boot)"
+  else echo "  the root's HAICC: $there is there, this setup is $this: kept, no updates yet (a new work folder has $this)"; fi
 else
+  echo "  copying the root's HAICC into $install..."
   rm -rf "$install/haicc-base-boot.new" && cp -a "$here" "$install/haicc-base-boot.new" && rm -rf "$install/haicc-base-boot.new/test" && mv "$install/haicc-base-boot.new" "$install/haicc-base-boot"
   echo "  copied the root's HAICC (haicc-base-boot $(cat "$here/VERSION")) into $install/haicc-base-boot"
 fi
@@ -62,4 +66,4 @@ exec node "\$HAICC_HOME/haicc-base-boot/haicc.js" "\$@"
 EOS
 chmod 755 "$work/haicc.new" && mv "$work/haicc.new" "$work/haicc"
 echo "  written $work/haicc"
-echo "stage 1 done: ./haicc boot next"
+echo "Stage 1 done. Now the host's prerequisites (./haicc boot)."

@@ -67,13 +67,32 @@ test('fix --yes: Node.js installed into the home, and the check after it finds i
     execFileSync('tar', ['-czf', join(h.dir, file), '-C', join(h.dir, 'release'), 'node-v22.9.9-linux-x64'])
     const sum = execFileSync('sha256sum', [join(h.dir, file)], { encoding: 'utf8' }).split(' ')[0]
     const tools = join(h.dir, 'bin')
-    writeFileSync(join(tools, 'curl'), `#!/bin/sh\nfor a in "$@"; do last=$a; case $a in */SHASUMS256.txt) echo "${sum}  ${file}"; exit 0 ;; esac; done\ncp "${join(h.dir, file)}" "$last"\n`)
+    writeFileSync(join(tools, 'curl'), `#!/bin/sh\nfor a in "$@"; do last=$a; case $a in */SHASUMS256.txt) sums=1 ;; esac; done\nif [ -n "$sums" ]; then echo "${sum}  ${file}" > "$last"; else cp "${join(h.dir, file)}" "$last"; fi\n`)
     chmodSync(join(tools, 'curl'), 0o755)
-    for (const u of ['tar', 'sha256sum', 'gzip', 'mkdir', 'mv', 'cp']) symlinkSync(execFileSync('sh', ['-c', `command -v ${u}`], { encoding: 'utf8' }).trim(), join(tools, u))
+    for (const u of ['tar', 'sha256sum', 'gzip', 'mkdir', 'mv', 'cp', 'sleep', 'wc', 'tail']) symlinkSync(execFileSync('sh', ['-c', `command -v ${u}`], { encoding: 'utf8' }).trim(), join(tools, u))
     const f = h.run('fix', '--yes')
-    assert.match(f.stdout, /installed: Node\.js v22\.9\.9/, f.stdout + f.stderr)
+    assert.match(f.stdout, /downloading node-v22\.9\.9.*\n(.*\n)*.*checksum.*\n.*unpacking.*\ninstalled: Node\.js v22\.9\.9/, f.stdout + f.stderr)
     assert.equal(row(f.stdout.split('installed:')[1], 'node')[1], 'v22.9.9')
     assert.equal(f.status, 0, f.stdout + f.stderr)
+  } finally { rmSync(h.dir, { recursive: true, force: true }) }
+})
+
+test('download: a lost connection is tried again and said; not found is not tried again', () => {
+  const h = host({})
+  try {
+    const tools = join(h.dir, 'bin')
+    for (const u of ['sleep', 'wc', 'tail']) symlinkSync(execFileSync('sh', ['-c', `command -v ${u}`], { encoding: 'utf8' }).trim(), join(tools, u))
+    // The fake curl: fails once with a lost connection, then delivers; or says 404.
+    writeFileSync(join(tools, 'curl'), `#!/bin/sh\nfor a in "$@"; do last=$a; url=$prev; prev=$a; case $a in *missing*) echo "curl: (22) 404" >&2; exit 22 ;; esac; done\nif [ ! -f "$last.once" ]; then : > "$last.once"; echo "curl: (28) too slow" >&2; exit 28; fi\necho done > "$last"\n`)
+    chmodSync(join(tools, 'curl'), 0o755)
+    const dl = url => spawnSync(join(tools, 'sh'), ['-c', `. ${join(here, 'lib', 'download.sh')}; download ${url} ${join(h.dir, 'out')}`], { encoding: 'utf8', env: { PATH: tools, DL_WAIT: '0' } })
+    const ok = dl('https://x/there')
+    assert.equal(ok.status, 0, ok.stdout + ok.stderr)
+    assert.match(ok.stdout, /connection lost \(curl: \(28\) too slow\): trying again in 0 s, 2 of 6/)
+    const no = dl('https://x/missing')
+    assert.equal(no.status, 1)
+    assert.match(no.stdout, /not available: curl: \(22\) 404/)
+    assert.doesNotMatch(no.stdout, /trying again/)
   } finally { rmSync(h.dir, { recursive: true, force: true }) }
 })
 
@@ -99,7 +118,7 @@ test('fetch: from a folder source, with what it requires, all the way down; each
     assert.equal(r.status, 0, r.stdout + r.stderr)
     for (const repo of ['base-demo-x', 'base-package-b', 'base-package-c']) assert.ok(existsSync(join(work, 'haiccing', repo, 'package.json')), repo)
     assert.ok(!existsSync(join(work, 'haiccing', 'base-package-c', '.git')), 'plain copies, no .git')
-    assert.deepEqual(r.stdout.trimEnd().split('\n'), ['base-demo-x', 'base-package-b', 'base-package-c'].map(x => `  fetched ${x} (folder ${src})`))
+    assert.deepEqual(r.stdout.trimEnd().split('\n').filter(l => l.startsWith('  fetched')), ['base-demo-x', 'base-package-b', 'base-package-c'].map(x => `  fetched ${x} (folder ${src})`))
     // Already there: kept, not fetched again.
     const again = spawnSync('sh', [join(here, 'fetch.sh'), join(work, 'haiccing'), '--requires', 'base-demo-x'], { encoding: 'utf8' })
     assert.equal(again.status, 0)

@@ -68,6 +68,32 @@ Node.js 24 prints `ℹ tests N`. Only the counts: pass or fail was always the
 exit code. Fixed in `pkgm-base-manager`'s source, not yet in its product or
 package.
 
+## Output as it happens (2026-11-06, in the source, not released)
+
+The human, running the release on an intermittent connection: a blinking
+cursor and no idea what was happening. Now every step says what it is doing
+before it does it, as it happens, on stdout and in the log:
+
+- the host's checks each say `checking <name>...`, then the result; a command
+  that does not answer gives up after 20 s (a stuck Docker daemon);
+- a download (`lib/download.sh`, Node.js's and `./haicc fetch`'s) gives its
+  size every 5 s, says when no data is arriving, resumes a lost connection up
+  to six tries with longer waits, says not found at once, and fails with
+  the reason;
+- `./haicc fetch` streams, and tells a failed connection from a repository
+  that is not there;
+- a kept older copy of the root's HAICC is said, not silent;
+- no answer to a question (Ctrl-D) is a no, not Node.js's error;
+- the published first command shows a progress bar (`curl --progress-bar`).
+
+Tested with a clock on each line in a real terminal: lines arrive at their
+moment. The route with everything installed: exit 0, about 0.5 s. A stuck
+Docker: says so at 20 s each, ends with what to do. On this machine's
+connection, outages included: a real resume seen (3 MB kept after a lost
+connection). Not seen through to the end: the no-Node.js download and the
+144 MB fetch, stopped for the connection's slowness; both reported truthfully
+as far as they went. Tests 9 of 9.
+
 ## Left open
 
 - `5-validation/manual-run.sh` retired: this route replaces it.
