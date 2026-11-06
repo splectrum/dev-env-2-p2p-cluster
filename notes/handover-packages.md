@@ -114,3 +114,27 @@ each organisation's page on GitHub shows it.
 `haiccing`'s profile starts with downloading the setup from
 `base-package-haicc`'s latest release: publish that release first (above,
 "Again, after part 6"), or check the link once it is there.
+
+## The release, and the demos again (2026-11-06)
+
+The root boot is built: `base-package-haicc` (`90fe587`) carries it, and
+the setup is built from it (`haicc-setup.sh`, 34 KB, hash `96cfc58bc18f`).
+To do, in this order:
+1. **The demos**: `publish.sh ~/haiccing-publish` pushes the two demos (the
+   six packages show unchanged), then builds the setup.
+2. **The release** of `haiccing/base-package-haicc`, the setup attached
+   (`gh release create`, as `publish.sh` does with `gh`; or by hand: Releases,
+   "Draft a new release", tag `setup-96cfc58bc18f`, attach
+   `haicc-setup.sh`, mark latest).
+3. **The route from it**, on a clean work folder, and record it in
+   `6-work-folder/local-run.md` with `.haicc/log/haicc.log`:
+
+   ```sh
+   curl -fsSL -o haicc-setup.sh https://github.com/haiccing/base-package-haicc/releases/latest/download/haicc-setup.sh
+   sh haicc-setup.sh ~/haicc-work
+   ~/haicc-work/haiccing/boot
+   cd ~/haicc-work && ./haicc list
+   ```
+
+   The root only, for now: the manager boot (and so running a demo) is the
+   next step. Then check `haiccing`'s profile's link works.

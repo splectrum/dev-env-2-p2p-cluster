@@ -50,3 +50,11 @@ to archive (the human).
 `561c633`, `splectral-p2p-actions` `d420d44`, `splectral-scenario` `bbe2908`;
 packages `base-package-p2p` `c71fb51`, `base-package-splectral` `5fcf3d7`
 (from dev `5414ae5`). The demos (their readmes) with the local agent.
+
+**The root boot (2026-11-06)**: products `haicc-base-boot` `06d69bb`,
+`haicc-deployment` `98fcc76`, `haicc-reconcile` `1362fe7`,
+`pkgm-base-manager` `67b92e0`; packages (from dev `e4ffd70`; every readme
+by the new template) `base-package-haicc` `90fe587`, `-pkgm` `59002ac`,
+`-third-party` `b001bdb`, `-mycelium` `49d5ac5`, `-p2p` `c01fd3f`,
+`-splectral` `137141f`. The setup built: `haicc-setup.sh`, base-package-haicc
+`96cfc58bc18f`, 34 KB; its release and the demos: the local agent.
