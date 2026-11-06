@@ -37,7 +37,7 @@ test('the lifecycle: deploy, start, stop, teardown, reconcile; the desired state
 
   await d.teardown()
   assert.ok(!existsSync(join(work, 'config')) && !existsSync(join(work, 'running')))
-  assert.ok(existsSync(join(work, 'deployment', 'topics', 'lifecycle')), 'the record stays')
+  assert.ok(existsSync(join(work, 'deployment', 'lifecycle.jsonl')), 'the record stays')
   // Reopened: the desired state is the fold of what was recorded.
   const again = await openDeployment({ project: join(dir, 'project.json'), work })
   assert.deepEqual(await again.desired().then(x => [x.deployed, x.running, x.last]), [false, false, 'teardown'])

@@ -18,15 +18,16 @@
 // project's packages, installed by the package manager from the project's
 // siblings: requirements of kind `package`, first in its configuration
 // (where the install folder is the package manager's). Every verb is a record in
-// the deployment's lifecycle topic; the desired state is their fold. What
-// the engine checks and does goes to its reconcile topic.
+// the deployment's lifecycle journal (deployment/lifecycle.jsonl); the
+// desired state is their fold. What the engine checks and does goes to its
+// reconcile journal (deployment/reconcile.jsonl).
 import { readFileSync, mkdirSync, existsSync } from 'node:fs'
 import { dirname, resolve, join } from 'node:path'
 import { homedir } from 'node:os'
 import { pathToFileURL } from 'node:url'
 import { createEngine, providers as builtin } from '../haicc-reconcile/index.js'
-import { openTopic, folderStorage } from '../mycelium-topic/index.js'
-import { validateName } from '../mycelium-uri/index.js'
+import { journal } from '../haicc-reconcile/lib/journal.js'
+import { validateName } from '../haicc-reconcile/lib/names.js'
 
 const VERBS = { deploy: { deployed: true, running: false }, start: { deployed: true, running: true }, stop: { running: false }, teardown: { deployed: false, running: false } }
 
@@ -56,14 +57,14 @@ export async function openDeployment ({ project: file, work, packages, from }) {
   work = resolve(work)
   mkdirSync(join(work, 'deployment'), { recursive: true })
   const p = await readProject(file, work, { packages, from })
-  const lifecycle = await openTopic({ storage: folderStorage(join(work, 'deployment', 'topics', 'lifecycle')) })
-  const log = await openTopic({ storage: folderStorage(join(work, 'deployment', 'topics', 'reconcile')) })
+  const lifecycle = journal(join(work, 'deployment', 'lifecycle.jsonl'))
+  const log = journal(join(work, 'deployment', 'reconcile.jsonl'))
   let verb = null
-  const engine = createEngine({ providers: p.providers, owner: p.owner, record: v => log.produce({ value: { verb, ...v } }) })
+  const engine = createEngine({ providers: p.providers, owner: p.owner, record: v => log.append({ verb, ...v }) })
   const both = () => [...p.configuration, ...p.running]
   const runningNames = () => p.running.map(r => r.name || r.kind)
   const stopRunning = () => engine.remove(both(), { only: runningNames() })
-  const desired = async () => desiredOf(await lifecycle.consume(0))
+  const desired = async () => desiredOf(lifecycle.read())
 
   // `exceptKinds`: kinds left alone (the Splectral server reconciling its
   // own project leaves itself).
@@ -76,7 +77,7 @@ export async function openDeployment ({ project: file, work, packages, from }) {
     return { stopped, removed: await engine.remove(p.configuration) }
   }
   const act = v => async () => {
-    await lifecycle.produce({ value: { verb: v, time: Date.now(), project: p.owner } })
+    lifecycle.append({ verb: v, time: Date.now(), project: p.owner })
     verb = v
     const want = await desired()
     if (v === 'deploy') return engine.apply(p.configuration, { strict: p.strict })

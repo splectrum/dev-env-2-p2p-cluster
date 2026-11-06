@@ -122,50 +122,44 @@ packages repository and extracts it; with packages, it is the same
 mechanism as the host's, writing only what changed, the image keeping
 Bare and the boot only.
 
-## The work folder, one route, one boot (agreed 2026-11-05)
-
-It replaces the kicks, the demos' `run.sh` and `~/.haicc` (built first, part
-3): everything starts at HAICC, and lives in one folder.
+## The work folder, one route, a double boot (agreed 2026-11-05, revised 2026-11-06)
 
 ```
 <work>/
-  haicc                 the launcher, written by boot: ./haicc <command>
+  haicc                 the launcher: ./haicc <command>
   haiccing/             boot (the stub), sources, [install], the repositories
-  .haicc/               the one install: node/, packages/, log/
-  manager/              the deployments (fixed, for now), one folder per project
+  .haicc/               the root install: node/, packages/ (HAICC, the package manager), log/
+  manager/              the swarm: self-contained (next: haicc boot <manager>)
 ```
 
 - **The setup** is a release of `base-package-haicc`: a self-extracting
-  shell archive (`haicc-setup.sh`: `sh` and `tar` only) that extracts the
-  skeleton: `haiccing/boot`, `haiccing/sources`, `haiccing/base-package-haicc/`.
-  `--sources=folder:<path>` or `github:<org>` sets where the repositories
-  come from (default `github:haiccing`).
-- **`haiccing/boot`**, executable (no `sh` in front), is a thin stub naming
-  its setup's package (`base-package-haicc`; other setups later, their own
-  stub). No verbs: step 0, the repositories it needs fetched from `sources`,
-  the package manager and HAICC installed into `.haicc`, `./haicc`
-  written; then the optional `haiccing/install` (one `haicc` command a
-  line, stopping at the first failure), or the next commands said.
-- **`sources`** (in `haiccing/`, written by the setup): one source a line,
-  in order, the first having a repository wins: `folder <path>` (plain
-  copies; the development repository's written packages, for tests),
-  `github <org>` (archives); later `swarm`, the package swarm's repository
-  synced to a folder. Repositories are fetched as needed: the packages a
-  project requires, all the way down.
-- **`./haicc`**: everything after boot. A project's packages fetched and
-  installed, its deployment in `manager/<project>/`. One fixed manager folder
-  for now; options for swarms later.
-- **Tests inside**: `haicc test <package|project>`; the self-test is an
-  `install` file (packages tested, each demo run, tested, torn down), run
-  by boot in a fresh work folder; the browser run stays outside (Playwright).
-- **Logged from the ground up**, files first (topics as a follow-on):
-  boot's output (`.haicc/log/boot-<time>.log`); every `haicc` command, its
-  input and output and outcome (`.haicc/log/commands.jsonl`); every package
-  change (`.haicc/packages/.pkgm/changes.jsonl`); every repository fetched
-  and from where (`.haicc/log/sources.jsonl`). The deployments' lifecycle and
-  reconcile are topics already.
-- **Retired**: `pkgm-base-boot` and kicking the package manager alone (one
-  line of HAICC's boot installs it); the kicks; the demos' `run.sh`.
+  shell archive (`haicc-setup.sh`: `sh` and `tar` only) extracting
+  `haiccing/boot`, `haiccing/sources`, `haiccing/base-package-haicc/`.
+- **Stage 1, `haiccing/boot`** (shell, before Node.js): only what HAICC
+  needs to run: Linux x86-64 and Node.js (fixed with a yes, into
+  `.haicc/node`); HAICC's code copied out (once: then it is the package
+  manager's); `./haicc` written; then stage 2.
+- **Stage 2, `./haicc boot`** (HAICC itself): the host's other
+  prerequisites, git and Docker Engine (installed, running, rootful,
+  native, the user in its group), as HAICC requirements, checked by its
+  reconcile engine and fixed with a yes; the package manager fetched and
+  installed by its own code, HAICC registered with it; then
+  `haiccing/install` (one `./haicc` command a line), or the next commands.
+- **HAICC runs on Node.js alone**: its package requires only `pkgm` (the
+  root install, 0.35 MB). Its records are files (journals, JSON lines);
+  its name check its own (a URI part). Topics are not HAICC's: a sync
+  into topics is a separate process, installed into a swarm, later.
+- **The log is what a command prints**: stdout and stderr appended to
+  `.haicc/log/haicc.log` in order, a header line and a close line per
+  command; files of 10 KB, rotated as a command starts (whole commands a
+  file). Levels: normal (the state changes and the outcome), `--verbose`,
+  `--debug`. Every visible state change is printed.
+- **Each swarm self-contained** (the manager boot, next): HAICC installed
+  in the manager too, with the swarm's packages; processes there resolve
+  their modules from the manager's folder; the manager's HAICC logs locally,
+  echoed back to the root's or not (a config). The master's manager folder
+  syncs its packages into the swarm; a node's are synced from the swarm into
+  its manager folder (the p2p version).
 
 ## Folders on a machine
 

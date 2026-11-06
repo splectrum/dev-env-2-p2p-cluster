@@ -21,30 +21,29 @@ function host (fakes) {
 }
 const row = (out, name) => out.split('\n').find(l => l.startsWith(name + ' '))?.split(/\s{2,}/)
 
-test('check: Node.js and git too old, Docker missing (exit 1), each with found, required and the fix', () => {
+test('check: Node.js too old (exit 1), with found, required and the fix; only what HAICC needs to run', () => {
   const h = host({ node: 'echo v20.11.0', git: 'echo git version 2.20.1' })
   try {
     const r = h.run('check')
     assert.equal(r.status, 1, r.stdout)
     assert.deepEqual(row(r.stdout, 'node').slice(0, 4), ['node', 'v20.11.0', '22 or later', 'no'])
     assert.match(row(r.stdout, 'node')[4], /into .*\.haicc\/node, no sudo/)
-    assert.deepEqual(row(r.stdout, 'git').slice(0, 4), ['git', '2.20.1', '2.25 or later', 'no'])
-    assert.deepEqual(row(r.stdout, 'docker').slice(0, 4), ['docker', '-', 'engine', 'no'])
     assert.equal(row(r.stdout, 'os')[3], process.arch === 'x64' && process.platform === 'linux' ? 'yes' : 'no')
+    assert.equal(row(r.stdout, 'git'), undefined, 'git and Docker: stage 2, HAICC itself')
+    assert.equal(row(r.stdout, 'docker'), undefined)
   } finally { rmSync(h.dir, { recursive: true, force: true }) }
 })
 
-test('check: only Docker missing still stops the boot (exit 1); fix --dry-run says what it would do', () => {
-  const h = host({ node: 'echo v22.3.0', git: 'echo git version 2.43.0' })
+test('check: Node.js there (exit 0); without it, fix --dry-run says what it would do', () => {
+  const h = host({ node: 'echo v22.3.0' })
   try {
-    const r = h.run('check')
-    assert.equal(r.status, 1, r.stdout)
-    assert.deepEqual(row(r.stdout, 'docker').slice(0, 4), ['docker', '-', 'engine', 'no'])
-    assert.equal(row(r.stdout, 'node')[3], 'yes')
-    const f = h.run('fix', '--dry-run')
-    assert.match(f.stdout, /would: install Docker Engine with apt/)
-    assert.doesNotMatch(f.stdout, /would: install Node/)
+    assert.equal(h.run('check').status, 0)
   } finally { rmSync(h.dir, { recursive: true, force: true }) }
+  const g = host({})
+  try {
+    const f = g.run('fix', '--dry-run')
+    assert.match(f.stdout, /would: install Node\.js 22/)
+  } finally { rmSync(g.dir, { recursive: true, force: true }) }
 })
 
 test('fix without a terminal and without --yes changes nothing', () => {
@@ -68,7 +67,7 @@ function source () {
   return dir
 }
 
-test('fetch: from a folder source, with what it requires, all the way down; recorded', () => {
+test('fetch: from a folder source, with what it requires, all the way down; each said', () => {
   const src = source()
   const work = mkdtempSync(join(tmpdir(), 'work-'))
   try {
@@ -78,11 +77,11 @@ test('fetch: from a folder source, with what it requires, all the way down; reco
     assert.equal(r.status, 0, r.stdout + r.stderr)
     for (const repo of ['base-demo-x', 'base-package-b', 'base-package-c']) assert.ok(existsSync(join(work, 'haiccing', repo, 'package.json')), repo)
     assert.ok(!existsSync(join(work, 'haiccing', 'base-package-c', '.git')), 'plain copies, no .git')
-    const log = readFileSync(join(work, '.haicc', 'log', 'sources.jsonl'), 'utf8').trim().split('\n').map(l => JSON.parse(l))
-    assert.deepEqual(log.map(l => [l.repository, l.source, l.outcome]), [['base-demo-x', `folder ${src}`, 'fetched'], ['base-package-b', `folder ${src}`, 'fetched'], ['base-package-c', `folder ${src}`, 'fetched']])
+    assert.deepEqual(r.stdout.trimEnd().split('\n'), ['base-demo-x', 'base-package-b', 'base-package-c'].map(x => `  fetched ${x} (folder ${src})`))
     // Already there: kept, not fetched again.
-    assert.equal(spawnSync('sh', [join(here, 'fetch.sh'), join(work, 'haiccing'), '--requires', 'base-demo-x']).status, 0)
-    assert.equal(readFileSync(join(work, '.haicc', 'log', 'sources.jsonl'), 'utf8').trim().split('\n').length, 3)
+    const again = spawnSync('sh', [join(here, 'fetch.sh'), join(work, 'haiccing'), '--requires', 'base-demo-x'], { encoding: 'utf8' })
+    assert.equal(again.status, 0)
+    assert.equal(again.stdout, '')
     // In none of the sources: said, recorded, exit 1.
     const m = spawnSync('sh', [join(here, 'fetch.sh'), join(work, 'haiccing'), 'base-package-nope'], { encoding: 'utf8' })
     assert.equal(m.status, 1)

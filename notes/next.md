@@ -29,7 +29,11 @@ Phase 3, step 1 (packages and the boot): record
 after part 6"): the demos and the setup's release published; a work
 folder from scratch. **The human**: archive `pear-full-square/pkgm-base-boot`.
 
-**Next here**:
+**The root boot** (2026-11-06): the double boot, HAICC on Node.js alone,
+its log (notes/packages.md, "a double boot"). **Next here**: the manager
+boot (`haicc boot <manager>`), through the master's and a node's scenarios.
+
+**Next here, also**:
 - (done: the local run's finding 1, a node's shutdown with its
   prerequisites, `7-shutdown/`)
 - the logs as topics (part 6's follow-on).

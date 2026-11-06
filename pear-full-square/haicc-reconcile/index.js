@@ -6,4 +6,6 @@
 export { createEngine } from './lib/engine.js'
 import * as machine from './lib/providers/machine.js'
 import * as local from './lib/providers/local.js'
-export const providers = { ...machine, ...local }
+// Kinds are named in lowercase with '-' (the names in declarations).
+const { dockerInstalled, dockerRunning, dockerGroup, ...rest } = machine
+export const providers = { ...rest, 'docker-installed': dockerInstalled, 'docker-running': dockerRunning, 'docker-group': dockerGroup, ...local }

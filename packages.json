@@ -27,9 +27,9 @@
       ]
     },
     "haicc": {
-      "description": "HAICC: declare what a project needs, check it, make it so (haicc-reconcile), and its lifecycle (haicc-deployment). The entry package.",
+      "description": "HAICC: declare what a project needs, check it, make it so (haicc-reconcile), its lifecycle (haicc-deployment), and its boot (haicc-base-boot). The entry: everything starts here.",
       "requires": [
-        "mycelium"
+        "pkgm"
       ],
       "modules": [
         "pear-full-square/haicc-reconcile",
@@ -37,25 +37,31 @@
         "pear-full-square/haicc-base-boot"
       ],
       "readme": [
-        "## A work folder",
+        "## Start here",
         "",
-        "Everything starts here. The setup, a release of this package (`haicc-setup.sh`, self-extracting: `sh` and `tar` only), extracts a work folder's `haiccing/`; its `boot` does the rest:",
+        "Linux on x86-64 (on Windows: inside WSL2), with `curl` and `tar`. The setup is this package's release, `haicc-setup.sh`:",
         "",
         "```sh",
-        "sh haicc-setup.sh ~/haicc-work                 # haiccing/: boot, sources (github haiccing), base-package-haicc",
-        "~/haicc-work/haiccing/boot                     # step 0, the repositories fetched, the package manager and HAICC into .haicc, ./haicc",
-        "cd ~/haicc-work && ./haicc run base-demo-liveness",
+        "curl -fsSL -o haicc-setup.sh https://github.com/haiccing/base-package-haicc/releases/latest/download/haicc-setup.sh",
+        "sh haicc-setup.sh ~/haicc-work         # a work folder: haiccing/ with boot, sources and this package",
+        "~/haicc-work/haiccing/boot             # checks the machine, installs HAICC (and the package manager), writes ./haicc",
+        "cd ~/haicc-work",
+        "./haicc run base-demo-liveness         # a demo: fetched, installed, deployed; the browser opens",
         "```",
+        "",
+        "The boot checks the machine (Linux x86-64; Node.js 22 or later; git 2.25 or later; Docker Engine, rootful, native, running, and the user in the `docker` group) and fixes what is missing only with your yes (`haiccing/boot --yes` agrees beforehand): Node.js into `.haicc/node`, git and Docker Engine with `apt`. Then it stops, unless `haiccing/install` is there: one `./haicc` command a line, carried on with (`selftest.install` in `haicc-base-boot` is the self-test).",
+        "",
+        "## The work folder",
         "",
         "```",
         "<work>/",
         "  haicc        the launcher: ./haicc <command>",
-        "  haiccing/    boot, sources, [install], the repositories",
-        "  .haicc/      the install: node/, packages/, log/ (boot's output, every command, every fetch)",
+        "  haiccing/    boot, sources (where repositories come from: folder <path>, github <org>), [install], the repositories",
+        "  .haicc/      the install: node/, packages/, log/ (the boot's output, every command, every fetch)",
         "  manager/     the deployments, one folder per project",
         "```",
         "",
-        "Step 0 checks the host (Linux x86-64; Node.js 22 or later; git 2.25 or later; Docker Engine, rootful, native, running, and the user in the `docker` group: all needed, since nodes run in Docker containers) and fixes what is missing only with your yes (`haiccing/boot --yes` to agree beforehand): Node.js into `.haicc/node` (no sudo), git and Docker Engine with `apt`. `haiccing/sources` says where the repositories come from (`folder <path>`, `github <org>`), and `haiccing/install`, if there, is carried on with: one `haicc` command a line (`selftest.install` in `haicc-base-boot` is one)."
+        "`./haicc` without arguments lists its commands."
       ]
     },
     "pkgm": {
