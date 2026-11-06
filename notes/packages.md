@@ -124,6 +124,10 @@ Bare and the boot only.
 
 ## The work folder, one route, a double boot (agreed 2026-11-05, revised 2026-11-06)
 
+**Decided by the human, 2026-11-06, over what follows: no hidden folders, full
+stop.** "It doesn't make sense to have visible state change in a hidden
+folder." `.haicc`, as written below and elsewhere in this note, is to go.
+
 ```
 <work>/
   haicc                 the launcher: ./haicc <command>
