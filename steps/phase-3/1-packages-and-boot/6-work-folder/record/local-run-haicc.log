@@ -1,0 +1,102 @@
+== 2026-11-06T07:22:30.000Z haiccing/boot   (in <download folder>)
+haicc-base-boot 0.4.0: stage 1, the work folder /home/herma/haicc-work
+prerequisite   found                    required       ok   fix would
+os             linux-x86_64             linux-x86_64   yes  
+node           v24.21.0                 22 or later    yes  
+  copied the root's HAICC (haicc-base-boot 0.4.0) into /home/herma/haicc-work/.haicc/haicc-base-boot
+  written /home/herma/haicc-work/haicc
+stage 1 done: ./haicc boot next
+== exit 0, 0.0 s
+== 2026-11-06T07:22:30.288Z haicc boot  (in <download folder>)
+The host's prerequisites (git, Docker Engine):
+  all 5 met
+
+Booted. Next, from /home/herma/haicc-work:
+  ./haicc boot manager     a manager: its own HAICC and packages (the next step)
+  ./haicc list             the managers here
+== exit 0, 0.4 s
+== 2026-11-06T07:22:30.776Z haicc list  (in /home/herma/haicc-work)
+managers (/home/herma/haicc-work): none yet
+== exit 0, 0.0 s
+== 2026-11-06T07:23:50.000Z haiccing/boot   (in /home/herma/haicc-work)
+haicc-base-boot 0.4.0: stage 1, the work folder /home/herma/haicc-work
+prerequisite   found                    required       ok   fix would
+os             linux-x86_64             linux-x86_64   yes  
+node           v24.21.0                 22 or later    yes  
+  the root's HAICC: there (copied at the first boot)
+  written /home/herma/haicc-work/haicc
+stage 1 done: ./haicc boot next
+== exit 0, 0.0 s
+== 2026-11-06T07:23:50.356Z haicc boot  (in /home/herma/haicc-work)
+The host's prerequisites (git, Docker Engine):
+  all 5 met
+
+Booted. Next, from /home/herma/haicc-work:
+  ./haicc boot manager     a manager: its own HAICC and packages (the next step)
+  ./haicc list             the managers here
+== exit 0, 0.6 s
+== 2026-11-06T07:23:50.983Z haicc  (in /home/herma/haicc-work)
+haicc at the root of a work folder (./haicc): the part of HAICC the host
+needs, copied in by haiccing/boot (stage 1). Node.js built-ins only.
+  haicc boot [--yes]           the root's boot (stage 2): the host's prerequisites
+                               (git, Docker Engine), checked and fixed with a yes;
+                               then haiccing/install, if there, or the next commands
+  haicc boot <manager>         a manager: the next step (not built yet)
+  haicc fetch <repository>     a repository, with what it requires, into haiccing/
+  haicc list                   the managers in this work folder
+--verbose: each check's detail too. What every command prints goes to
+.haicc/log/haicc.log as well, in order (files of 10 KB). Exit 0 when done,
+1 when not (the output says what is missing), 2 on a bad call.
+== exit 2, 0.0 s
+== 2026-11-06T07:23:51.043Z haicc nonsense  (in /home/herma/haicc-work)
+haicc at the root of a work folder (./haicc): the part of HAICC the host
+needs, copied in by haiccing/boot (stage 1). Node.js built-ins only.
+  haicc boot [--yes]           the root's boot (stage 2): the host's prerequisites
+                               (git, Docker Engine), checked and fixed with a yes;
+                               then haiccing/install, if there, or the next commands
+  haicc boot <manager>         a manager: the next step (not built yet)
+  haicc fetch <repository>     a repository, with what it requires, into haiccing/
+  haicc list                   the managers in this work folder
+--verbose: each check's detail too. What every command prints goes to
+.haicc/log/haicc.log as well, in order (files of 10 KB). Exit 0 when done,
+1 when not (the output says what is missing), 2 on a bad call.
+== exit 2, 0.0 s
+== 2026-11-06T07:23:51.105Z haicc run base-demo-liveness  (in /home/herma/haicc-work)
+haicc at the root of a work folder (./haicc): the part of HAICC the host
+needs, copied in by haiccing/boot (stage 1). Node.js built-ins only.
+  haicc boot [--yes]           the root's boot (stage 2): the host's prerequisites
+                               (git, Docker Engine), checked and fixed with a yes;
+                               then haiccing/install, if there, or the next commands
+  haicc boot <manager>         a manager: the next step (not built yet)
+  haicc fetch <repository>     a repository, with what it requires, into haiccing/
+  haicc list                   the managers in this work folder
+--verbose: each check's detail too. What every command prints goes to
+.haicc/log/haicc.log as well, in order (files of 10 KB). Exit 0 when done,
+1 when not (the output says what is missing), 2 on a bad call.
+== exit 2, 0.0 s
+== 2026-11-06T07:23:51.168Z haicc boot manager  (in /home/herma/haicc-work)
+haicc boot manager: a manager's boot is the next step, not built yet
+== exit 1, 0.0 s
+== 2026-11-06T07:23:51.235Z haicc list  (in /)
+managers (/home/herma/haicc-work): none yet
+== exit 0, 0.0 s
+== 2026-11-06T07:27:44.000Z haiccing/boot   (in /home/herma/haiccing-testing)
+haicc-base-boot 0.4.0: stage 1, the work folder /home/herma/haicc-work
+prerequisite   found                    required       ok   fix would
+os             linux-x86_64             linux-x86_64   yes  
+node           v24.21.0                 22 or later    yes  
+  the root's HAICC: there (copied at the first boot)
+  written /home/herma/haicc-work/haicc
+stage 1 done: ./haicc boot next
+== exit 0, 0.0 s
+== 2026-11-06T07:27:44.481Z haicc boot  (in /home/herma/haiccing-testing)
+The host's prerequisites (git, Docker Engine):
+  all 5 met
+
+Booted. Next, from /home/herma/haicc-work:
+  ./haicc boot manager     a manager: its own HAICC and packages (the next step)
+  ./haicc list             the managers here
+== exit 0, 0.4 s
+== 2026-11-06T07:27:44.899Z haicc list  (in /home/herma/haicc-work)
+managers (/home/herma/haicc-work): none yet
+== exit 0, 0.0 s

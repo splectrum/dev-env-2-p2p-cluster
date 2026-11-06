@@ -107,7 +107,5 @@ cached. Now in the validation's readme.
 ## Left open
 
 - Finding 1: fixed, `../7-shutdown/`.
-- `manual-run.sh` was added afterwards, for a run by hand with the browser
-  opening: tested on liveness with `--no-open`, ended by Enter, and by an
-  interrupt during the download and with the demo running; all left
-  nothing behind. Not yet tried: the browser opening, and other-host.
+- `manual-run.sh`, added afterwards for a run by hand, is retired: the work
+  folder's route replaced it.

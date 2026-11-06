@@ -5,10 +5,8 @@ plain folder copies of the `haiccing` repositories side by side, a clean
 home folder each (`HAICC_HOME` under the scratch folder). `run.sh
 <scratch>` runs the cases, each recorded in `record/<case>.txt`,
 `record/cases.txt` their exit codes; `publish.sh` writes and pushes the
-`haiccing` repositories (for the local agent, `notes/handover-packages.md`);
-`manual-run.sh [liveness|other-host]` runs a demo by hand, from GitHub's
-archives and a clean home in a temporary folder, removed afterwards. The
-`ui-*` cases need `playwright` where `npm root -g` finds it, with its
+`haiccing` repositories (for the local agent, `notes/handover-packages.md`).
+The `ui-*` cases need `playwright` where `npm root -g` finds it, with its
 Chromium.
 
 **Findings** (2026-11-04; 15 cases, all as expected):

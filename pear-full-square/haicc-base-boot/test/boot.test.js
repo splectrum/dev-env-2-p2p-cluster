@@ -55,6 +55,28 @@ test('fix without a terminal and without --yes changes nothing', () => {
   } finally { rmSync(h.dir, { recursive: true, force: true }) }
 })
 
+test('fix --yes: Node.js installed into the home, and the check after it finds it', () => {
+  const h = host({})
+  try {
+    // The release, as a fake curl serves it: a tar with a bin/node, its checksum.
+    const file = 'node-v22.9.9-linux-x64.tar.gz'
+    const tree = join(h.dir, 'release', 'node-v22.9.9-linux-x64')
+    mkdirSync(join(tree, 'bin'), { recursive: true })
+    writeFileSync(join(tree, 'bin', 'node'), '#!/bin/sh\necho v22.9.9\n')
+    chmodSync(join(tree, 'bin', 'node'), 0o755)
+    execFileSync('tar', ['-czf', join(h.dir, file), '-C', join(h.dir, 'release'), 'node-v22.9.9-linux-x64'])
+    const sum = execFileSync('sha256sum', [join(h.dir, file)], { encoding: 'utf8' }).split(' ')[0]
+    const tools = join(h.dir, 'bin')
+    writeFileSync(join(tools, 'curl'), `#!/bin/sh\nfor a in "$@"; do last=$a; case $a in */SHASUMS256.txt) echo "${sum}  ${file}"; exit 0 ;; esac; done\ncp "${join(h.dir, file)}" "$last"\n`)
+    chmodSync(join(tools, 'curl'), 0o755)
+    for (const u of ['tar', 'sha256sum', 'gzip', 'mkdir', 'mv', 'cp']) symlinkSync(execFileSync('sh', ['-c', `command -v ${u}`], { encoding: 'utf8' }).trim(), join(tools, u))
+    const f = h.run('fix', '--yes')
+    assert.match(f.stdout, /installed: Node\.js v22\.9\.9/, f.stdout + f.stderr)
+    assert.equal(row(f.stdout.split('installed:')[1], 'node')[1], 'v22.9.9')
+    assert.equal(f.status, 0, f.stdout + f.stderr)
+  } finally { rmSync(h.dir, { recursive: true, force: true }) }
+})
+
 // A folder of repositories, as a source: a project requiring a package
 // requiring another.
 function source () {
