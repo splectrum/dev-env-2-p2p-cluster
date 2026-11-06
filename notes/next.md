@@ -25,6 +25,23 @@ Phase 3, step 1 (packages and the boot): record
 - **The local agent's first run** (`5-validation/local-run.md`): the demos
   published, both run from GitHub's archives; one open finding.
 
+**The local agent, on boot and shutdown by level (2026-11-06).** Built and
+tested, not published: `setup-25a1bd107a92`, boot 0.6.0, from `001583e`; a new
+folder through setup, `./boot`, a swarm, nodes, each shutdown and boot, each
+teardown, `./shutdown`, `./boot` again: all exit 0, no hidden files. Fixed here:
+a node's `./haicc list`, `version`, `fetch` and `install` crashed on paths from
+before the new layout (`haicc-deployment/haicc.js`; a test added); `list` and
+`version` now show the packages copied in. **For the implementer**, with the
+package manager work:
+1. In a node, `./haicc test <package>` says `no project` for the packages
+   copied in: it reads the registry, which they are not in.
+2. In a node, `./haicc install` still installs the old merged way, beside the
+   whole copies: `packages/pear-full-square`, `packages/node_modules`, and each
+   package listed twice (`base-package-haicc` and `haicc`).
+3. `./haicc boot hosts/master` makes one swarm, `hosts-master`, and says so.
+   The form `<swarm>/<node>` was dropped by the levels; a clear refusal would
+   say more than a cleaned name.
+
 **Now: boot and shutdown by level, built and tested (2026-11-06); next,
 the master's swarm.** `notes/packages.md`, "Boot and shutdown by level".
 A `haicc boot`/`shutdown` works on the config of the folder it is called
