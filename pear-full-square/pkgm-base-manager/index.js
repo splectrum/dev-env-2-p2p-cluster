@@ -165,7 +165,8 @@ export const readDefinitions = dev => readJson(join(dev, 'packages.json'))
 // Write a package's folder: its manifest, readme and tests, with its
 // content already in place; the hash over its content.
 function finish (dir, name, def, folders, extra = {}) {
-  const hash = hashTree(dir, [...folders, ...(extra.root || []), ...(existsSync(join(dir, 'test')) ? ['test'] : [])])
+  const records = new Set(extra.records || [])
+  const hash = hashTree(dir, [...folders, ...(extra.root || []), ...(existsSync(join(dir, 'test')) ? ['test'] : [])], { skip: p => records.has(p) })
   const pkg = { name: def.repo || repoName(name), description: def.description, private: true, license: def.license || 'MIT', pkgm: { package: name, requires: def.requires || [], folders, hash, ...extra } }
   writeJson(join(dir, 'package.json'), pkg)
   // A readme of its own (a project's), or one written from the definition.
@@ -183,6 +184,7 @@ function readme (name, def, m) {
   lines.push(`- requires: ${m.requires.length ? m.requires.map(link).join(', ') : 'nothing'}`,
     ...(m.platform ? [`- platform: ${m.platform}`] : []),
     `- hash: \`${m.hash}\``, '',
+    ...(m.records?.length ? [`Its records (not in its hash): ${m.records.map(r => `\`${r}\``).join(', ')}: the latest run of each test, and what is known not to work yet.`, ''] : []),
     `In a work folder (see [${ORG}/${repoName('haicc')}](https://github.com/${ORG}/${repoName('haicc')})), installed by HAICC as a project needs it, or by \`./haicc install ${name}\`, into \`.haicc/packages\` with what it requires; tested there, within the package: \`./haicc test ${name}\`.`, '',
     'Written by the package manager from the development repository ([splectrum/dev-env-2-p2p-cluster](https://github.com/splectrum/dev-env-2-p2p-cluster)): not edited here.', '')
   return lines.join('\n')
@@ -256,9 +258,12 @@ export function writePackages ({ dev, out, only = null, keep = false, log = () =
         copy(join(dev, from), join(dir, path), { skip: (r, base) => base === 'node_modules' || base === '.git' || base === 'record' })
         folders.push(path)
       }
-      for (const [to, from] of Object.entries(def.root || {})) copy(join(dev, from), join(dir, to))
       generatedTests(dir, 'modules')
-      manifests[name] = finish(dir, name, def, folders, def.root ? { root: Object.keys(def.root) } : {})
+      // Its own files (in its hash) and its records: the latest runs of its
+      // tests (test/<name>.log), its known issues (not in its hash: they
+      // describe the package, they are not it).
+      for (const [to, from] of Object.entries({ ...(def.root || {}), ...(def.records || {}) })) if (existsSync(join(dev, from))) copy(join(dev, from), join(dir, to))
+      manifests[name] = finish(dir, name, def, folders, { ...(def.root ? { root: Object.keys(def.root) } : {}), ...(def.records ? { records: Object.keys(def.records) } : {}) })
     }
     if (!findPackage('third-party', out)) throw missing('third-party', out)
     const results = []

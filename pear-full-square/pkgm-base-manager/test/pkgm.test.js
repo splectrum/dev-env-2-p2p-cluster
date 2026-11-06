@@ -68,6 +68,17 @@ test('import, write, install, test: the whole flow', () => {
     const before = manifest(ap).hash
     writePackages({ dev, out })
     assert.equal(manifest(ap).hash, before)
+    // Its records (a test's latest log): written, not in the hash.
+    put(join(dev, 'records/a.log'), 'a run\n')
+    const defs = JSON.parse(readFileSync(join(dev, 'packages.json'), 'utf8'))
+    defs.packages.apkg.records = { 'test/a.log': 'records/a.log' }
+    json(join(dev, 'packages.json'), defs)
+    writePackages({ dev, out })
+    assert.equal(readFileSync(join(ap, 'test/a.log'), 'utf8'), 'a run\n')
+    assert.equal(manifest(ap).hash, before, 'a record changes nothing of the package')
+    put(join(dev, 'records/a.log'), 'another run\n')
+    writePackages({ dev, out })
+    assert.equal(manifest(ap).hash, before)
 
     // Installing: what it requires first, fully qualified, our module by name.
     const done = install('apkg', { from: out, into })
