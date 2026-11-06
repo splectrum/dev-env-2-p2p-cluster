@@ -90,3 +90,21 @@ package manager has no boot of its own now): archive it on GitHub.
 Part 7 (a node's shutdown, `7-shutdown/`) fixes finding 1 of the first local
 run: worth Run and Run again a few times on the liveness demo in the new
 work folder, to see it hold on this machine too.
+
+## The organisations' profiles (2026-11-06)
+
+Five profiles, drafted and agreed with the human: what each organisation is
+for, where to start. Each in this repository at
+`<org>/.github/profile/README.md`, for the repository `<org>/.github`
+(all five exist): `splectrum`, `bare-for-pear`, `pear-full-square`,
+`splectral`, `haiccing`. The cloud session cannot push them (five
+repositories of one name cannot share a session).
+
+For each: clone `https://github.com/<org>/.github`, copy the file to
+`profile/README.md` there (replacing the old one where there is one), commit
+("The organisation's profile: what it is for, where to start"), push. Check
+each organisation's page on GitHub shows it.
+
+`haiccing`'s profile starts with downloading the setup from
+`base-package-haicc`'s latest release: publish that release first (above,
+"Again, after part 6"), or check the link once it is there.
