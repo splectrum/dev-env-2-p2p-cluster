@@ -7,7 +7,8 @@ folder, one route, one boot"), the request's part 6.
   self-extracting (`sh`, `tar`): `haiccing/boot` (the stub naming
   `base-package-haicc`, executable), `haiccing/sources`
   (`--sources=folder:<path>|github:<org>`, default `github haiccing`),
-  `haiccing/base-package-haicc/`. The tested one: `record/haicc-setup.sh`.
+  `haiccing/base-package-haicc/`. Stored once, clean: the GitHub release of
+  `base-package-haicc` (not here).
 - **`haiccing/boot`** (`boot.sh`): step 0; the package manager's and
   HAICC's repositories with what HAICC requires fetched (`fetch.sh`, from
   `sources`); the package manager by its own code, HAICC by it, into
@@ -27,7 +28,8 @@ folder, one route, one boot"), the request's part 6.
 
 ## The self-test
 
-`selftest.sh <scratch>`: the packages written from here, the setup
+The run (then a script here, since removed: test runs belong in the
+development environment, thrown away after; only their logs kept): the packages written from here, the setup
 released from them, a fresh work folder (`--sources=folder:<the written
 packages>`), `haicc-base-boot/selftest.install` as `haiccing/install`,
 then `haiccing/boot`. Record of 2026-11-05 (`record/`): **exit 0**.
@@ -41,7 +43,7 @@ then `haiccing/boot`. Record of 2026-11-05 (`record/`): **exit 0**.
   built), `test` passed, `teardown`; `test p2p`, `test splectral`; the
   same for other-host (27 s); `list`: six packages installed, both
   deployments `nothing (last: teardown)`.
-- The work folder (`record/work-folder.txt`): `haicc`, `haiccing/` (boot,
+- The work folder: `haicc`, `haiccing/` (boot,
   sources, install, eight repositories), `.haicc/`, `manager/` (one folder
   per project). Nothing running after; no secret in the logs.
 - The browser run is not in it (Playwright, outside the packages).

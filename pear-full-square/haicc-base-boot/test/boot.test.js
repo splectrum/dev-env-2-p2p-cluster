@@ -17,7 +17,7 @@ function host (fakes) {
   mkdirSync(bin)
   for (const u of UTILS) { const p = execFileSync('sh', ['-c', `command -v ${u}`], { encoding: 'utf8' }).trim(); if (p.startsWith('/')) symlinkSync(p, join(bin, u)) }
   for (const [name, script] of Object.entries(fakes)) { writeFileSync(join(bin, name), `#!/bin/sh\n${script}\n`); chmodSync(join(bin, name), 0o755) }
-  return { dir, run: (...args) => spawnSync(join(bin, 'sh'), [join(here, 'step0.sh'), ...args], { encoding: 'utf8', env: { PATH: bin, HOME: dir, HAICC_HOME: join(dir, '.haicc') }, input: '' }) }
+  return { dir, run: (...args) => spawnSync(join(bin, 'sh'), [join(here, 'step0.sh'), ...args], { encoding: 'utf8', env: { PATH: bin, HOME: dir, HAICC_HOME: join(dir, 'install') }, input: '' }) }
 }
 const row = (out, name) => out.split('\n').find(l => l.startsWith(name + ' '))?.split(/\s{2,}/)
 
@@ -27,7 +27,7 @@ test('check: Node.js too old (exit 1), with found, required and the fix; only wh
     const r = h.run('check')
     assert.equal(r.status, 1, r.stdout)
     assert.deepEqual(row(r.stdout, 'node').slice(0, 4), ['node', 'v20.11.0', '22 or later', 'no'])
-    assert.match(row(r.stdout, 'node')[4], /into .*\.haicc\/node, no sudo/)
+    assert.match(row(r.stdout, 'node')[4], /into .*\/install\/node, no sudo/)
     assert.equal(row(r.stdout, 'os')[3], process.arch === 'x64' && process.platform === 'linux' ? 'yes' : 'no')
     assert.equal(row(r.stdout, 'git'), undefined, 'git and Docker: stage 2, HAICC itself')
     assert.equal(row(r.stdout, 'docker'), undefined)
@@ -49,9 +49,9 @@ test('check: Node.js there (exit 0); without it, fix --dry-run says what it woul
 test('fix without a terminal and without --yes changes nothing', () => {
   const h = host({ git: 'echo git version 2.43.0' })
   try {
-    const f = spawnSync(execFileSync('sh', ['-c', 'command -v setsid'], { encoding: 'utf8' }).trim(), ['-w', join(h.dir, 'bin', 'sh'), join(here, 'step0.sh'), 'fix'], { encoding: 'utf8', env: { PATH: join(h.dir, 'bin'), HOME: h.dir, HAICC_HOME: join(h.dir, '.haicc') }, input: '' })
+    const f = spawnSync(execFileSync('sh', ['-c', 'command -v setsid'], { encoding: 'utf8' }).trim(), ['-w', join(h.dir, 'bin', 'sh'), join(here, 'step0.sh'), 'fix'], { encoding: 'utf8', env: { PATH: join(h.dir, 'bin'), HOME: h.dir, HAICC_HOME: join(h.dir, 'install') }, input: '' })
     assert.match(f.stdout, /not fixed \(no terminal to ask; --yes to agree\): install Node\.js/)
-    assert.ok(!existsSync(join(h.dir, '.haicc', 'node')))
+    assert.ok(!existsSync(join(h.dir, 'install', 'node')))
   } finally { rmSync(h.dir, { recursive: true, force: true }) }
 })
 
@@ -148,8 +148,17 @@ test('the setup: a self-extracting release, extracting haiccing/ (boot, sources,
     assert.ok(statSync(join(work, 'haiccing', 'boot')).mode & 0o100)
     assert.match(readFileSync(join(work, 'haiccing', 'boot'), 'utf8'), /base-package-haicc\/pear-full-square\/haicc-base-boot\/boot\.sh/)
     assert.deepEqual(readFileSync(join(work, 'haiccing', 'sources'), 'utf8').split('\n').filter(l => l && !l.startsWith('#')), [`folder ${dir}/repos`, 'github haiccing'])
-    // Again: already set up, nothing changed.
-    assert.match(spawnSync('sh', [join(dir, 'haicc-setup.sh'), work], { encoding: 'utf8' }).stdout, /already set up/)
+    // Logged from the start: the setup's own lines in the work folder's log.
+    assert.match(readFileSync(join(work, 'log', 'haicc.log'), 'utf8'), /^== .* sh haicc-setup\.sh .*\nhaicc-setup: base-package-haicc abcdef123456 .*\n(.*\n)*== exit 0\n$/)
+    // Again, the same setup: said, exit 0, nothing changed.
+    const again = spawnSync('sh', [join(dir, 'haicc-setup.sh'), work], { encoding: 'utf8' })
+    assert.equal(again.status, 0)
+    assert.match(again.stdout, /already set up with this setup/)
+    // Another setup over it: both named, a new folder said, exit 1, nothing changed.
+    writeFileSync(join(work, 'haiccing', 'base-package-haicc', 'package.json'), JSON.stringify({ name: 'base-package-haicc', pkgm: { package: 'haicc', hash: '0123456789abcdef' } }))
+    const other = spawnSync('sh', [join(dir, 'haicc-setup.sh'), work], { encoding: 'utf8' })
+    assert.equal(other.status, 1)
+    assert.match(other.stdout, /has base-package-haicc 0123456789ab \(boot .*\), this one is abcdef123456 .*use a new folder/s)
     // Without --sources: GitHub.
     spawnSync('sh', [join(dir, 'haicc-setup.sh'), join(dir, 'work2')])
     assert.deepEqual(readFileSync(join(dir, 'work2', 'haiccing', 'sources'), 'utf8').split('\n').filter(l => l && !l.startsWith('#')), ['github haiccing'])

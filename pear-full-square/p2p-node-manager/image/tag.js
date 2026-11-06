@@ -5,7 +5,7 @@ import { join } from 'node:path'
 import { createHash } from 'node:crypto'
 
 export function tagOf (folder) {
-  const reg = JSON.parse(readFileSync(join(folder, '.pkgm', 'installed.json'), 'utf8'))
+  const reg = JSON.parse(readFileSync(join(folder, 'pkgm', 'installed.json'), 'utf8'))
   const h = createHash('sha256')
   for (const [name, p] of Object.entries(reg.packages).sort(([a], [b]) => a < b ? -1 : 1)) {
     if (p.state !== 'installed') throw new Error(`${name}: not installed completely`)

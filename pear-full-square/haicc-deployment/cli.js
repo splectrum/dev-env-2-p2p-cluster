@@ -1,10 +1,9 @@
 #!/usr/bin/env node
 // A project's deployment from the command line. One JSON line out.
 //   node cli.js deploy|start|stop|teardown|reconcile|status <project.json> [--work=<folder>]
-// The work folder defaults to ~/.haicc/<owner>. Exit 0 when the verb's
+// The work folder defaults to manager/<owner>, in the current folder. Exit 0 when the verb's
 // state is reached; 1 otherwise (the result says what is missing, and
 // hints what only a human can do); 2 on a bad call.
-import { homedir } from 'node:os'
 import { join } from 'node:path'
 import { readFileSync } from 'node:fs'
 import { openDeployment } from './index.js'
@@ -19,7 +18,7 @@ if (!verbs.includes(verb) || !file) {
 }
 try {
   const owner = JSON.parse(readFileSync(file, 'utf8')).owner
-  const d = await openDeployment({ project: file, work: flags.work || join(homedir(), '.haicc', owner) })
+  const d = await openDeployment({ project: file, work: flags.work || join('manager', owner) })
   const result = await d[verb]()
   const met = xs => (xs || []).every(x => x.status === 'met' || x.status === 'extra')
   // status of a project never deployed: say what deploying would need.

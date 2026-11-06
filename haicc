@@ -2,10 +2,11 @@
 # The demo projects, from the development repository's root:
 #   sh haicc check|deploy|start|stop|teardown|status|reconcile <project> [--work=<folder>]
 # <project>: a folder under haiccing/ (base-demo-liveness, base-demo-other-host).
-# The work folder defaults to ~/.haicc/<project>. After start, the browser
+# The work folder defaults to manager/<project>, in this repository (git ignores it). After start, the browser
 # opens where it can (Linux desktop, WSL); the URL is printed either way.
 set -eu
 root=$(cd "$(dirname "$0")" && pwd)
+cd "$root"
 verb=${1:-}; project=${2:-}
 [ -n "$verb" ] && [ -n "$project" ] || { sed -n '2,7p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
 shift 2

@@ -33,7 +33,7 @@ import { isDeepStrictEqual } from 'node:util'
 import { nodeState } from '../p2p-node-manager/index.js'
 import { heldNodes, release } from './shutdown.js'
 
-const MARK = '.haicc-owner'
+const MARK = 'haicc-owner'
 const ownerOf = folder => existsSync(join(folder, MARK)) ? readFileSync(join(folder, MARK), 'utf8').trim() : null
 const running = async n => (await nodeState(n.folder))?.status === 'running'
 

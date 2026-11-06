@@ -20,10 +20,24 @@ Phase 3, step 1 (packages and the boot): record
   repositories fetched from `haiccing/sources`, the package manager and
   HAICC into `.haicc`), `./haicc` for everything after, `manager/` for the
   deployments, logs in files from the start. Self-tested from a fresh work
-  folder (`6-work-folder/selftest.sh`, exit 0). `pkgm-base-boot`, the
+  folder (exit 0; the script since removed, its log kept). `pkgm-base-boot`, the
   kicks and the demos' `run.sh` retired.
 - **The local agent's first run** (`5-validation/local-run.md`): the demos
   published, both run from GitHub's archives; one open finding.
+
+**Now, for the local agent: publish the fixes, then the human tests
+locally (2026-11-06).** Built in the session, committed on `main`, not
+published: the human's report on the third release, findings 4 to 7, and
+no hidden folders (`notes/packages.md`, "a double boot"). Boot 0.5.0:
+`install/` and `log/` in a work folder, `pkgm/` for an install's registry,
+`haicc-owner` for the mark, no temporary dot-files; the setup logs from its
+first line, says `already set up with this setup` (exit 0) or names both
+setups and says to use a new folder (exit 1); the published commands one
+command joined with `&&`, `curl` retrying. No line names the log: the
+instructions say where it is (the human). How, in
+`notes/handover-packages.md`, "The fixes after the third release". Tests:
+decided, not built (`notes/packages.md`, "Testing"); they come with the
+package manager work.
 
 **Next here, first: the human's report on the third release (2026-11-06)**.
 It completed for them, output as it happens, but the log failed them. Detail:

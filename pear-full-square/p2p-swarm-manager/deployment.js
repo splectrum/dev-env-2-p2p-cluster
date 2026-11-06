@@ -111,7 +111,7 @@ export const requirementsOf = (folder, deployment) => deployment.nodes.map(n => 
   ? { name: n.name, kind: 'node', want: { swarm: folder, name: n.name } }
   : { name: `${n.prefix}nodes`, kind: 'nodes', want: { swarm: folder, prefix: n.prefix, atLeast: n.atLeast } })
 
-const ownerOf = folder => existsSync(join(folder, '.haicc-owner')) ? readFileSync(join(folder, '.haicc-owner'), 'utf8').trim() : 'p2p-swarm-manager'
+const ownerOf = folder => existsSync(join(folder, 'haicc-owner')) ? readFileSync(join(folder, 'haicc-owner'), 'utf8').trim() : 'p2p-swarm-manager'
 
 export async function watch ({ folder, auto = false, every = 3000, onRound = null }) {
   const s = await describe({ folder })

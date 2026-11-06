@@ -129,7 +129,7 @@ test('import, write, install, test: the whole flow', () => {
     assert.equal(uninstall('third-party', { into }), true)
     assert.ok(!existsSync(join(into, 'node_modules/dep-x')))
     // Every change, a record.
-    const changes = readFileSync(join(into, '.pkgm/changes.jsonl'), 'utf8').trim().split('\n').map(l => JSON.parse(l))
+    const changes = readFileSync(join(into, 'pkgm/changes.jsonl'), 'utf8').trim().split('\n').map(l => JSON.parse(l))
     assert.deepEqual(changes.map(c => `${c.package}:${c.action}`), ['third-party:installed', 'apkg:installed', 'apkg:updated', 'apkg:updated', 'apkg:updated', 'apkg:removed', 'third-party:removed'])
     assert.deepEqual(Object.keys(changes[3].overrides), ['org/amod'])
   } finally {
@@ -157,7 +157,7 @@ test('an interrupted install is redone', () => {
     install('third-party', { from: out, into })
     const reg = installed(into)
     reg.packages['third-party'].state = 'installing'
-    writeFileSync(join(into, '.pkgm/installed.json'), JSON.stringify(reg))
+    writeFileSync(join(into, 'pkgm/installed.json'), JSON.stringify(reg))
     rmSync(join(into, 'node_modules/dep-x'), { recursive: true })
     assert.deepEqual(install('third-party', { from: out, into }).map(d => d.action), ['updated'])
     assert.ok(existsSync(join(into, 'node_modules/dep-x/index.js')))

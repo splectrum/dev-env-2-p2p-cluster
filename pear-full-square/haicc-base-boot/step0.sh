@@ -8,7 +8,7 @@
 # check exits 0 when all is met, 1 when not.
 set -u
 here=$(cd "$(dirname "$0")" && pwd)
-home=${HAICC_HOME:-$HOME/.haicc}
+home=${HAICC_HOME:-install}
 . "$here/lib/download.sh"
 [ -x "$home/node/bin/node" ] && PATH=$home/node/bin:$PATH
 op=${1:-check}; shift 2>/dev/null || true

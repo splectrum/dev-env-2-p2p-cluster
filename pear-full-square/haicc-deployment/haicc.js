@@ -9,10 +9,10 @@
 //   haicc fetch <repository>          a repository (and what it requires) into haiccing/
 //   haicc list | version
 // The work folder ($HAICC_WORK): haiccing/ (the repositories, and sources:
-// where they come from), .haicc/ (the install), manager/ (the deployments,
+// where they come from), install/ (the install), log/ (its log), manager/ (the deployments,
 // one folder per project; one fixed manager folder for now). <project>: its
 // repository's name, with or without `base-`, or a folder with project.json.
-// What every command prints goes to .haicc/log/haicc.log too, in order
+// What every command prints goes to log/haicc.log too, in order
 // (files of 10 KB); --verbose and --debug say more. Every visible state
 // change is printed. Exit 0 when done; 1 when not (the output says what is
 // missing); 2 on a bad call.
@@ -30,14 +30,14 @@ const argv = process.argv.slice(2)
 const flags = Object.fromEntries(argv.filter(a => a.startsWith('--')).map(a => { const [k, v] = a.slice(2).split('='); return [k, v ?? true] }))
 const [verb, name] = argv.filter(a => !a.startsWith('--'))
 const work = resolve(process.env.HAICC_WORK || '.')
-const home = join(work, '.haicc')
+const home = join(work, 'install')
 const packages = join(home, 'packages')
 const haiccing = join(work, 'haiccing')
 const manager = join(work, 'manager')
 process.env.HAICC_HOME = home
 process.env.HAICC_PACKAGES = packages
 
-const log = openLog({ dir: join(home, 'log'), command: ['haicc', ...argv], level: flags.debug ? 'debug' : flags.verbose ? 'verbose' : 'normal' })
+const log = openLog({ dir: join(work, 'log'), command: ['haicc', ...argv], level: flags.debug ? 'debug' : flags.verbose ? 'verbose' : 'normal' })
 
 const usage = () => { process.stderr.write(readFileSync(new URL(import.meta.url), 'utf8').split('\n').slice(1, 16).map(l => l.replace(/^\/\/ ?/, '')).join('\n') + '\n'); process.exit(2) }
 const pkgm = async () => import(pathToFileURL(join(packages, 'pear-full-square', 'pkgm-base-manager', 'index.js')).href)

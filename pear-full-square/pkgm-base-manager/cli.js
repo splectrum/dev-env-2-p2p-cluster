@@ -6,11 +6,10 @@
 //   pkgm test    <package> [--into=<install folder>]
 //   pkgm list    [--into=<install folder>]
 //   pkgm uninstall <package> [--into=<install folder>]
-// The install folder defaults to $HAICC_HOME/packages (~/.haicc/packages).
+// The install folder defaults to $HAICC_HOME/packages ($HAICC_HOME: ./install).
 // Progress to stderr as JSON lines (--quiet: none); the result to stdout, as JSON; exit 1
 // when a test fails or the operation is refused.
 import process from 'node:process'
-import { homedir } from 'node:os'
 import { join } from 'node:path'
 import { importThirdParty, writePackages, install, testPackage, installed, uninstall } from './index.js'
 
@@ -21,7 +20,7 @@ for (const a of rest) {
   if (!m) { args.push(a); continue }
   if (m[1] === 'override') { const i = m[2].lastIndexOf('='); overrides[m[2].slice(0, i)] = m[2].slice(i + 1) } else flags[m[1]] = m[2] ?? true
 }
-const into = flags.into || join(process.env.HAICC_HOME || join(homedir(), '.haicc'), 'packages')
+const into = flags.into || join(process.env.HAICC_HOME || 'install', 'packages')
 const log = flags.quiet ? () => {} : e => process.stderr.write(JSON.stringify(e) + '\n')
 const out = (v, ok = true) => { process.stdout.write(JSON.stringify(v, null, 2) + '\n'); process.exit(ok ? 0 : 1) }
 const need = (v, what) => { if (!v) { process.stderr.write(`pkgm ${op}: ${what} needed\n`); process.exit(2) } return v }

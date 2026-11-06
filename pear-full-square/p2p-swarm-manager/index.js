@@ -123,7 +123,7 @@ export async function genesis ({ swarm, folder, nodes, vault, code, subnet = '17
   mkdirSync(folder, { recursive: true })
   // Its owner (haicc's mark): this manager, unless a project made it (the
   // project's provider marks it its own). What is owned may be stopped.
-  if (!existsSync(join(folder, '.haicc-owner'))) writeFileSync(join(folder, '.haicc-owner'), 'p2p-swarm-manager\n')
+  if (!existsSync(join(folder, 'haicc-owner'))) writeFileSync(join(folder, 'haicc-owner'), 'p2p-swarm-manager\n')
   const { record, write } = await swarmRecord(folder)
   const t0 = Date.now()
   record('genesis-started', { swarm })
