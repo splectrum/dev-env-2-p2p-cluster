@@ -177,9 +177,10 @@ section and older ones differ, this one holds.
   integrity, and that it was stripped, with the stripped file's checksum).
   The full runtime belongs to the root, with the host's move to Bare (the
   roadmap: `plan.md`, "The host on Bare"); the host runs on Node.js for now.
-- **Versioned packages, later**: the version goes into the name
-  (major.minor, e.g. `base-package-haicc-1.2`), so versions sit side by side
-  in `packages/` and are used side by side.
+- **Names stay plain for now**, as today (`base-package-haicc`).
+  **Versioned packages are a later feature**: then the version goes into
+  the name (major.minor, e.g. `base-package-haicc-1.2`), so versions sit
+  side by side in `packages/` and are used side by side.
 
 **The work folder**, the same shape at the root and in a manager:
 
