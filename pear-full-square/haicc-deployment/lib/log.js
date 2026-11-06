@@ -1,31 +1,33 @@
-// HAICC's log: what a command prints (its stdout and stderr), appended to
-// <install>/log/haicc.log as it is printed, in order; a header line before
-// each command (the time, the command as typed, its folder, its level) and
-// a close line after (its exit code, how long it took). Files up to a size
-// limit (10 KB), checked as a command starts: then haicc.log becomes
-// haicc.<n>.log and the command starts a new one (a file holds whole
-// commands, so one may end a little over the limit).
-// The boot (stage 1, in shell) writes the same way.
+// HAICC's log: what a command prints (its stdout and stderr), appended as
+// it is printed, in order, to the current file in <work>/log/: files of
+// 10 KB, each named by its first command's start in UTC
+// (20261106T103312Z.log), so the folder lists in time order and the
+// newest is the current one. A command starts a new file, named by its own
+// start, when the current one is over 10 KB (whole commands a file). Each
+// command: a header line (its real start, the command, its folder, its
+// level) and a close line (its exit code, how long it took). The setup and
+// the boot's stage 1 (in shell) write the same way. The managers' copy
+// (haicc-base-boot has the root's).
 //   const log = openLog({ dir, command, level })   its stdout and stderr, teed from now
-import { appendFileSync, mkdirSync, existsSync, statSync, renameSync, readdirSync } from 'node:fs'
+import { appendFileSync, mkdirSync, statSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
 export const LIMIT = 10 * 1024
 export const LEVELS = ['normal', 'verbose', 'debug']
+const NAME = /^\d{8}T\d{6}Z\.log$/
 
-function rotate (dir) {
-  const file = join(dir, 'haicc.log')
-  if (!existsSync(file) || statSync(file).size < LIMIT) return
-  const n = readdirSync(dir).map(f => /^haicc\.(\d+)\.log$/.exec(f)).filter(Boolean).reduce((m, x) => Math.max(m, Number(x[1])), 0) + 1
-  renameSync(file, join(dir, `haicc.${n}.log`))
+// The current file (the newest), or a new one named by this start.
+export function logFile (dir, start = new Date()) {
+  const newest = readdirSync(dir).filter(f => NAME.test(f)).sort().at(-1)
+  if (newest && statSync(join(dir, newest)).size < LIMIT) return join(dir, newest)
+  return join(dir, start.toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z') + '.log')
 }
 
 export function openLog ({ dir, command, level = 'normal' }) {
   mkdirSync(dir, { recursive: true })
-  const file = join(dir, 'haicc.log')
-  try { rotate(dir) } catch {}
-  const write = text => { try { appendFileSync(file, text) } catch {} }
   const t0 = Date.now()
+  const file = logFile(dir, new Date(t0))
+  const write = text => { try { appendFileSync(file, text) } catch {} }
   write(`== ${new Date(t0).toISOString()} ${command.join(' ')}  (in ${process.cwd()}${level === 'normal' ? '' : `, ${level}`})\n`)
   for (const stream of [process.stdout, process.stderr]) {
     const original = stream.write.bind(stream)

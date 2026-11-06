@@ -37,7 +37,16 @@ cd ~/haicc-work && ./haicc list
   rootful and native), each fixed only with a yes; then `haiccing/install`
   if there (one `./haicc` command a line, stopping at the first failure),
   or the next commands.
-- **The root's commands**: `boot`, `boot <manager>` (next), `fetch
+- **A manager** (`./haicc boot <name>`, e.g. `master`, `node-1`): the name
+  is required, made a URI part if it is not one (the change said); the
+  host's prerequisites checked first; `<name>/` made in the same shape,
+  the package manager and HAICC copied in whole (`<name>/packages/`), its
+  launcher `<name>/haicc`; then its own boot, `<name>/haicc boot`: the
+  self-test of what was copied in (each package's tests, in place),
+  ready when all pass. Its output shown here as it happens (`--no-echo`:
+  its outcome only); its own log in `<name>/log/`. Booted again: what is
+  there is kept, the self-test runs again.
+- **The root's commands**: `boot`, `boot <name>`, `fetch
   <repository>` (with what it requires, from `haiccing/sources`: `folder
   <path>`, `github <org>`), `list` (the managers).
 - **The host checks are the boot's own copy**: `haicc-reconcile`'s machine

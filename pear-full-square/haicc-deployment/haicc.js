@@ -1,5 +1,8 @@
 #!/usr/bin/env node
-// haicc: HAICC for a work folder, as its boot installs it (./haicc <command>).
+// haicc: HAICC in a manager (<manager>/haicc <command>), the full HAICC,
+// copied in by the root's `./haicc boot <manager>`.
+//   haicc boot                        the manager's boot: the self-test of what was copied
+//                                     in (each package's tests, in place); 0 when all pass
 //   haicc run <project> [--no-open]   fetched (with what it needs), installed, deployed and
 //                                     started, the browser opened
 //   haicc test <project|package>      a package's tests within the package; a project's: its
@@ -8,12 +11,12 @@
 //   haicc install <package>           a package, fetched and installed by the package manager
 //   haicc fetch <repository>          a repository (and what it requires) into haiccing/
 //   haicc list | version
-// The work folder ($HAICC_WORK): haiccing/ (the repositories, and sources:
-// where they come from), install/ (the install), log/ (its log), manager/ (the deployments,
-// one folder per project; one fixed manager folder for now). <project>: its
-// repository's name, with or without `base-`, or a folder with project.json.
-// What every command prints goes to log/haicc.log too, in order
-// (files of 10 KB); --verbose and --debug say more. Every visible state
+// The manager's folder ($HAICC_WORK): packages/ (its packages, whole
+// repositories), log/ (its log); the root's haiccing/ beside it. (`run` and
+// the lifecycle verbs: being reworked for managers, the swarm's step.)
+// <project>: its repository's name, with or without `base-`, or a folder
+// with project.json. What every command prints goes to log/ too, in order
+// (files of 10 KB named by their start, newest last); --verbose and --debug say more. Every visible state
 // change is printed. Exit 0 when done; 1 when not (the output says what is
 // missing); 2 on a bad call.
 import process from 'node:process'
@@ -24,17 +27,17 @@ import { pathToFileURL } from 'node:url'
 import { openDeployment } from './index.js'
 import { humanText } from './lib/human.js'
 import { openLog } from './lib/log.js'
+import { selfTest } from './lib/selftest.js'
 import { journal } from '../haicc-reconcile/lib/journal.js'
 
 const argv = process.argv.slice(2)
 const flags = Object.fromEntries(argv.filter(a => a.startsWith('--')).map(a => { const [k, v] = a.slice(2).split('='); return [k, v ?? true] }))
 const [verb, name] = argv.filter(a => !a.startsWith('--'))
 const work = resolve(process.env.HAICC_WORK || '.')
-const home = join(work, 'install')
-const packages = join(home, 'packages')
-const haiccing = join(work, 'haiccing')
+const packages = join(work, 'packages')
+const home = work
+const haiccing = existsSync(join(work, 'haiccing')) ? join(work, 'haiccing') : join(dirname(work), 'haiccing')
 const manager = join(work, 'manager')
-process.env.HAICC_HOME = home
 process.env.HAICC_PACKAGES = packages
 
 const log = openLog({ dir: join(work, 'log'), command: ['haicc', ...argv], level: flags.debug ? 'debug' : flags.verbose ? 'verbose' : 'normal' })
@@ -101,7 +104,15 @@ function printTest (n, t) {
 }
 
 try {
-  if (verb === 'version') {
+  if (verb === 'boot') {
+    // The manager's boot: what was copied in, tested in place.
+    console.log(`The manager ${basename(work)}: the self-test of its packages (${packages})`)
+    const t = selfTest(packages)
+    const failed = t.runs.filter(r => !r.ok)
+    if (!t.repos.length) console.log('  no packages here: nothing to test')
+    console.log(t.ok ? `Ready: ${t.runs.length} test runs passed (${t.repos.join(', ')})` : `Not ready: ${failed.length} of ${t.runs.length} test runs failed`)
+    process.exit(t.ok ? 0 : 1)
+  } else if (verb === 'version') {
     const reg = (await pkgm()).installed(packages)
     console.log(`haicc, the work folder ${work}`)
     for (const [n, p] of Object.entries(reg.packages)) console.log(`  ${n}: ${p.hash.slice(0, 12)}${p.overrides ? ' (overridden)' : ''}`)
