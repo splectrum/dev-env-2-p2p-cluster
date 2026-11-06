@@ -40,13 +40,27 @@ for a in "\$@"; do
   esac
 done
 mkdir -p "\$work"; work=\$(cd "\$work" && pwd)
-if [ -e "\$work/haiccing/$name" ]; then echo "already set up: \$work/haiccing (next: \$work/haiccing/boot)"; exit 0; fi
+# Logged from the start: what it says, to <work folder>/log/haicc.log too
+# (a header and a close line, as every haicc command's).
+mkdir -p "\$work/log"; log=\$work/log/haicc.log
+echo "== \$(date -u +%Y-%m-%dT%H:%M:%S.000Z) sh haicc-setup.sh \$*  (in \$(pwd))" >> "\$log"
+say () { echo "\$*"; echo "\$*" >> "\$log"; }
+end () { echo "== exit \$1" >> "\$log"; exit "\$1"; }
+say "haicc-setup: $name $hash (boot $version)"
+if [ -e "\$work/haiccing/$name/package.json" ]; then
+  there=\$(sed -n 's/.*"hash": *"\\([0-9a-f]\\{12\\}\\).*/\\1/p' "\$work/haiccing/$name/package.json" | head -1)
+  boot=\$(cat "\$work/haiccing/$name/pear-full-square/haicc-base-boot/VERSION" 2>/dev/null || echo '?')
+  if [ "\$there" = "$hash" ]; then say "already set up with this setup: \$work/haiccing (next: \$work/haiccing/boot)"; end 0; fi
+  say "already set up with another setup: \$work/haiccing has $name \$there (boot \$boot), this one is $hash (boot $version)."
+  say "Nothing changed. For this setup, use a new folder: sh haicc-setup.sh <new folder>"
+  end 1
+fi
 line=\$(awk '/^__PAYLOAD__\$/ { print NR + 1; exit }' "\$0")
 tail -n +"\$line" "\$0" | tar -xzf - -C "\$work"
 if [ -n "\$sources" ]; then { echo "# Where this work folder's repositories come from, in order."; printf '%s' "\$sources"; } > "\$work/haiccing/sources"; fi
-echo "set up: \$work/haiccing ($name $hash); sources: \$(grep -v '^#' "\$work/haiccing/sources" | tr '\n' ';' | sed 's/;\$//')"
-echo "next: \$work/haiccing/boot"
-exit 0
+say "set up: \$work/haiccing ($name $hash); sources: \$(grep -v '^#' "\$work/haiccing/sources" | tr '\\n' ';' | sed 's/;\$//')"
+say "next: \$work/haiccing/boot"
+end 0
 __PAYLOAD__
 EOS
 tar -czf - -C "$tmp" haiccing >> "$out"

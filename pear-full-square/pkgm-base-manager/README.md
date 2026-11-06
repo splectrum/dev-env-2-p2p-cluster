@@ -3,7 +3,7 @@
 The package manager, basic. Packages are self-contained folders (each its
 repository, `haiccing/base-package-<name>`): their code ready to run, laid
 out as it is installed, with their tests and a manifest. Installed into one
-folder on the host (`~/.haicc/packages`), each module once, the
+folder (a work folder's `install/packages`), each module once, the
 third-party code once; tested there, within the package. Node's built-ins
 only: no npm, no git.
 
@@ -48,7 +48,7 @@ base-package-<name>/
   left out), recorded; `pkgm test` then runs the module's and the
   package's tests; a plain install puts the package back.
 - The registry: `<install folder>/.pkgm/installed.json`; each package's
-  own files (manifest, readme, record, tests) in `.pkgm/packages/<name>/`.
+  own files (manifest, readme, record, tests) in `pkgm/packages/<name>/`.
 
 ## Writing packages
 

@@ -22,15 +22,17 @@ from a work folder: no development repository, no `npm install`. The setup
 `haiccing/`; its boot does the rest:
 
 ```bash
-sh haicc-setup.sh ~/haicc-work
-~/haicc-work/haiccing/boot
-cd ~/haicc-work && ./haicc run base-demo-liveness
+curl -fL --progress-bar --retry 5 --retry-all-errors --connect-timeout 20 \
+     -o haicc-setup.sh https://github.com/haiccing/base-package-haicc/releases/latest/download/haicc-setup.sh \
+  && sh haicc-setup.sh ~/haicc-work \
+  && ~/haicc-work/haiccing/boot \
+  && cd ~/haicc-work && ./haicc list
 ```
 
 Step 0 checks the machine first and fixes what is missing only with your
-yes (Node.js into the work folder's `.haicc/node`; git and Docker Engine
+yes (Node.js into the work folder's `install/node`; git and Docker Engine
 with `apt`); the repositories come from `haiccing/sources` (GitHub's by
-default). Everything it does is logged in `.haicc/log/`. The sections
+default). Everything it does is logged in the work folder's `log/haicc.log`. The sections
 below are for running the demos from this repository, the code as it is
 here.
 
@@ -118,7 +120,7 @@ sh haicc teardown base-demo-liveness
 port 4400. Starting the second while the first runs is refused, saying
 why; stop the first, then start the second.
 
-The work folder is `~/.haicc/<project>` (`--work=<folder>` for another).
+The work folder is `manager/<project>`, in this repository's root (`--work=<folder>` for another).
 It holds the swarm's folders and vaults (the nodes' secret keys: never
 copy them; teardown removes them) and the records: the deployment's
 topics (`deployment/`), Splectral's runs (`runs/`).
@@ -139,7 +141,7 @@ trust, and set it back afterwards.
 - `sh haicc reconcile <project>`: brings it back to what is wanted (a
   stopped node started, a stopped Splectral restarted).
 - A scenario that fails says why on its page; every action and its result
-  is in `~/.haicc/<project>/runs/actions` (a topic: one JSON file per
+  is in `manager/<project>/runs/actions` (a topic: one JSON file per
   record).
 - A node that does not start usually means UDP to the bridge addresses is
   blocked (section 1).
@@ -154,4 +156,4 @@ Open Claude Code in the repository's folder and give it this:
 > press Run in the browser. Don't commit anything. When I say I'm done,
 > `sh haicc stop`, and `teardown` if I ask.
 
-Never print or copy the vaults (`~/.haicc/<project>/a-vault`, `b-vault`).
+Never print or copy the vaults (`manager/<project>/a-vault`, `b-vault`).

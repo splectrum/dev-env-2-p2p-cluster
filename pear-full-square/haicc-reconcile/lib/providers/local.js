@@ -5,7 +5,7 @@ import { existsSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'node
 import { join } from 'node:path'
 import net from 'node:net'
 
-const MARK = '.haicc-owner'
+const MARK = 'haicc-owner'
 
 export const folder = {
   observe: r => existsSync(r.want.path) ? { path: r.want.path, owner: existsSync(join(r.want.path, MARK)) ? readFileSync(join(r.want.path, MARK), 'utf8').trim() : null } : null,

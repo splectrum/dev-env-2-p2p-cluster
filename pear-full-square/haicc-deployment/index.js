@@ -23,7 +23,6 @@
 // reconcile journal (deployment/reconcile.jsonl).
 import { readFileSync, mkdirSync, existsSync } from 'node:fs'
 import { dirname, resolve, join } from 'node:path'
-import { homedir } from 'node:os'
 import { pathToFileURL } from 'node:url'
 import { createEngine, providers as builtin } from '../haicc-reconcile/index.js'
 import { journal } from '../haicc-reconcile/lib/journal.js'
@@ -34,7 +33,7 @@ const VERBS = { deploy: { deployed: true, running: false }, start: { deployed: t
 export const desiredOf = records => records.reduce((s, r) => VERBS[r.value.verb] ? { ...s, ...VERBS[r.value.verb], since: r.value.time, last: r.value.verb } : s, { deployed: false, running: false, since: null, last: null })
 
 // The boundary: a project file read and checked once.
-export const haiccHome = () => process.env.HAICC_HOME || join(homedir(), '.haicc')
+export const haiccHome = () => process.env.HAICC_HOME || join(process.env.HAICC_WORK || '.', 'install')
 export const packagesFolder = () => resolve(process.env.HAICC_PACKAGES || join(haiccHome(), 'packages'))
 
 export async function readProject (file, work, { packages = packagesFolder(), from = null } = {}) {
@@ -45,7 +44,7 @@ export async function readProject (file, work, { packages = packagesFolder(), fr
   const providers = { ...builtin }
   const configuration = p.configuration || []
   const installer = join(packages, 'pear-full-square', 'pkgm-base-manager', 'reconcile.js')
-  if (p.packages?.length && existsSync(join(packages, '.pkgm')) && existsSync(installer)) {
+  if (p.packages?.length && existsSync(join(packages, 'pkgm')) && existsSync(installer)) {
     Object.assign(providers, (await import(pathToFileURL(installer).href)).providers)
     configuration.unshift(...p.packages.map(n => ({ name: `package-${n}`, kind: 'package', want: { name: n, from: from || dirname(here), into: packages } })))
   }

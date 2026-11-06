@@ -8,7 +8,7 @@
 //   haicc fetch <repository>     a repository, with what it requires, into haiccing/
 //   haicc list                   the managers in this work folder
 // --verbose: each check's detail too. What every command prints goes to
-// .haicc/log/haicc.log as well, in order (files of 10 KB). Exit 0 when done,
+// log/haicc.log as well, in order (files of 10 KB). Exit 0 when done,
 // 1 when not (the output says what is missing), 2 on a bad call.
 import process from 'node:process'
 import { existsSync, readFileSync, readdirSync, openSync, closeSync, createReadStream, createWriteStream } from 'node:fs'
@@ -24,9 +24,9 @@ const argv = process.argv.slice(2)
 const flags = Object.fromEntries(argv.filter(a => a.startsWith('--')).map(a => { const [k, v] = a.slice(2).split('='); return [k, v ?? true] }))
 const [verb, name] = argv.filter(a => !a.startsWith('--'))
 const work = resolve(process.env.HAICC_WORK || '.')
-const root = join(work, '.haicc')
+const root = join(work, 'install')
 const haiccing = join(work, 'haiccing')
-const log = openLog({ dir: join(root, 'log'), command: ['haicc', ...argv], level: flags.debug ? 'debug' : flags.verbose ? 'verbose' : 'normal' })
+const log = openLog({ dir: join(work, 'log'), command: ['haicc', ...argv], level: flags.debug ? 'debug' : flags.verbose ? 'verbose' : 'normal' })
 
 const usage = () => { process.stderr.write(readFileSync(new URL(import.meta.url), 'utf8').split('\n').slice(1, 12).map(l => l.replace(/^\/\/ ?/, '')).join('\n') + '\n'); process.exit(2) }
 
@@ -91,7 +91,9 @@ function installFile () {
 }
 
 try {
-  if (verb === 'boot' && !name) process.exit((await hostPrerequisites()) ? installFile() : 1)
+  if (verb === 'boot' && !name) {
+    process.exit((await hostPrerequisites()) ? installFile() : 1)
+  }
   else if (verb === 'boot') { console.log(`haicc boot ${name}: a manager's boot is the next step, not built yet`); process.exit(1) }
   else if (verb === 'fetch') {
     if (!name) usage()
@@ -105,7 +107,7 @@ try {
     if (code !== 0) console.log(`haicc fetch: not all of ${name} could be fetched (haiccing/sources)`)
     process.exit(code === 0 ? 0 : 1)
   } else if (verb === 'list') {
-    const managers = readdirSync(work).filter(n => existsSync(join(work, n, '.haicc')) && n !== '.haicc')
+    const managers = readdirSync(work).filter(n => n !== 'install' && existsSync(join(work, n, 'install')))
     console.log(`managers (${work}):${managers.length ? '' : ' none yet'}`)
     for (const m of managers) console.log(`  ${m}`)
     process.exit(0)

@@ -16,7 +16,7 @@ const run = (cmd, args) => { try { return execFileSync(cmd, args, { encoding: 'u
 
 const image = {
   observe (r) {
-    if (existsSync(join(r.want.code, '.pkgm', 'installed.json'))) {
+    if (existsSync(join(r.want.code, 'pkgm', 'installed.json'))) {
       let tag
       try { tag = tagOf(r.want.code) } catch { return null }
       return { tag, exists: run('docker', ['image', 'inspect', tag, '--format', '{{.Id}}']) !== null }

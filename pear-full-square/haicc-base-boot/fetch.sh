@@ -18,9 +18,9 @@ fetch_one () {
   r=$1
   lost=0
   [ -f "$haiccing/$r/package.json" ] && return 0
-  grep -v '^[[:space:]]*#' "$sources" | grep -v '^[[:space:]]*$' > "$haiccing/.sources.$$"
+  grep -v '^[[:space:]]*#' "$sources" | grep -v '^[[:space:]]*$' > "$haiccing/sources.$$.tmp"
   while read -r kind where; do
-    tmp=$haiccing/.fetch-$r.$$; rm -rf "$tmp"
+    tmp=$haiccing/$r.$$.fetching; rm -rf "$tmp"
     case $kind in
       folder)
         [ -f "$where/$r/package.json" ] || continue
@@ -39,9 +39,9 @@ fetch_one () {
         [ -d "$tmp" ] || continue ;;
       *) echo "haiccing/sources: unknown source '$kind'"; continue ;;
     esac
-    mv "$tmp" "$haiccing/$r" && { echo "  fetched $r ($kind $where)"; rm -f "$haiccing/.sources.$$"; return 0; }
-  done < "$haiccing/.sources.$$"
-  rm -f "$haiccing/.sources.$$"
+    mv "$tmp" "$haiccing/$r" && { echo "  fetched $r ($kind $where)"; rm -f "$haiccing/sources.$$.tmp"; return 0; }
+  done < "$haiccing/sources.$$.tmp"
+  rm -f "$haiccing/sources.$$.tmp"
   if [ $lost = 1 ]; then echo "  $r: the connection failed; check it and run this again"; return 1; fi
   echo "  $r: in none of the sources ($(grep -v '^[[:space:]]*#' "$sources" | tr '\n' ';' | sed 's/;$//'))"
   return 1

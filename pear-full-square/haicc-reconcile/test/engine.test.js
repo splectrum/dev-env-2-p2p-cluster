@@ -73,7 +73,7 @@ test('the generic providers: folder (made, owned, removed), port (free, taken, o
   const f = { name: 'work', kind: 'folder', want: { path: join(w, 'work') } }
   assert.equal((await e.check([f]))[0].status, 'missing')
   await e.apply([f])
-  assert.ok(existsSync(join(w, 'work', '.haicc-owner')))
+  assert.ok(existsSync(join(w, 'work', 'haicc-owner')))
   mkdirSync(join(w, 'theirs'))
   const theirs = { name: 'theirs', kind: 'folder', want: { path: join(w, 'theirs') } }
   assert.deepEqual(await e.remove([f, theirs]), { done: ['work'], failed: [], kept: ['theirs'] })

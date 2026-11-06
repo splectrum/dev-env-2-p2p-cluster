@@ -126,13 +126,15 @@ Bare and the boot only.
 
 **Decided by the human, 2026-11-06, over what follows: no hidden folders, full
 stop.** "It doesn't make sense to have visible state change in a hidden
-folder." `.haicc`, as written below and elsewhere in this note, is to go.
+folder." Done (2026-11-06): `install/` and `log/`, below; `.haicc`
+elsewhere in this note is the history it replaced.
 
 ```
 <work>/
   haicc                 the launcher: ./haicc <command>
   haiccing/             boot (the stub), sources, [install], the repositories
-  .haicc/               the root install: node/, packages/ (HAICC, the package manager), log/
+  install/              the root install: node/, haicc-base-boot/
+  log/                  the log: haicc.log (the setup's, the boot's, every command's)
   manager/              the swarm: self-contained (next: haicc boot <manager>)
 ```
 
@@ -141,8 +143,8 @@ folder." `.haicc`, as written below and elsewhere in this note, is to go.
   `haiccing/boot`, `haiccing/sources`, `haiccing/base-package-haicc/`.
 - **Stage 1, `haiccing/boot`** (shell, before Node.js): only what HAICC
   needs to run: Linux x86-64 and Node.js (fixed with a yes, into
-  `.haicc/node`); the root's part of HAICC, `haicc-base-boot`, copied into
-  `.haicc/` at the first boot only (versions later); `./haicc` written;
+  `install/node`); the root's part of HAICC, `haicc-base-boot`, copied into
+  `install/` at the first boot only (versions later); `./haicc` written;
   then stage 2.
 - **Stage 2, `./haicc boot`** (the root's HAICC): the host's other
   prerequisites, git and Docker Engine (installed, running, rootful,
@@ -159,10 +161,18 @@ folder." `.haicc`, as written below and elsewhere in this note, is to go.
   part). Topics are not HAICC's: a sync into topics is a separate process,
   installed into a swarm, later.
 - **The log is what a command prints**: stdout and stderr appended to
-  `.haicc/log/haicc.log` in order, a header line and a close line per
+  `log/haicc.log` in order, from the setup on, a header line and a close line per
   command; files of 10 KB, rotated as a command starts (whole commands a
   file). Levels: normal (the state changes and the outcome), `--verbose`,
   `--debug`. Every visible state change is printed.
+- **No hidden folders** (the human, 2026-11-06): `install/`, `log/`; an
+  install's registry `pkgm/`; the owner's mark `haicc-owner`; no
+  temporary dot-files. A manager has the same shape: `<manager>/install/`,
+  `<manager>/log/`.
+- **The setup** logs too, from its first line; set up again over the same
+  setup it says so (exit 0), over another it names both and says to use a
+  new folder (exit 1). The published commands are one command joined with
+  `&&`, `curl` retrying. Where the log is, the instructions say.
 - **Each swarm self-contained** (the manager boot, next): HAICC installed
   in the manager too, with the swarm's packages; processes there resolve
   their modules from the manager's folder; the manager's HAICC logs locally,

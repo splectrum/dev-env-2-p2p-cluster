@@ -9,7 +9,7 @@
 #                              platform's prebuilds only
 #   sh pear-full-square/p2p-node-manager/image/build.sh <code>   prints the node image's tag
 # <code> is either
-#   - an install folder (the package manager's, with .pkgm/installed.json):
+#   - an install folder (the package manager's, with pkgm/installed.json):
 #     the code as installed, the image tagged by the installed packages'
 #     hashes (p2p-node:pkg-<hash>), Bare's runtime from the third-party
 #     package; or
@@ -20,9 +20,9 @@ src=$(cd "$1" && pwd)
 here=$(cd "$(dirname "$0")" && pwd)
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
-if [ -f "$src/.pkgm/installed.json" ]; then
+if [ -f "$src/pkgm/installed.json" ]; then
   tag=$(node --input-type=module -e "import { tagOf } from '$here/tag.js'; console.log(tagOf(process.argv[1]))" "$src")
-  meta=$src/.pkgm/packages/third-party/package.json
+  meta=$src/pkgm/packages/third-party/package.json
   [ -f "$meta" ] || { echo "no third-party package installed in $src" >&2; exit 2; }
   version=$(node -p "require('$meta').pkgm.bare")
   binary=$src/$(node -p "require('$meta').pkgm.runtime")
@@ -31,9 +31,10 @@ if [ -f "$src/.pkgm/installed.json" ]; then
   if ! docker image inspect "$tag" >/dev/null 2>&1; then
     app=$work/node/app
     mkdir -p "$app"
-    # Everything installed but the package manager's own records; tests and
+    # Everything installed but the package manager's own records (pkgm/); tests and
     # Node's addons (Bare loads its own, .bare) left out.
     for d in "$src"/*; do cp -a "$d" "$app/"; done
+    rm -rf "$app/pkgm"
     find "$app" -type d -name test -prune -exec rm -rf {} +
     find "$app/node_modules" -name '*.node' -path '*/prebuilds/*' -delete
     rm -rf "$app/node_modules/bare-runtime-"*
