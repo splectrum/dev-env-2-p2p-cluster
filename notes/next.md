@@ -53,6 +53,8 @@ package manager work:
 3. `./haicc boot hosts/master` makes one swarm, `hosts-master`, and says so.
    The form `<swarm>/<node>` was dropped by the levels; a clear refusal would
    say more than a cleaned name.
+   **Done (2026-11-06):** a path for a name is refused (exit 2, nothing
+   made), naming the command to use: `hosts/haicc boot master`; a test added.
 
 **Now: boot and shutdown by level, built and tested (2026-11-06); next,
 the master's swarm.** `notes/packages.md`, "Boot and shutdown by level".
