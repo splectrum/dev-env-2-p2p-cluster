@@ -4,6 +4,9 @@ The second development phase: the creation of a P2P cluster, starting with
 p2p-git on Hyperdrive. Request: `pending/phase-2/request.md` on
 `pending/default`.
 
+Status (2026-11-06, the human's feedback): the fourth release works for the
+human; the folders' names and the log's timestamps for a fifth (`next.md`).
+
 Status (2026-11-06, the fourth release): `setup-47f2b29b0194`, boot 0.5.0, no
 hidden folders, published; the human tests it locally (`next.md`).
 
