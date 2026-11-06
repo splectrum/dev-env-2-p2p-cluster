@@ -56,12 +56,15 @@ package manager work:
    **Done (2026-11-06):** a path for a name is refused (exit 2, nothing
    made), naming the command to use: `hosts/haicc boot master`; a test added.
 
-**Next, agreed, not built (2026-11-06): swarms from config packages.**
-`notes/packages.md`, "Swarms from config packages; haiccing/, user/,
-swarms/": `swarms/` for the swarms, `user/` for the user's packages beside
-`haiccing/` (haiccing's only, `base-`), a swarm only from a package with a
-`nodes.json` (`./haicc boot <package>`, `--from=`), no current swarm (`cd`).
-Then the master's swarm. Waiting for the human's go.
+**Next, agreed, not built (2026-11-06): packages, platforms, swarms and
+tests.** `notes/packages.md`, that section: a package's structure
+(`modules/`, `swarms/<swarm>/` with one file a concern, `platform/`,
+`test/<test>/` package-shaped); any package may carry the platform, one
+platform per work folder, installs side by side in a parent folder;
+`swarms/` in the work folder, a swarm only from a package, `--from` a
+path; sources per package (`folder`, `git`, `github`), `contents.json` in
+every packages folder, `swarms.json` fully qualified; test runs in
+`swarms/test/<test>/`. Then the master's swarm. Waiting for the human's go.
 
 **Now: boot and shutdown by level, built and tested (2026-11-06); next,
 the master's swarm.** `notes/packages.md`, "Boot and shutdown by level".
