@@ -51,6 +51,12 @@ to archive (the human).
 packages `base-package-p2p` `c71fb51`, `base-package-splectral` `5fcf3d7`
 (from dev `5414ae5`). The demos (their readmes) with the local agent.
 
+**The second release (2026-11-06)**, the boot 0.4.1, by the local agent from
+dev `ba9c12a`: product `haicc-base-boot` `229a816` (split `6115008`), package
+`base-package-haicc` `d4b7c29` alone (`pkgm write --only=haicc`), the demos
+left as they are; the setup's release `setup-58fb397be615`; `haiccing/.github`
+`f9649d3`.
+
 **The root boot (2026-11-06)**: products `haicc-base-boot` `06d69bb`,
 `haicc-deployment` `98fcc76`, `haicc-reconcile` `1362fe7`,
 `pkgm-base-manager` `67b92e0`; packages (from dev `e4ffd70`; every readme

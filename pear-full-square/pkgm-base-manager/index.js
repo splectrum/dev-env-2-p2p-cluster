@@ -142,7 +142,7 @@ export function testPackage (name, { into, log = () => {} }) {
     delete env.NODE_TEST_CONTEXT
     const r = spawnSync(cmd, args, { cwd, encoding: 'utf8', env, maxBuffer: 64 * 1024 * 1024 })
     const out = (r.stdout || '') + (r.stderr || '')
-    const counts = Object.fromEntries(['tests', 'pass', 'fail'].map(k => [k, Number((out.match(new RegExp(`^# ${k} (\\d+)`, 'm')) || [])[1] || 0)]))
+    const counts = Object.fromEntries(['tests', 'pass', 'fail'].map(k => [k, Number((out.match(new RegExp(`^(?:#|ℹ) ${k} (\\d+)`, 'm')) || [])[1] || 0)]))
     const result = { what, ok: r.status === 0, ...counts, ms: Date.now() - t0, ...(r.status === 0 ? {} : { output: out.split('\n').slice(-40).join('\n') }) }
     log({ kind: 'tested', package: name, ...result, output: undefined })
     runs.push(result)

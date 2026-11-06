@@ -142,4 +142,5 @@ To do, in this order:
 
    **Done 2026-11-06** by the local agent, on the human's word without the
    demos (step 1 not done): `6-work-folder/local-run.md`. The link works.
-   Two fixes there want a new release; the profile's last step is open.
+   The second release, `setup-58fb397be615`, carries its fixes; the profile
+   is trimmed.
