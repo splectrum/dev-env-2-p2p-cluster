@@ -150,6 +150,11 @@ test('the setup: a self-extracting release, extracting haiccing/ (boot, sources,
     assert.deepEqual(readFileSync(join(work, 'haiccing', 'sources'), 'utf8').split('\n').filter(l => l && !l.startsWith('#')), [`folder ${dir}/repos`, 'github haiccing'])
     // Logged from the start: the setup's own lines in the work folder's log.
     assert.match(readFileSync(join(work, 'log', 'haicc.log'), 'utf8'), /^== .* sh haicc-setup\.sh .*\nhaicc-setup: base-package-haicc abcdef123456 .*\n(.*\n)*== exit 0\n$/)
+    // The first boot's stage 1, on a folder with no install/ yet: HAICC copied in.
+    const stage1 = spawnSync('sh', [join(work, 'haiccing', 'boot')], { encoding: 'utf8', env: { ...process.env, HAICC_BOOT_LOGGING: '1' } })
+    assert.equal(stage1.status, 0, stage1.stdout + stage1.stderr)
+    assert.ok(existsSync(join(work, 'install', 'haicc-base-boot', 'haicc.js')), stage1.stdout + stage1.stderr)
+    assert.ok(existsSync(join(work, 'haicc')))
     // Again, the same setup: said, exit 0, nothing changed.
     const again = spawnSync('sh', [join(dir, 'haicc-setup.sh'), work], { encoding: 'utf8' })
     assert.equal(again.status, 0)

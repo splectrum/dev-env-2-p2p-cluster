@@ -17,7 +17,7 @@ haiccing=$(cd "$here/../../.." && pwd)
 work=$(dirname "$haiccing")
 install=$work/install
 logdir=$work/log
-mkdir -p "$logdir"
+mkdir -p "$logdir" "$install"
 # Its output, to the log too (the exit code kept through the pipe).
 if [ -z "${HAICC_BOOT_LOGGING:-}" ]; then
   export HAICC_BOOT_LOGGING=1
@@ -54,7 +54,7 @@ if [ -f "$install/haicc-base-boot/haicc.js" ]; then
   else echo "  the root's HAICC: $there is there, this setup is $this: kept, no updates yet (a new work folder has $this)"; fi
 else
   echo "  copying the root's HAICC into $install..."
-  rm -rf "$install/haicc-base-boot.new" && cp -a "$here" "$install/haicc-base-boot.new" && rm -rf "$install/haicc-base-boot.new/test" && mv "$install/haicc-base-boot.new" "$install/haicc-base-boot"
+  rm -rf "$install/haicc-base-boot.new" && cp -a "$here" "$install/haicc-base-boot.new" && rm -rf "$install/haicc-base-boot.new/test" && mv "$install/haicc-base-boot.new" "$install/haicc-base-boot" || { echo "the root's HAICC could not be copied into $install"; exit 1; }
   echo "  copied the root's HAICC (haicc-base-boot $(cat "$here/VERSION")) into $install/haicc-base-boot"
 fi
 cat > "$work/haicc.new" <<EOS
