@@ -25,6 +25,15 @@ Phase 3, step 1 (packages and the boot): record
 - **The local agent's first run** (`5-validation/local-run.md`): the demos
   published, both run from GitHub's archives; one open finding.
 
+**Now: written up, to build once the human has read it (2026-11-06).**
+Decided with the human after the fourth release, in `notes/packages.md`,
+"Self-contained packages, the work folder, the log", and the request's
+part 7 (`pending/default` `2c5f2aa`): self-contained packages (no
+`requires`, installed whole, sealed); the work folder `packages/`, `node/`,
+`log/` (`install/` gone, one variable `HAICC_WORK`); the log on a
+timeline. Later: versioned packages (major.minor in the name), the host on
+Bare (`plan.md`).
+
 **Next here, first: the human's feedback on the fourth release (2026-11-06),
 for a fifth.** The human ran it: "that works a lot better". Decided with them:
 

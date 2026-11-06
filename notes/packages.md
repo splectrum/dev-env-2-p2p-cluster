@@ -142,6 +142,77 @@ packages repository and extracts it; with packages, it is the same
 mechanism as the host's, writing only what changed, the image keeping
 Bare and the boot only.
 
+## Self-contained packages, the work folder, the log (agreed 2026-11-06)
+
+Decided with the human after the fourth release; to build next. Where this
+section and older ones differ, this one holds.
+
+**Self-contained packages.**
+- **A package carries everything it runs on**: its modules, the modules of
+  ours they import (from other packages), and the third-party code they
+  use, all the way down. No `requires`: imports never leave the package
+  (relative ones between modules keep working inside it).
+- **Installing is copying the repository in, whole**: `packages/<repository>/`,
+  as the repository has it; nothing taken apart, nothing resolved across
+  packages. The package manager's registry is the sealed version of each
+  repository installed.
+- **Once sealed, only the repository's version counts**: tested as the
+  whole it is, once; a new version of another package changes nothing in
+  it. No retesting on a dependency's upgrade, no version tracking across
+  repositories.
+- **Splectral's components** (`splectral/`) are self-contained the same way:
+  a view or a scenario is its own files, run by the platform; a project's
+  package carries its components and the platform.
+- **The writer works each package's set out**: its modules, ours they
+  import, the third-party code those use, all the way down.
+- **Sizes** (measured 2026-11-06, Linux x64, as imported): `haicc`, `pkgm`:
+  no third-party code (well under 1 MB each); `mycelium`: 41 MB; `p2p`,
+  `splectral` and each demo: 139 to 144 MB, of which Bare's runtime 97 MB
+  (published with debug information), RocksDB 20 MB (a Node.js build for the
+  host, a Bare one for the nodes), the rest 20 to 25 MB. Our own code about
+  3 MB. A manager typically installs one project's package, about 120 MB
+  with the runtime stripped; two projects carry two copies.
+- **Bare's runtime, stripped, for deployment** (68 MB): in the packages that
+  build node images; the import's record says so (the published version's
+  integrity, and that it was stripped, with the stripped file's checksum).
+  The full runtime belongs to the root, with the host's move to Bare (the
+  roadmap: `plan.md`, "The host on Bare"); the host runs on Node.js for now.
+- **Versioned packages, later**: the version goes into the name
+  (major.minor, e.g. `base-package-haicc-1.2`), so versions sit side by side
+  in `packages/` and are used side by side.
+
+**The work folder**, the same shape at the root and in a manager:
+
+```
+<work>/
+  haicc        the launcher
+  haiccing/    boot, sources, [install], the repositories as fetched
+  packages/    the code: repositories, whole (the root: base-package-haicc; a manager: its packages, and pkgm/)
+  node/        Node.js, when HAICC had to install it
+  log/         the log files
+  manager/     the same shape again
+```
+
+- `install/` goes. One variable, `HAICC_WORK`: the folder HAICC works in
+  (the root, or a manager); `packages/`, `node/`, `log/` follow from it.
+  `HAICC_HOME` goes.
+- The root runs its HAICC (`haicc-base-boot`) from
+  `packages/base-package-haicc/`, a copy made at the first boot: `haiccing/`
+  stays what is fetched, `packages/` what runs.
+- Still no hidden folders.
+
+**The log on a timeline.**
+- Files of 10 KB, each named by the start of its first command, in UTC
+  (`log/20261106T103312Z.log`): `ls log/` reads in time order; the newest is
+  the current one. A command appends to it, or starts a new file named by
+  its own start once the current one is over 10 KB (whole commands a file).
+  The setup, the boot's stage 1 (shell) and HAICC (Node.js) do the same.
+- Each command: a header with its real start time (seconds in shell,
+  milliseconds in Node.js; no invented `.000Z`), and a close line with its
+  duration (`== exit 0, 1.2 s`), the setup's included. Not every line.
+- The instructions (the readmes, `haiccing`'s profile) say where the log
+  is: in `log/`, newest last.
+
 ## The work folder, one route, a double boot (agreed 2026-11-05, revised 2026-11-06)
 
 **Decided by the human, 2026-11-06, over what follows: no hidden folders, full
