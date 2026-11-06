@@ -36,8 +36,17 @@ For a fourth release:
 4. The published commands joined with `&&`, curl with retries (profile,
    `packages.json`'s readme lines).
 
-Open with the human: whether the log stays in the hidden `.haicc/log/`, or
-moves somewhere visible (the local agent's suggestion: stay, and print the path).
+**Decided by the human: no hidden folders, full stop** ("it doesn't make
+sense to have visible state change in a hidden folder"). This goes before the
+four items, and changes the first two. Everything in `.haicc/` moves to a
+visible folder: the root's install, the log, Node.js, and the default home of
+`HAICC_HOME` (`~/.haicc`). In the source: 34 lines over 18 files of
+`pear-full-square`, and `packages.json`; then the readmes and the design
+(`notes/packages.md`). Also the temporary dot-files of the boot: `.boot-exit`,
+`.fetch-*`, `.sources.*`. A manager's `.haicc` too (`./haicc list` finds
+managers by it). The new name is the implementer's to propose: `haicc/` cannot
+be it, as `./haicc` is a file in the same folder. `.git` and the `.github`
+repositories are not ours to rename.
 Also to do: `pkgm-base-manager`'s count of tests is in the source, not its
 product or package; the no-Node.js boot through to the end; the package
 `base-package-haicc` on Codeberg was behind `d816572` when this was written.

@@ -119,7 +119,7 @@ Findings, for the implementation session (`notes/next.md`):
 The human: "There was output text, but nothing in file", though the log was
 there: `~/haicc-work/.haicc/log/haicc.log`, 1,298 bytes, the whole run. The
 folder is hidden and no output names it. A log nobody can find is not doing
-its job.
+its job. The human's decision: no hidden folders, full stop (`notes/next.md`).
 
 ### 5. The log does not start from the start (open)
 
