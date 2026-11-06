@@ -60,6 +60,7 @@ fix_node () {
   curl -fsSL "$base/$file" -o "$tmp/$file" && curl -fsSL "$base/SHASUMS256.txt" | grep " $file\$" | (cd "$tmp" && sha256sum -c - >/dev/null) || { echo "Node.js download failed, or its checksum did not match"; rm -rf "$tmp"; return 1; }
   mkdir -p "$home" && rm -rf "$home/node.new" && mkdir "$home/node.new" && tar -xzf "$tmp/$file" -C "$home/node.new" --strip-components=1 && rm -rf "$home/node" && mv "$home/node.new" "$home/node"
   rm -rf "$tmp"
+  PATH=$home/node/bin:$PATH   # for the check that follows
   echo "installed: Node.js $("$home/node/bin/node" -v) in $home/node"
 }
 

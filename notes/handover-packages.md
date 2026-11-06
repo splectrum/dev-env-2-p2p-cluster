@@ -1,7 +1,6 @@
 # Handover: publishing the haiccing packages (for the local agent)
 
 **Done 2026-11-05**, both tasks: `steps/phase-3/1-packages-and-boot/5-validation/local-run.md`.
-The from-scratch run in one command: `5-validation/manual-run.sh`.
 
 Written 2026-11-04 after phase 3, step 1; updated the same day. The cloud
 session published the six packages (`haiccing/base-package-haicc`, `-pkgm`,
@@ -140,3 +139,7 @@ To do, in this order:
 
    The root only, for now: the manager boot (and so running a demo) is the
    next step. Then check `haiccing`'s profile's link works.
+
+   **Done 2026-11-06** by the local agent, on the human's word without the
+   demos (step 1 not done): `6-work-folder/local-run.md`. The link works.
+   Two fixes there want a new release; the profile's last step is open.

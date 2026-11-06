@@ -4,6 +4,11 @@ The second development phase: the creation of a P2P cluster, starting with
 p2p-git on Hyperdrive. Request: `pending/phase-2/request.md` on
 `pending/default`.
 
+Status (2026-11-06, local): **the first HAICC release tested** from its own
+download (`../steps/phase-3/1-packages-and-boot/6-work-folder/local-run.md`):
+the root's route works; a machine without Node.js stops at the first boot,
+fixed in the source, not yet released.
+
 Status (2026-11-05, local): **the `haiccing` repositories published, the
 from-scratch run done** (`../steps/phase-3/1-packages-and-boot/5-validation/local-run.md`):
 both demos run from GitHub's archives; `base-demo-liveness` failed 1 run in

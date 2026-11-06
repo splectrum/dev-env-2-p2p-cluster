@@ -25,9 +25,13 @@ Phase 3, step 1 (packages and the boot): record
 - **The local agent's first run** (`5-validation/local-run.md`): the demos
   published, both run from GitHub's archives; one open finding.
 
-**Waiting on the local agent** (`notes/handover-packages.md`, "Again,
-after part 6"): the demos and the setup's release published; a work
-folder from scratch. **The human**: archive `pear-full-square/pkgm-base-boot`.
+**The first release tested (2026-11-06)**: `setup-96cfc58bc18f`, the root's
+route from its own download: `6-work-folder/local-run.md`. It works with
+Node.js there; without it the first boot stops. That fix and one for a
+warning are in the source, and want a new release (products, packages, the
+setup, `VERSION`). Open with the human: `haiccing`'s profile still ends with
+`./haicc run`, which this release cannot do. Not done, the human's word: the
+demos' publishing. **The human**: archive `pear-full-square/pkgm-base-boot`.
 
 **The root boot** (2026-11-06): the double boot, HAICC on Node.js alone,
 its log (notes/packages.md, "a double boot"). **Next here**: the manager
