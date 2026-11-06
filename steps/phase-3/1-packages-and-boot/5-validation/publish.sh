@@ -42,7 +42,7 @@ sh "$dev/pear-full-square/haicc-base-boot/release.sh" "$folder/base-package-haic
 tag=setup-$(node -p "require('$folder/base-package-haicc/package.json').pkgm.hash.slice(0, 12)")
 if [ $push = 1 ] && command -v gh >/dev/null 2>&1; then
   if gh release view "$tag" -R haiccing/base-package-haicc >/dev/null 2>&1; then echo "release $tag: there already"
-  else gh release create "$tag" "$folder/haicc-setup.sh" -R haiccing/base-package-haicc --title "Setup $tag" --notes "The setup: sh haicc-setup.sh <work folder>, then <work folder>/haiccing/boot. Written from dev-env-2-p2p-cluster $commit." --latest && echo "release $tag: published"; fi
+  else gh release create "$tag" "$folder/haicc-setup.sh" -R haiccing/base-package-haicc --title "Setup $tag" --notes "The setup: sh haicc-setup.sh <work folder>, then <work folder>/boot. Written from dev-env-2-p2p-cluster $commit." --latest && echo "release $tag: published"; fi
 else
   echo "release $tag: built ($folder/haicc-setup.sh), not uploaded$([ $push = 1 ] && echo ' (no gh)')"
 fi

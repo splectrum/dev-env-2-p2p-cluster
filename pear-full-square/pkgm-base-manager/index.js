@@ -183,7 +183,7 @@ function readme (name, def, m) {
   lines.push(`- requires: ${m.requires.length ? m.requires.map(link).join(', ') : 'nothing'}`,
     ...(m.platform ? [`- platform: ${m.platform}`] : []),
     `- hash: \`${m.hash}\``, '',
-    `In a work folder (see [${ORG}/${repoName('haicc')}](https://github.com/${ORG}/${repoName('haicc')})), installed by HAICC as a project needs it, or by \`./haicc install ${name}\`, into \`.haicc/packages\` with what it requires; tested there, within the package: \`./haicc test ${name}\`.`, '',
+    `In a work folder (see [${ORG}/${repoName('haicc')}](https://github.com/${ORG}/${repoName('haicc')})), installed by HAICC as a project needs it, or by \`./haicc install ${name}\` in a node's manager, into its \`packages/\` with what it requires; tested there, within the package: \`./haicc test ${name}\`.`, '',
     'Written by the package manager from the development repository ([splectrum/dev-env-2-p2p-cluster](https://github.com/splectrum/dev-env-2-p2p-cluster)): not edited here.', '')
   return lines.join('\n')
 }
