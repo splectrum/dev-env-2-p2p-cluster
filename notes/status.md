@@ -7,7 +7,8 @@ p2p-git on Hyperdrive. Request: `pending/phase-2/request.md` on
 Status (2026-11-06, local): **the first HAICC release tested** from its own
 download (`../steps/phase-3/1-packages-and-boot/6-work-folder/local-run.md`):
 the root's route works; a machine without Node.js stopped at the first boot,
-fixed in the second release, `setup-58fb397be615`.
+fixed in the second release; output as it happens in the third,
+`setup-b8c4a67a5e83`.
 
 Status (2026-11-05, local): **the `haiccing` repositories published, the
 from-scratch run done** (`../steps/phase-3/1-packages-and-boot/5-validation/local-run.md`):
