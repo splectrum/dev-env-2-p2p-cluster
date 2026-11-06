@@ -33,14 +33,12 @@ export function copy (from, to, opts = {}) {
   }
 }
 
-// A folder's identity: its paths, exec bits, links and contents (`skip`:
-// paths that describe it rather than are it, left out).
-export function hashTree (root, paths, { skip = () => false } = {}) {
+// A folder's identity: its paths, exec bits, links and contents.
+export function hashTree (root, paths) {
   const h = createHash('sha256')
   for (const p of paths) {
     const files = lstatSync(join(root, p)).isDirectory() ? walk(join(root, p)).map(f => ({ ...f, path: `${p}/${f.path}` })) : [{ path: p, exec: (lstatSync(join(root, p)).mode & 0o111) !== 0 }]
     for (const f of files) {
-      if (skip(f.path)) continue
       h.update(f.path + '\0')
       if (f.link !== undefined) h.update('link\0' + f.link + '\0')
       else h.update((f.exec ? 'x' : '-') + '\0' + createHash('sha256').update(readFileSync(join(root, f.path))).digest('hex') + '\0')
