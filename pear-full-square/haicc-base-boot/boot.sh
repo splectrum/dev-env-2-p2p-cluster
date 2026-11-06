@@ -7,7 +7,7 @@
 #    <work>/packages/ (at the first boot only), and <work>/haicc written;
 # 3. then ./haicc boot (stage 2: the host's other prerequisites,
 #    haiccing/install).
-# The work folder: haicc, haiccing/, packages/, node/ (Node.js, when the
+# The work folder: haicc, haiccing/, packages/, nodejs/ (Node.js, when the
 # boot installs it), log/. What it prints goes to the log as well, in
 # <work>/log/: files of 10 KB, each named by its first command's start
 # (UTC), so they list in time order; a header line (the real start) and a
@@ -45,7 +45,7 @@ if ! sh "$here/step0.sh" check; then
   echo "HAICC needs what is marked 'no' above to run."
   sh "$here/step0.sh" fix $yes || { echo; echo "HAICC cannot run yet: fix what is marked 'no' (sh $here/step0.sh fix), then haiccing/boot again"; exit 1; }
 fi
-[ -x "$work/node/bin/node" ] && PATH=$work/node/bin:$PATH && export PATH
+[ -x "$work/nodejs/bin/node" ] && PATH=$work/nodejs/bin:$PATH && export PATH
 
 # 2. HAICC's package, copied whole into packages/ at the first boot.
 pkg=$work/packages/base-package-haicc
@@ -64,7 +64,7 @@ cat > "$work/haicc.new" <<EOS
 # HAICC for this work folder (written by haiccing/boot): ./haicc <command>
 work=\$(cd "\$(dirname "\$0")" && pwd)
 HAICC_WORK=\$work; export HAICC_WORK
-[ -x "\$work/node/bin/node" ] && PATH=\$work/node/bin:\$PATH
+[ -x "\$work/nodejs/bin/node" ] && PATH=\$work/nodejs/bin:\$PATH
 exec node "\$work/packages/base-package-haicc/pear-full-square/haicc-base-boot/haicc.js" "\$@"
 EOS
 chmod 755 "$work/haicc.new" && mv "$work/haicc.new" "$work/haicc"
