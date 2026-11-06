@@ -4,6 +4,9 @@ The second development phase: the creation of a P2P cluster, starting with
 p2p-git on Hyperdrive. Request: `pending/phase-2/request.md` on
 `pending/default`.
 
+Status (2026-11-06, the fourth release): `setup-47f2b29b0194`, boot 0.5.0, no
+hidden folders, published; the human tests it locally (`next.md`).
+
 Status (2026-11-06, the human's report): the third release completed for the
 human, but they could not find its log: findings 4 to 7 of
 `../steps/phase-3/1-packages-and-boot/6-work-folder/local-run.md`, back to the

@@ -147,6 +147,10 @@ To do, in this order:
 
 ## The fixes after the third release (2026-11-06)
 
+**Items 1 to 4 done 2026-11-06** by the local agent, the release with the
+human's OK: `setup-47f2b29b0194`, recorded in `5-validation/products.md` and
+`6-work-folder/local-run.md`. Item 5 is the human's.
+
 On `main` (the session's commits up to "Testing decided; the environment
 copies removed"): the human's findings 4 to 7 and no hidden folders, the
 boot 0.5.0. Not published. In this order:

@@ -25,46 +25,13 @@ Phase 3, step 1 (packages and the boot): record
 - **The local agent's first run** (`5-validation/local-run.md`): the demos
   published, both run from GitHub's archives; one open finding.
 
-**Now, for the local agent: publish the fixes, then the human tests
-locally (2026-11-06).** Built in the session, committed on `main`, not
-published: the human's report on the third release, findings 4 to 7, and
-no hidden folders (`notes/packages.md`, "a double boot"). Boot 0.5.0:
-`install/` and `log/` in a work folder, `pkgm/` for an install's registry,
-`haicc-owner` for the mark, no temporary dot-files; the setup logs from its
-first line, says `already set up with this setup` (exit 0) or names both
-setups and says to use a new folder (exit 1); the published commands one
-command joined with `&&`, `curl` retrying. No line names the log: the
-instructions say where it is (the human). How, in
-`notes/handover-packages.md`, "The fixes after the third release". Tests:
-decided, not built (`notes/packages.md`, "Testing"); they come with the
-package manager work.
-
-**Next here, first: the human's report on the third release (2026-11-06)**.
-It completed for them, output as it happens, but the log failed them. Detail:
-`steps/phase-3/1-packages-and-boot/6-work-folder/local-run.md`, findings 4 to 7.
-For a fourth release:
-1. The boot's last line names the log (`Logged to <path>`), when it fails too.
-2. The log starts at the setup: `haicc-setup.sh` writes its header and result
-   into `.haicc/log/haicc.log`.
-3. `already set up` names both versions and says to use a new folder.
-4. The published commands joined with `&&`, curl with retries (profile,
-   `packages.json`'s readme lines).
-
-**Decided by the human: no hidden folders, full stop** ("it doesn't make
-sense to have visible state change in a hidden folder"). This goes before the
-four items, and changes the first two. Everything in `.haicc/` moves to a
-visible folder: the root's install, the log, Node.js, and the default home of
-`HAICC_HOME` (`~/.haicc`). In the source: 34 lines over 18 files of
-`pear-full-square`, and `packages.json`; then the readmes and the design
-(`notes/packages.md`). Also the temporary dot-files of the boot: `.boot-exit`,
-`.fetch-*`, `.sources.*`. A manager's `.haicc` too (`./haicc list` finds
-managers by it). The new name is the implementer's to propose: `haicc/` cannot
-be it, as `./haicc` is a file in the same folder. `.git` and the `.github`
-repositories are not ours to rename.
-Also to do: `pkgm-base-manager`'s count of tests is in the source, not its
-product or package; the no-Node.js boot through to the end; the package
-`base-package-haicc` on Codeberg was behind `d816572` when this was written.
-The local machine's connection is intermittent.
+**Now: the human tests the fourth release locally (2026-11-06).**
+`setup-47f2b29b0194`, boot 0.5.0, published: findings 4 to 7 and no hidden
+folders. Record: `steps/phase-3/1-packages-and-boot/6-work-folder/local-run.md`.
+What the human checks: `notes/handover-packages.md`, "The fixes after the third
+release", item 5. Tests: decided, not built (`notes/packages.md`, "Testing");
+they come with the package manager work. The local machine's connection is
+intermittent: a failed download there is the connection first.
 
 **The first releases tested (2026-11-06)**: `6-work-folder/local-run.md`.
 `setup-96cfc58bc18f` stopped at the first boot without Node.js;
