@@ -1,16 +1,7 @@
 # The self-test: a work folder's install file (copy it to haiccing/install,
-# then haiccing/boot). Every package's tests within the package, then each
-# demo run, tested and torn down. The browser run is not here (Playwright).
-test pkgm
-test third-party
-test mycelium
-test haicc
-run base-demo-liveness --no-open
-test base-demo-liveness
-teardown base-demo-liveness
-test p2p
-test splectral
-run base-demo-other-host --no-open
-test base-demo-other-host
-teardown base-demo-other-host
+# then haiccing/boot). The root's part, for now; the managers' (each
+# package's tests, each demo run, tested, torn down) come with the manager
+# boot.
+list
+fetch base-package-p2p
 list

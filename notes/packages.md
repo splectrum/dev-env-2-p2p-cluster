@@ -137,18 +137,23 @@ Bare and the boot only.
   `haiccing/boot`, `haiccing/sources`, `haiccing/base-package-haicc/`.
 - **Stage 1, `haiccing/boot`** (shell, before Node.js): only what HAICC
   needs to run: Linux x86-64 and Node.js (fixed with a yes, into
-  `.haicc/node`); HAICC's code copied out (once: then it is the package
-  manager's); `./haicc` written; then stage 2.
-- **Stage 2, `./haicc boot`** (HAICC itself): the host's other
+  `.haicc/node`); the root's part of HAICC, `haicc-base-boot`, copied into
+  `.haicc/` at the first boot only (versions later); `./haicc` written;
+  then stage 2.
+- **Stage 2, `./haicc boot`** (the root's HAICC): the host's other
   prerequisites, git and Docker Engine (installed, running, rootful,
-  native, the user in its group), as HAICC requirements, checked by its
-  reconcile engine and fixed with a yes; the package manager fetched and
-  installed by its own code, HAICC registered with it; then
+  native, the user in its group), checked and fixed with a yes; then
   `haiccing/install` (one `./haicc` command a line), or the next commands.
-- **HAICC runs on Node.js alone**: its package requires only `pkgm` (the
-  root install, 0.35 MB). Its records are files (journals, JSON lines);
-  its name check its own (a URI part). Topics are not HAICC's: a sync
-  into topics is a separate process, installed into a swarm, later.
+- **The root is `haicc-base-boot` alone** (76 KB, Node.js built-ins):
+  the boot, `fetch`, `list` (the managers), `boot <manager>` (next). No
+  package manager, no engine, no deployments: those are the managers'.
+  Dependencies are only between `haiccing` repositories, so the root
+  depends on nothing: its host checks are its own copy of
+  `haicc-reconcile`'s machine kinds, a test keeping the two agreeing.
+- **HAICC runs on Node.js alone**: its package requires only `pkgm`. Its
+  records are files (journals, JSON lines); its name check its own (a URI
+  part). Topics are not HAICC's: a sync into topics is a separate process,
+  installed into a swarm, later.
 - **The log is what a command prints**: stdout and stderr appended to
   `.haicc/log/haicc.log` in order, a header line and a close line per
   command; files of 10 KB, rotated as a command starts (whole commands a

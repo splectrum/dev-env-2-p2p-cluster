@@ -1,0 +1,110 @@
+#!/usr/bin/env node
+// haicc at the root of a work folder (./haicc): the part of HAICC the host
+// needs, copied in by haiccing/boot (stage 1). Node.js built-ins only.
+//   haicc boot [--yes]           the root's boot (stage 2): the host's prerequisites
+//                                (git, Docker Engine), checked and fixed with a yes;
+//                                then haiccing/install, if there, or the next commands
+//   haicc boot <manager>         a manager: the next step (not built yet)
+//   haicc fetch <repository>     a repository, with what it requires, into haiccing/
+//   haicc list                   the managers in this work folder
+// --verbose: each check's detail too. What every command prints goes to
+// .haicc/log/haicc.log as well, in order (files of 10 KB). Exit 0 when done,
+// 1 when not (the output says what is missing), 2 on a bad call.
+import process from 'node:process'
+import { existsSync, readFileSync, readdirSync, openSync, closeSync, createReadStream, createWriteStream } from 'node:fs'
+import { join, dirname, resolve } from 'node:path'
+import { spawnSync } from 'node:child_process'
+import { createInterface } from 'node:readline'
+import { fileURLToPath } from 'node:url'
+import { openLog } from './lib/log.js'
+import { CHECKS } from './lib/host.js'
+
+const here = dirname(fileURLToPath(import.meta.url))
+const argv = process.argv.slice(2)
+const flags = Object.fromEntries(argv.filter(a => a.startsWith('--')).map(a => { const [k, v] = a.slice(2).split('='); return [k, v ?? true] }))
+const [verb, name] = argv.filter(a => !a.startsWith('--'))
+const work = resolve(process.env.HAICC_WORK || '.')
+const root = join(work, '.haicc')
+const haiccing = join(work, 'haiccing')
+const log = openLog({ dir: join(root, 'log'), command: ['haicc', ...argv], level: flags.debug ? 'debug' : flags.verbose ? 'verbose' : 'normal' })
+
+const usage = () => { process.stderr.write(readFileSync(new URL(import.meta.url), 'utf8').split('\n').slice(1, 12).map(l => l.replace(/^\/\/ ?/, '')).join('\n') + '\n'); process.exit(2) }
+
+// A yes, asked of the person (or given with --yes; none without a terminal).
+async function ask (what) {
+  if (flags.yes) { console.log(`  yes (--yes): ${what}`); return true }
+  let fd
+  try { fd = openSync('/dev/tty', 'r+') } catch { console.log(`  not done, no terminal to ask (--yes to agree): ${what}`); return false }
+  const rl = createInterface({ input: createReadStream(null, { fd, autoClose: false }), output: createWriteStream(null, { fd, autoClose: false }) })
+  const answer = await new Promise(resolve => rl.question(`  ${what}? [y/N] `, resolve))
+  rl.close(); closeSync(fd)
+  const yes = /^y(es)?$/i.test(answer.trim())
+  console.log(`  ${what}? ${yes ? 'yes' : 'no'}`)
+  return yes
+}
+
+// The host's prerequisites, in order: checked; what is missing fixed with
+// a yes and checked again; what is still missing said, with its hint.
+async function hostPrerequisites () {
+  console.log("The host's prerequisites (git, Docker Engine):")
+  const missing = []
+  for (const c of CHECKS) {
+    let a = c.observe()
+    if (c.met(a)) { if (log.verbose) console.log(`  ok      ${c.name}  ${c.detail(a)}`); continue }
+    console.log(`  missing ${c.name}  ${c.detail(a)}`)
+    if (c.fix) {
+      const r = await c.fix(ask, a)
+      console.log(`  ${r.said}`)
+      a = c.observe()
+      if (c.met(a)) { console.log(`  ok      ${c.name}  ${c.detail(a)}`); continue }
+    }
+    console.log(`  ${c.name}: ${c.hint}`)
+    missing.push(c.name)
+  }
+  if (missing.length) { console.log(`Not booted (${missing.join(', ')}): fix what is said above, then ./haicc boot again`); return false }
+  console.log(`  all ${CHECKS.length} met`)
+  return true
+}
+
+// haiccing/install: one haicc command a line, each its own command (it
+// logs itself), stopping at the first failure.
+function installFile () {
+  const file = join(haiccing, 'install')
+  if (!existsSync(file)) {
+    console.log(`\nBooted. Next, from ${work}:`)
+    console.log('  ./haicc boot manager     a manager: its own HAICC and packages (the next step)')
+    console.log('  ./haicc list             the managers here')
+    return 0
+  }
+  console.log('\nhaiccing/install:')
+  const lines = readFileSync(file, 'utf8').split('\n')
+  for (let n = 1; n <= lines.length; n++) {
+    const line = lines[n - 1].trim()
+    if (!line || line.startsWith('#')) continue
+    console.log(`\n[${n}] ./haicc ${line}`)
+    const r = spawnSync(join(work, 'haicc'), line.split(/\s+/), { stdio: 'inherit' })
+    if (r.status !== 0) { console.log(`haiccing/install stopped at line ${n}: ./haicc ${line}`); return 1 }
+  }
+  console.log('\nhaiccing/install done')
+  return 0
+}
+
+try {
+  if (verb === 'boot' && !name) process.exit((await hostPrerequisites()) ? installFile() : 1)
+  else if (verb === 'boot') { console.log(`haicc boot ${name}: a manager's boot is the next step, not built yet`); process.exit(1) }
+  else if (verb === 'fetch') {
+    if (!name) usage()
+    const r = spawnSync('sh', [join(here, 'fetch.sh'), haiccing, '--requires', name], { encoding: 'utf8', env: { ...process.env, PATH: `${dirname(process.execPath)}:${process.env.PATH}` } })
+    process.stdout.write(r.stdout || '')
+    if (r.status !== 0) console.log(`haicc fetch: not all of ${name} could be fetched (haiccing/sources)`)
+    process.exit(r.status === 0 ? 0 : 1)
+  } else if (verb === 'list') {
+    const managers = readdirSync(work).filter(n => existsSync(join(work, n, '.haicc')) && n !== '.haicc')
+    console.log(`managers (${work}):${managers.length ? '' : ' none yet'}`)
+    for (const m of managers) console.log(`  ${m}`)
+    process.exit(0)
+  } else usage()
+} catch (err) {
+  console.log(`haicc ${verb}: ${err.message}`)
+  process.exit(1)
+}
