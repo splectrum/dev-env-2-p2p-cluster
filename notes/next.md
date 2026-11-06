@@ -25,8 +25,19 @@ Phase 3, step 1 (packages and the boot): record
 - **The local agent's first run** (`5-validation/local-run.md`): the demos
   published, both run from GitHub's archives; one open finding.
 
+**Published: the fifth release (2026-11-06), the human's word.**
+`setup-25a1bd107a92`, boot 0.6.0, latest; `base-package-haicc` `5b36fe6` on
+GitHub. Run from the latest link with the default sources, through a node:
+exit 0. **Only that repository went out**, the human's word: the other
+`haiccing` repositories had generated text changes only and stay at their last
+commits, so a node takes `base-package-pkgm` `cd28ada5126f` from GitHub, not the
+`ec1e96858df7` this repository writes (same code). **Not published:** the
+products (`pear-full-square`), `haiccing`'s profile, Codeberg's mirror of
+`base-package-haicc`. The profile still says `~/haicc-work/haiccing/boot`, which
+this release does not have: `~/haicc-work/boot`.
+
 **The local agent, on boot and shutdown by level (2026-11-06).** Built and
-tested, not published: `setup-25a1bd107a92`, boot 0.6.0, from `001583e`; a new
+tested: `setup-25a1bd107a92`, boot 0.6.0, from `001583e`; a new
 folder through setup, `./boot`, a swarm, nodes, each shutdown and boot, each
 teardown, `./shutdown`, `./boot` again: all exit 0, no hidden files. Fixed here:
 a node's `./haicc list`, `version`, `fetch` and `install` crashed on paths from

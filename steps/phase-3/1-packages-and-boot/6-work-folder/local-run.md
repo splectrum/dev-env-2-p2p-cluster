@@ -174,3 +174,12 @@ command, the no-Node.js boot. The human's to run (`notes/handover-packages.md`).
   the connection first.
 - `~/haicc-work` is left on the machine, as the first release set it up: a
   setup does not update a work folder.
+
+## The fifth release (2026-11-06)
+
+`setup-25a1bd107a92`, boot 0.6.0, published with the human's OK: only
+`base-package-haicc` (`5b36fe6`) and the release. Tested before publishing from
+the built file: setup, `./boot`, a swarm, two nodes, shutdown and boot at each
+level, teardown, `./shutdown`, `./boot` again. After publishing, from the latest
+link with the default sources, through a node's boot and self-test: exit 0, no
+hidden files, one log file named by its start. What was left out: `notes/next.md`.
