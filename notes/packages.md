@@ -149,6 +149,11 @@ stop.** "It doesn't make sense to have visible state change in a hidden
 folder." Done (2026-11-06): `install/` and `log/`, below; `.haicc`
 elsewhere in this note is the history it replaced.
 
+**Decided by the human, 2026-11-06, over the layout below: `packages/`, `node/`
+and `log/` at the top of a work folder and of a manager; `install/` goes. A
+timestamp and a duration per command; log files timestamped in their names,
+so the folder sorts on the timeline.** To build: `next.md`.
+
 ```
 <work>/
   haicc                 the launcher: ./haicc <command>

@@ -25,6 +25,42 @@ Phase 3, step 1 (packages and the boot): record
 - **The local agent's first run** (`5-validation/local-run.md`): the demos
   published, both run from GitHub's archives; one open finding.
 
+**Next here, first: the human's feedback on the fourth release (2026-11-06),
+for a fifth.** The human ran it: "that works a lot better". Decided with them:
+
+1. **The folders.** `packages` is the name for code modules, and `install/`
+   blurred it: `install/haicc-base-boot/` outside any `packages` folder,
+   `<manager>/install/packages/` a layer deeper than it needs, Node.js beside
+   code, and `install/` against the file `haiccing/install`. The work folder
+   becomes, the same shape at the root and in a manager:
+
+   ```
+   <work>/
+     haicc        the launcher
+     haiccing/    boot, sources, the repositories
+     packages/    the code modules: haicc-base-boot (a manager's: all its packages, and pkgm/)
+     node/        Node.js, when HAICC had to install it
+     log/         the log files
+     manager/     the same shape again
+   ```
+
+   `install/` goes. `HAICC_HOME` and `packagesFolder()` change meaning with it:
+   what they point at is the implementer's to work out. Still no hidden folders.
+2. **Each command in the log: a timestamp, and its duration at the end.** Not
+   every line (the local agent's suggestion, not taken). The header has the real
+   time of the command; its close line has how long it took. Today the shell's
+   headers carry a made-up `.000Z`, and the setup's close line has no duration.
+3. **Log files timestamped when written**, in their names, so the folder sorts
+   on the timeline as it is listed: `ls log/` reads in time order. Today
+   `haicc.log`, then `haicc.1.log`. Whether a file is one command, or stays
+   rotated at 10 KB, the implementer's to propose; names in UTC, sorting as
+   text. The instructions name the log's place, so they change with it (the
+   readmes, `haiccing`'s profile; `notes/packages.md`).
+
+Then to the local agent: products, packages, the release with the human's OK.
+The local checks that were left stand: a failed download stopping the one
+command; a boot without Node.js, through to the end, on a good connection.
+
 **Now: the human tests the fourth release locally (2026-11-06).**
 `setup-47f2b29b0194`, boot 0.5.0, published: findings 4 to 7 and no hidden
 folders. Record: `steps/phase-3/1-packages-and-boot/6-work-folder/local-run.md`.

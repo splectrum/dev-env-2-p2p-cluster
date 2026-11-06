@@ -160,6 +160,12 @@ both named, a new folder said, exit 1. The `latest` link serves that file
 byte for byte. Not seen by the agent: a failed download stopping the one
 command, the no-Node.js boot. The human's to run (`notes/handover-packages.md`).
 
+## The human's manual test of the fourth release (2026-11-06)
+
+`setup-47f2b29b0194` from its release, the one command, a clean folder:
+"that works a lot better". Feedback, back to the implementation session
+(`notes/next.md`): the folders' names, the log's timestamps, its files' names.
+
 ## Left open
 
 - `5-validation/manual-run.sh` retired: this route replaces it.
