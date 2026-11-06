@@ -93,6 +93,12 @@ work folder, to see it hold on this machine too.
 
 ## The organisations' profiles (2026-11-06)
 
+**Done 2026-11-06** by the local agent: all five pushed and shown on their
+organisations' pages (`splectrum` `c524388`, `bare-for-pear` `98d4528`,
+`pear-full-square` `ca3f0c2`, `splectral` `700dd04`, `haiccing` `72726ee`).
+The setup's link in `haiccing`'s profile is 404 until the release is
+published ("Again, after part 6"): check it then.
+
 Five profiles, drafted and agreed with the human: what each organisation is
 for, where to start. Each in this repository at
 `<org>/.github/profile/README.md`, for the repository `<org>/.github`
