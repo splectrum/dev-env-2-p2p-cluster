@@ -221,6 +221,14 @@ Design: `packages.md`. Its own request is written as its scope settles.
 
 ## Further down the roadmap
 
+- **The host on Bare** (the human, 2026-11-06: where we need to get to).
+  Today the host side runs on Node.js (the root's HAICC, the package
+  manager, the managers, Splectral's server); Bare only in the nodes. One
+  runtime everywhere: Bare at the root instead of Node.js (one binary; the
+  full one kept in the root folder), the host's processes on Bare. A probe
+  first (what Bare's modules give for child processes sharing the terminal,
+  reading from it, tests, fetch), then the root, then the host's processes.
+
 Each replacing its in-code version behind the same contract, once enough
 is built and proven:
 
