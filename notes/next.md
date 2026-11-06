@@ -25,6 +25,24 @@ Phase 3, step 1 (packages and the boot): record
 - **The local agent's first run** (`5-validation/local-run.md`): the demos
   published, both run from GitHub's archives; one open finding.
 
+**Next here, first: the human's report on the third release (2026-11-06)**.
+It completed for them, output as it happens, but the log failed them. Detail:
+`steps/phase-3/1-packages-and-boot/6-work-folder/local-run.md`, findings 4 to 7.
+For a fourth release:
+1. The boot's last line names the log (`Logged to <path>`), when it fails too.
+2. The log starts at the setup: `haicc-setup.sh` writes its header and result
+   into `.haicc/log/haicc.log`.
+3. `already set up` names both versions and says to use a new folder.
+4. The published commands joined with `&&`, curl with retries (profile,
+   `packages.json`'s readme lines).
+
+Open with the human: whether the log stays in the hidden `.haicc/log/`, or
+moves somewhere visible (the local agent's suggestion: stay, and print the path).
+Also to do: `pkgm-base-manager`'s count of tests is in the source, not its
+product or package; the no-Node.js boot through to the end; the package
+`base-package-haicc` on Codeberg was behind `d816572` when this was written.
+The local machine's connection is intermittent.
+
 **The first releases tested (2026-11-06)**: `6-work-folder/local-run.md`.
 `setup-96cfc58bc18f` stopped at the first boot without Node.js;
 `setup-58fb397be615` fixes it; `setup-b8c4a67a5e83` (boot 0.4.2, latest) says

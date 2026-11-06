@@ -99,8 +99,53 @@ a full no-Node.js run: the built file booted with everything installed, and
 the `latest` link serves that file byte for byte. Still to run: the no-Node.js
 download through to the end, on a better connection; the human's manual test.
 
+## The human's manual test of the third release (2026-11-06)
+
+`setup-b8c4a67a5e83`, boot 0.4.2, everything installed, in the human's own
+terminal: completed, with the output as it happens. It took two tries, and
+the first taught something:
+
+- **First try: not a test of the release.** The block of commands, pasted
+  whole, went on after `curl: (56) Recv failure: Connection reset by peer`.
+  `~/haicc-work` still held 0.4.1, so the setup said `already set up`, and
+  the boot ran the old copy. It looked like a working run of the new release.
+- **Second try, clean folder, commands joined with `&&`:** exit 0, 0.4.2 in
+  `.haicc`, every line as it happened; `./haicc list`: none yet.
+
+Findings, for the implementation session (`notes/next.md`):
+
+### 4. Where the log is, is never said (open)
+
+The human: "There was output text, but nothing in file", though the log was
+there: `~/haicc-work/.haicc/log/haicc.log`, 1,298 bytes, the whole run. The
+folder is hidden and no output names it. A log nobody can find is not doing
+its job.
+
+### 5. The log does not start from the start (open)
+
+The request says "logged from the start, in files". It starts at
+`haiccing/boot`. `sh haicc-setup.sh` is not logged, so the line saying which
+setup was used is not in the file. The download itself cannot be: no HAICC
+exists yet.
+
+### 6. `already set up` hides a version mismatch (open)
+
+A new setup over an older work folder says `already set up` and nothing else;
+the boot then prints the new version, says the older copy is kept, and runs it.
+The setup should name both versions and say to use a new folder.
+
+### 7. The published commands do not stop on a failed download (open)
+
+`haiccing`'s profile and `base-package-haicc`'s readme list the commands line
+by line, so pasted whole they go on after a failed download, with an old
+`haicc-setup.sh` where there is one. Join them with `&&`, and give the curl
+retries (`--retry 5 --retry-all-errors --connect-timeout 20`).
+
 ## Left open
 
 - `5-validation/manual-run.sh` retired: this route replaces it.
+- The no-Node.js boot through to the end, on a good connection: not yet seen.
+  The local machine's connection is intermittent: a failed download there is
+  the connection first.
 - `~/haicc-work` is left on the machine, as the first release set it up: a
   setup does not update a work folder.
