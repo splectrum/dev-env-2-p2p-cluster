@@ -40,12 +40,17 @@ for a in "\$@"; do
   esac
 done
 mkdir -p "\$work"; work=\$(cd "\$work" && pwd)
-# Logged from the start: what it says, to <work folder>/log/haicc.log too
-# (a header and a close line, as every haicc command's).
-mkdir -p "\$work/log"; log=\$work/log/haicc.log
-echo "== \$(date -u +%Y-%m-%dT%H:%M:%S.000Z) sh haicc-setup.sh \$*  (in \$(pwd))" >> "\$log"
+# Logged from the start: what it says, to <work folder>/log/ too (the
+# current file, or a new one named by now; a header and a close line, as
+# every haicc command's).
+mkdir -p "\$work/log"
+log=\$(ls "\$work/log" | grep -E '^[0-9]{8}T[0-9]{6}Z\\.log\$' | sort | tail -1)
+if [ -z "\$log" ] || [ "\$(wc -c < "\$work/log/\$log")" -ge 10240 ]; then log=\$(date -u +%Y%m%dT%H%M%SZ).log; fi
+log=\$work/log/\$log
+t0=\$(date +%s)
+echo "== \$(date -u +%Y-%m-%dT%H:%M:%SZ) sh haicc-setup.sh \$*  (in \$(pwd))" >> "\$log"
 say () { echo "\$*"; echo "\$*" >> "\$log"; }
-end () { echo "== exit \$1" >> "\$log"; exit "\$1"; }
+end () { echo "== exit \$1, \$(( \$(date +%s) - t0 )) s" >> "\$log"; exit "\$1"; }
 say "haicc-setup: $name $hash (boot $version)"
 if [ -e "\$work/haiccing/$name/package.json" ]; then
   there=\$(sed -n 's/.*"hash": *"\\([0-9a-f]\\{12\\}\\).*/\\1/p' "\$work/haiccing/$name/package.json" | head -1)

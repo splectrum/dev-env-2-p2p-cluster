@@ -20,7 +20,7 @@ One command: it stops at the first step that fails (a failed download included).
 
 The boot checks Node.js, git and Docker Engine, and fixes what is missing
 only with your yes. Everything stays in the work folder, in plain sight.
-Everything it does is logged in the work folder: `~/haicc-work/log/haicc.log`.
+Everything it does is logged in the work folder's `log/` (`~/haicc-work/log/`): files named by their start, newest last.
 Running the projects from there is the next step.
 
 Part of the [SPLectrum](https://splectrum.world) engineering infrastructure.
