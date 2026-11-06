@@ -25,7 +25,18 @@ Phase 3, step 1 (packages and the boot): record
 - **The local agent's first run** (`5-validation/local-run.md`): the demos
   published, both run from GitHub's archives; one open finding.
 
-**Now: swarms and nodes on a host, and teardown, built and tested
+**Now: boot and shutdown by level, built and tested (2026-11-06); next,
+the master's swarm.** `notes/packages.md`, "Boot and shutdown by level".
+A `haicc boot`/`shutdown` works on the config of the folder it is called
+from: a node (its container, with the swarm's step), a swarm
+(`<swarm>/nodes.json`: its nodes cold, rebuilt by its boot), the root
+(`swarms.json`: each swarm); the work folder cold (`./boot`, `./shutdown`,
+stubs at the top; kept: `haiccing/`, `log/`, `nodejs/`). One thing from its
+parent: `./haicc boot|teardown <swarm>`, `<swarm>/haicc boot|teardown
+<node>`. Tested from a fresh work folder: every level, both ways, each
+teardown, `./shutdown` and `./boot` again; the boot tests pass (9).
+
+**Before (superseded by the above): swarms and nodes on a host, and teardown, built and tested
 (2026-11-06); next, the master's swarm.** `notes/packages.md`, "Swarms and
 nodes on a host; teardown". `./haicc boot <swarm>/<node>` (or
 `<swarm>/haicc boot <node>`): the swarm's folder (its launcher, the root's

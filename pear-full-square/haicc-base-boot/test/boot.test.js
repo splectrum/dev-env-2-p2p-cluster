@@ -142,11 +142,13 @@ test('the setup: a self-extracting release, extracting haiccing/ (boot, sources,
     const work = join(dir, 'work')
     const r = spawnSync('sh', [join(dir, 'haicc-setup.sh'), work, `--sources=folder:${dir}/repos`, '--sources=github:haiccing'], { encoding: 'utf8' })
     assert.equal(r.status, 0, r.stdout + r.stderr)
-    assert.match(r.stdout, /next: .*\/work\/haiccing\/boot/)
+    assert.match(r.stdout, /next: .*\/work\/boot/)
     assert.ok(existsSync(join(work, 'haiccing', 'base-package-haicc', 'pear-full-square', 'haicc-base-boot', 'boot.sh')))
-    // The stub: executable, naming its setup.
-    assert.ok(statSync(join(work, 'haiccing', 'boot')).mode & 0o100)
-    assert.match(readFileSync(join(work, 'haiccing', 'boot'), 'utf8'), /base-package-haicc\/pear-full-square\/haicc-base-boot\/boot\.sh/)
+    // The stubs, ./boot and ./shutdown: executable, naming their setup.
+    for (const s of ['boot', 'shutdown']) {
+      assert.ok(statSync(join(work, s)).mode & 0o100)
+      assert.match(readFileSync(join(work, s), 'utf8'), new RegExp(`base-package-haicc/pear-full-square/haicc-base-boot/${s}\\.sh`))
+    }
     assert.deepEqual(readFileSync(join(work, 'haiccing', 'sources'), 'utf8').split('\n').filter(l => l && !l.startsWith('#')), [`folder ${dir}/repos`, 'github haiccing'])
     // Logged from the start: the setup's own lines in the work folder's log.
     // in a file named by its start (UTC), listing in time order; its real start, its duration.
@@ -155,13 +157,13 @@ test('the setup: a self-extracting release, extracting haiccing/ (boot, sources,
     assert.match(logs[0], /^\d{8}T\d{6}Z\.log$/)
     assert.match(readFileSync(join(work, 'log', logs[0]), 'utf8'), /^== \d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ sh haicc-setup\.sh .*\nhaicc-setup: base-package-haicc abcdef123456 .*\n(.*\n)*== exit 0, \d+ s\n$/)
     // The first boot's stage 1, on a folder with no packages/ yet: HAICC's package copied in whole.
-    const stage1 = spawnSync('sh', [join(work, 'haiccing', 'boot')], { encoding: 'utf8', env: { ...process.env, HAICC_BOOT_LOGGING: '1' } })
+    const stage1 = spawnSync('sh', [join(work, 'boot')], { encoding: 'utf8', env: { ...process.env, HAICC_BOOT_LOGGING: '1' } })
     assert.equal(stage1.status, 0, stage1.stdout + stage1.stderr)
     assert.ok(existsSync(join(work, 'packages', 'base-package-haicc', 'pear-full-square', 'haicc-base-boot', 'haicc.js')), stage1.stdout + stage1.stderr)
     assert.ok(existsSync(join(work, 'haicc')))
     assert.match(readFileSync(join(work, 'haicc'), 'utf8'), /packages\/base-package-haicc\/pear-full-square\/haicc-base-boot\/haicc\.js/)
     // Nothing hidden, no install/: the work folder's shape.
-    assert.deepEqual(readdirSync(work).sort(), ['haicc', 'haiccing', 'log', 'packages'])
+    assert.deepEqual(readdirSync(work).sort(), ['boot', 'haicc', 'haiccing', 'log', 'packages', 'shutdown'])
     // Again, the same setup: said, exit 0, nothing changed.
     const again = spawnSync('sh', [join(dir, 'haicc-setup.sh'), work], { encoding: 'utf8' })
     assert.equal(again.status, 0)

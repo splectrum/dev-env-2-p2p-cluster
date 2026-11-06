@@ -1,32 +1,37 @@
 #!/usr/bin/env node
 // haicc at the root of a work folder (./haicc): the part of HAICC the host
-// needs, run from packages/base-package-haicc (copied in by haiccing/boot,
+// needs, run from packages/base-package-haicc (copied in by ./boot,
 // stage 1). Node.js built-ins only. The work folder: HAICC_WORK.
-//   haicc boot [--yes]           the root's boot (stage 2): the host's prerequisites
-//                                (git, Docker Engine), checked and fixed with a yes;
+// Each `haicc boot` or `haicc shutdown` works on the configuration of the folder
+// it is called from, and keeps it; removing a child is `teardown <child>`.
+// At the root (./haicc), on swarms.json, the host's swarms:
+//   haicc boot [--yes]           the host's prerequisites (git, Docker Engine), checked
+//                                and fixed with a yes; each swarm in swarms.json booted;
 //                                then haiccing/install, if there, or the next commands
-//   haicc boot <swarm>/<node> [--role=master|node] [--no-echo]
-//                                a node's manager, <work>/<swarm>/<node>: the swarm's folder
-//                                (its launcher, swarm.json) made on first use, the node added
-//                                with its role (the first: master), the package manager and
-//                                HAICC copied in whole; then the node's own boot (its
-//                                self-test), its output shown as it happens (--no-echo: its
-//                                outcome only). Names made URI parts, the changes said.
-//   haicc teardown [<swarm>[/<node>]] [--yes]
-//                                a node: its own teardown (leave, shut down, its contents
-//                                removed; its HAICC kept for a reboot); a swarm: its nodes,
-//                                the master last; the root: every swarm, then the swarms'
-//                                folders, packages/ and ./haicc (kept: haiccing/, log/,
-//                                nodejs/: external downloads are retained). Asked first.
-//   haicc fetch <repository>     a repository, with what it requires, into haiccing/
-//   haicc list                   the swarms here, their nodes and roles
-// From a swarm's launcher (<swarm>/haicc, HAICC_SWARM): the same commands, in
-// that swarm (boot <node>, boot: each of its nodes, teardown [<node>], list).
+//   haicc boot <swarm>           the swarm: added (its folder, launcher, nodes.json) if new,
+//                                then booted
+//   haicc shutdown [<swarm>]     each swarm's (or the one's) shutdown: its nodes removed,
+//                                its folder and nodes.json kept
+//   haicc teardown <swarm>       the swarm removed: its nodes, its folder, its entry
+//   haicc shutdown --cold        (./shutdown) everything removed back to the setup: the
+//                                swarms, swarms.json, packages/, ./haicc; kept: haiccing/,
+//                                log/, nodejs/ (external downloads are retained)
+// In a swarm (<swarm>/haicc), on its nodes.json, its nodes and roles:
+//   haicc boot [<node>] [--role=master|node] [--no-echo]
+//                                each node (or the one: added if new, the first the
+//                                master), built if its folder is not there (its manager:
+//                                the package manager and HAICC copied in, its launcher),
+//                                then its own boot (<swarm>/<node>/haicc boot), as it happens
+//   haicc shutdown [<node>]      each node's (or the one's) cold shutdown: its container
+//                                removed, its folder removed; nodes.json kept
+//   haicc teardown <node>        the node removed, and its entry
+// Both: haicc fetch <repository> (into haiccing/, with what it requires), haicc list.
+// Removing is asked first (--yes agrees). Names are made URI parts, the changes said.
 // --verbose: each check's detail too. What every command prints goes to
 // log/ as well, in order (files of 10 KB named by their start, newest last). Exit 0 when done,
 // 1 when not (the output says what is missing), 2 on a bad call.
 import process from 'node:process'
-import { existsSync, readFileSync, readdirSync, openSync, closeSync, createReadStream, createWriteStream, mkdirSync, writeFileSync, chmodSync, renameSync } from 'node:fs'
+import { existsSync, readFileSync, openSync, closeSync, createReadStream, createWriteStream, mkdirSync, writeFileSync, chmodSync, renameSync, rmSync } from 'node:fs'
 import { join, dirname, resolve } from 'node:path'
 import { spawn, spawnSync } from 'node:child_process'
 import { createInterface } from 'node:readline'
@@ -40,9 +45,12 @@ const flags = Object.fromEntries(argv.filter(a => a.startsWith('--')).map(a => {
 const [verb, name] = argv.filter(a => !a.startsWith('--'))
 const work = resolve(process.env.HAICC_WORK || '.')
 const haiccing = join(work, 'haiccing')
-const log = openLog({ dir: join(work, 'log'), command: ['haicc', ...argv], level: flags.debug ? 'debug' : flags.verbose ? 'verbose' : 'normal' })
+// A swarm's command run by the root (the root echoes and logs every line of
+// it: HAICC_NOLOG) does not log itself; typed, it does.
+const level = flags.debug ? 'debug' : flags.verbose ? 'verbose' : 'normal'
+const log = process.env.HAICC_NOLOG === '1' ? { level, verbose: level !== 'normal', debug: level === 'debug' } : openLog({ dir: join(work, 'log'), command: flags.cold ? ['./shutdown', ...argv.filter(a => a !== 'shutdown' && a !== '--cold')] : [process.env.HAICC_SWARM ? `${process.env.HAICC_SWARM}/haicc` : 'haicc', ...argv], level })
 
-const usage = () => { process.stderr.write(readFileSync(new URL(import.meta.url), 'utf8').split('\n').slice(1, 25).map(l => l.replace(/^\/\/ ?/, '')).join('\n') + '\n'); process.exit(2) }
+const usage = () => { process.stderr.write(readFileSync(new URL(import.meta.url), 'utf8').split('\n').slice(1, 33).map(l => l.replace(/^\/\/ ?/, '')).join('\n') + '\n'); process.exit(2) }
 
 // A yes, asked of the person (or given with --yes; none without a terminal).
 async function ask (what) {
@@ -87,7 +95,8 @@ function installFile () {
   const file = join(haiccing, 'install')
   if (!existsSync(file)) {
     console.log(`\nBooted. Next, from ${work}:`)
-    console.log('  ./haicc boot <swarm>/master   a swarm\'s master: its manager, its own HAICC and package manager')
+    console.log('  ./haicc boot <swarm>          a swarm: its folder, launcher and nodes.json')
+    console.log('  <swarm>/haicc boot master     its master: a node\'s manager, its own HAICC')
     console.log('  ./haicc list                  the swarms here, their nodes')
     return 0
   }
@@ -106,8 +115,8 @@ function installFile () {
 
 // The work folder's own folders and files: not a swarm's name; a swarm's
 // own files: not a node's name.
-const OWN = ['packages', 'haiccing', 'nodejs', 'log', 'haicc']
-const SWARM_OWN = ['haicc', 'swarm.json']
+const OWN = ['packages', 'haiccing', 'nodejs', 'log', 'haicc', 'boot', 'shutdown', 'swarms.json']
+const SWARM_OWN = ['haicc', 'nodes.json']
 const ROLES = ['master', 'node']
 const inSwarm = process.env.HAICC_SWARM || null
 // A name made a URI part: lowercase a-z, 0-9, words joined by single '-'.
@@ -122,41 +131,18 @@ function clean (raw, what, own) {
   return n
 }
 
-// What a command names: [swarm, node], from <swarm>[/<node>] or, from a
-// swarm's launcher, [<node>]. undefined: not named; null: not a name.
-function target (arg) {
-  const parts = (arg || '').split('/').filter(Boolean)
-  const [rs, rn] = inSwarm ? [inSwarm, parts[0]] : [parts[0], parts[1]]
-  const swarm = rs === undefined ? undefined : (inSwarm ? rs : clean(rs, 'swarm', OWN))
-  const node = rn === undefined ? undefined : clean(rn, 'node', SWARM_OWN)
-  return [swarm, node]
+// The configurations: swarms.json (the host's swarms, in order), and each
+// swarm's nodes.json (its nodes here and their roles).
+const jsonFile = {
+  read: (f, empty) => existsSync(f) ? JSON.parse(readFileSync(f, 'utf8')) : empty,
+  write: (f, v) => { writeFileSync(f + '.new', JSON.stringify(v, null, 2) + '\n'); renameSync(f + '.new', f) }
 }
-
-const swarmFile = swarm => join(work, swarm, 'swarm.json')
-const readSwarm = swarm => existsSync(swarmFile(swarm)) ? JSON.parse(readFileSync(swarmFile(swarm), 'utf8')) : { swarm, nodes: {} }
-const writeSwarm = (swarm, v) => { writeFileSync(swarmFile(swarm) + '.new', JSON.stringify(v, null, 2) + '\n'); renameSync(swarmFile(swarm) + '.new', swarmFile(swarm)) }
-const swarms = () => readdirSync(work).filter(n => existsSync(join(work, n, 'swarm.json'))).sort()
+const swarmsFile = join(work, 'swarms.json')
+const readSwarms = () => jsonFile.read(swarmsFile, { swarms: {} })
+const nodesFile = swarm => join(work, swarm, 'nodes.json')
+const readNodes = swarm => jsonFile.read(nodesFile(swarm), { swarm, nodes: {} })
 // A swarm's nodes in the order to take them down: the nodes, then the master.
 const downOrder = s => Object.keys(s.nodes).sort((a, b) => (s.nodes[a].role === 'master') - (s.nodes[b].role === 'master') || a.localeCompare(b))
-
-// A swarm's folder, on first use: its launcher (the root's HAICC, in that
-// swarm) and its configuration (swarm.json: the host's side of the swarm,
-// its nodes here and their roles).
-function swarmFolder (swarm) {
-  if (existsSync(swarmFile(swarm))) return
-  mkdirSync(join(work, swarm), { recursive: true })
-  writeFileSync(join(work, swarm, 'haicc'), `#!/bin/sh
-# The swarm ${swarm} on this host (written by the root's HAICC): ${swarm}/haicc <command>,
-# the root's HAICC in this swarm.
-work=$(cd "$(dirname "$0")/.." && pwd)
-HAICC_WORK=$work; HAICC_SWARM=${swarm}; export HAICC_WORK HAICC_SWARM
-[ -x "$work/nodejs/bin/node" ] && PATH=$work/nodejs/bin:$PATH
-exec node "$work/packages/base-package-haicc/pear-full-square/haicc-base-boot/haicc.js" "$@"
-`)
-  chmodSync(join(work, swarm, 'haicc'), 0o755)
-  writeSwarm(swarm, { swarm, nodes: {} })
-  console.log(`The swarm ${swarm}: its folder made (${join(work, swarm)}), its launcher ${swarm}/haicc, swarm.json`)
-}
 
 // A child HAICC run, its output here as it happens (each line marked), or
 // only its last line; its exit code.
@@ -177,28 +163,27 @@ async function echoed (cmd, args, env) {
   return code
 }
 
-// A node's manager: the swarm's folder first, the node added with its
-// role; its folder in the work folder's shape, the package manager and
-// HAICC copied in whole (fetched first where they are not), its launcher;
-// then its own boot (its self-test), as it happens.
-async function bootNode (swarm, node) {
+// Removing is asked once, by the command the person typed (its children
+// are told --yes).
+async function confirm (what) {
+  console.log(`${what}. A plain remove: no way back.`)
+  return ask('go ahead')
+}
+
+const hostReady = () => {
   const notMet = CHECKS.filter(c => !c.met(c.observe())).map(c => c.name)
-  if (notMet.length) { console.log(`The host is not ready (${notMet.join(', ')}): ./haicc boot first`); return 1 }
-  if (existsSync(join(work, swarm)) && !existsSync(swarmFile(swarm))) { console.log(`haicc boot: ${join(work, swarm)} is there, and not a swarm's folder: choose another name`); return 1 }
-  swarmFolder(swarm)
+  if (notMet.length) console.log(`The host is not ready (${notMet.join(', ')}): ./haicc boot first`)
+  return !notMet.length
+}
+
+// ---- a swarm, from its folder: on nodes.json ----------------------------
+
+// A node built if its folder is not there (its manager: the package manager
+// and HAICC copied in whole, its launcher); then its own boot, as it happens.
+async function bootNode (swarm, node) {
   const dir = join(work, swarm, node)
-  if (existsSync(dir) && !existsSync(join(dir, 'packages'))) { console.log(`haicc boot ${swarm}/${node}: ${dir} is there, and not a node's manager: choose another name`); return 1 }
-  const s = readSwarm(swarm)
-  if (!s.nodes[node]) {
-    const master = Object.keys(s.nodes).find(n => s.nodes[n].role === 'master')
-    const role = flags.role || (master ? 'node' : 'master')
-    if (!ROLES.includes(role)) { console.log(`haicc boot: --role=${role}: a role is one of ${ROLES.join(', ')}`); return 2 }
-    if (role === 'master' && master) { console.log(`haicc boot: the swarm ${swarm} has its master already (${master})`); return 1 }
-    s.nodes[node] = { role }
-    writeSwarm(swarm, s)
-    console.log(`The swarm ${swarm}: ${node} added, its role ${role} (${swarmFile(swarm)})`)
-  }
-  console.log(`The node ${swarm}/${node}, its manager (${dir}):`)
+  if (existsSync(dir) && !existsSync(join(dir, 'packages'))) { console.log(`The node ${swarm}/${node}: ${dir} is there, and not a node's manager`); return 1 }
+  console.log(`The node ${swarm}/${node} (${readNodes(swarm).nodes[node]?.role}), its manager (${dir}):`)
   mkdirSync(join(dir, 'packages'), { recursive: true })
   for (const repo of ['base-package-pkgm', 'base-package-haicc']) {
     const at = join(dir, 'packages', repo)
@@ -213,105 +198,205 @@ async function bootNode (swarm, node) {
     const hash = JSON.parse(readFileSync(join(at, 'package.json'), 'utf8')).pkgm?.hash?.slice(0, 12)
     console.log(`  copied ${repo} (${hash}) into ${join(dir, 'packages')}`)
   }
-  writeFileSync(join(dir, 'haicc.new'), `#!/bin/sh
-# HAICC for the node ${swarm}/${node} (written by the root's HAICC): ${swarm}/${node}/haicc <command>,
+  if (!existsSync(join(dir, 'haicc'))) {
+    writeFileSync(join(dir, 'haicc.new'), `#!/bin/sh
+# HAICC for the node ${swarm}/${node} (written by its swarm's HAICC): ${swarm}/${node}/haicc <command>,
 # the node's own HAICC (installed in its packages/).
 work=$(cd "$(dirname "$0")" && pwd)
 HAICC_WORK=$work; export HAICC_WORK
 [ -x "$work/../../nodejs/bin/node" ] && PATH=$work/../../nodejs/bin:$PATH
 exec node "$work/packages/base-package-haicc/pear-full-square/haicc-deployment/haicc.js" "$@"
 `)
-  chmodSync(join(dir, 'haicc.new'), 0o755)
-  renameSync(join(dir, 'haicc.new'), join(dir, 'haicc'))
-  console.log(`  written ${join(dir, 'haicc')}`)
-  // Its own boot: it logs itself (in its log/); here, echoed as it happens.
+    chmodSync(join(dir, 'haicc.new'), 0o755)
+    renameSync(join(dir, 'haicc.new'), join(dir, 'haicc'))
+    console.log(`  written ${join(dir, 'haicc')}`)
+  }
   console.log(`Its boot (${swarm}/${node}/haicc boot)${flags['no-echo'] ? ', its outcome only' : ''}:`)
-  const code = await echoed(join(dir, 'haicc'), ['boot'], { HAICC_WORK: dir })
-  console.log(code === 0 ? `The node ${swarm}/${node}: ready` : `The node ${swarm}/${node}: its boot ended with exit ${code} (its log: ${swarm}/${node}/log/)`)
+  const code = await echoed(join(dir, 'haicc'), ['boot'], { HAICC_WORK: dir, HAICC_NOLOG: '' })
+  console.log(code === 0 ? `The node ${swarm}/${node}: up` : `The node ${swarm}/${node}: its boot ended with exit ${code} (its log: ${swarm}/${node}/log/)`)
   return code === 0 ? 0 : 1
 }
 
-// A node's teardown: its own HAICC's (it leaves the swarm, shuts its
-// container down, removes its contents, keeping its HAICC for a reboot).
-async function teardownNode (swarm, node) {
+// A node's cold shutdown: its own shutdown (its container removed), then
+// its folder removed.
+async function removeNode (swarm, node) {
   const dir = join(work, swarm, node)
-  if (!existsSync(join(dir, 'haicc'))) { console.log(`The node ${swarm}/${node}: no manager here, nothing to take down`); return 0 }
-  console.log(`The node ${swarm}/${node} (${swarm}/${node}/haicc teardown):`)
-  const code = await echoed(join(dir, 'haicc'), ['teardown', '--yes'], { HAICC_WORK: dir })
-  console.log(code === 0 ? `The node ${swarm}/${node}: torn down (its HAICC kept: ${swarm}/haicc boot ${node} again)` : `The node ${swarm}/${node}: its teardown ended with exit ${code} (its log: ${swarm}/${node}/log/)`)
-  return code === 0 ? 0 : 1
-}
-
-// A swarm's teardown: its nodes, the master last; stopping at a failure.
-async function teardownSwarm (swarm) {
-  const s = readSwarm(swarm)
-  const order = downOrder(s)
-  console.log(`The swarm ${swarm}: its nodes taken down, the master last (${order.join(', ') || 'none'})`)
-  for (const node of order) if (await teardownNode(swarm, node)) return 1
+  if (!existsSync(dir)) { console.log(`The node ${swarm}/${node}: not here (nothing to remove)`); return 0 }
+  if (existsSync(join(dir, 'haicc'))) {
+    console.log(`The node ${swarm}/${node} (${swarm}/${node}/haicc shutdown):`)
+    const code = await echoed(join(dir, 'haicc'), ['shutdown'], { HAICC_WORK: dir, HAICC_NOLOG: '' })
+    if (code !== 0) { console.log(`The node ${swarm}/${node}: its shutdown ended with exit ${code}: not removed (its log: ${swarm}/${node}/log/)`); return 1 }
+  }
+  rmSync(dir, { recursive: true, force: true })
+  console.log(`  removed ${swarm}/${node}/`)
   return 0
 }
 
-// What a teardown will remove, said; asked once.
-async function confirm (what) {
-  console.log(`Teardown: ${what}. A plain remove: no way back.`)
-  return ask('go ahead')
-}
-
-async function teardown (arg) {
-  const [swarm, node] = target(arg)
-  if (swarm === null || node === null) return 2
-  if (swarm && !existsSync(swarmFile(swarm))) { console.log(`haicc teardown: no swarm ${swarm} here`); return 1 }
+async function swarmBoot (swarm, node) {
+  const s = readNodes(swarm)
   if (node) {
-    if (!readSwarm(swarm).nodes[node]) { console.log(`haicc teardown: no node ${node} in the swarm ${swarm}`); return 1 }
-    if (!(await confirm(`the node ${swarm}/${node}: it leaves the swarm, its container is shut down, its contents removed (its HAICC kept)`))) return 1
-    return teardownNode(swarm, node)
-  }
-  if (swarm) {
-    if (!(await confirm(`the swarm ${swarm}: each of its nodes, the master last (their HAICC kept)`))) return 1
-    return teardownSwarm(swarm)
-  }
-  const all = swarms()
-  if (!(await confirm(`the root: every swarm (${all.join(', ') || 'none'}), then the swarms' folders, packages/ and ./haicc; kept: haiccing/, log/, nodejs/`))) return 1
-  for (const sw of all) if (await teardownSwarm(sw)) { console.log('The root\'s teardown stopped: a swarm could not be taken down (above)'); return 1 }
-  const { rmSync } = await import('node:fs')
-  for (const sw of all) { rmSync(join(work, sw), { recursive: true, force: true }); console.log(`  removed ${sw}/`) }
-  // Last: what runs this command (it is loaded: removing its files is safe).
-  rmSync(join(work, 'packages'), { recursive: true, force: true }); console.log('  removed packages/')
-  rmSync(join(work, 'haicc'), { force: true }); console.log('  removed ./haicc')
-  console.log(`The root: torn down; haiccing/boot sets it up again (kept: haiccing/, log/${existsSync(join(work, 'nodejs')) ? ', nodejs/' : ''})`)
-  return 0
-}
-
-function list () {
-  const all = inSwarm ? [inSwarm] : swarms()
-  console.log(`swarms (${work}):${all.length ? '' : ' none yet'}`)
-  for (const sw of all) {
-    const s = readSwarm(sw)
-    console.log(`  ${sw}`)
-    for (const n of Object.keys(s.nodes).sort((a, b) => (s.nodes[b].role === 'master') - (s.nodes[a].role === 'master') || a.localeCompare(b))) {
-      console.log(`    ${n}  ${s.nodes[n].role}${existsSync(join(work, sw, n, 'haicc')) ? '' : '  (no manager)'}`)
+    if (!s.nodes[node]) {
+      if (!hostReady()) return 1
+      const master = Object.keys(s.nodes).find(n => s.nodes[n].role === 'master')
+      const role = flags.role || (master ? 'node' : 'master')
+      if (!ROLES.includes(role)) { console.log(`haicc boot: --role=${role}: a role is one of ${ROLES.join(', ')}`); return 2 }
+      if (role === 'master' && master) { console.log(`haicc boot: the swarm ${swarm} has its master already (${master})`); return 1 }
+      s.nodes[node] = { role }
+      jsonFile.write(nodesFile(swarm), s)
+      console.log(`The swarm ${swarm}: ${node} added to nodes.json, its role ${role}`)
     }
+    return bootNode(swarm, node)
   }
-  return 0
-}
-
-async function boot (arg) {
-  if (!arg && !inSwarm) return (await hostPrerequisites()) ? installFile() : 1
-  const [swarm, node] = target(arg)
-  if (swarm === null || node === null) return 2
-  if (node) return bootNode(swarm, node)
-  if (!inSwarm) { console.log(`haicc boot ${swarm}: a node's manager is booted as <swarm>/<node> (e.g. ${swarm}/master)`); return 2 }
-  // From a swarm's launcher, no node: each of its nodes, the master first.
-  const order = downOrder(readSwarm(swarm)).reverse()
-  if (!order.length) { console.log(`The swarm ${swarm}: no nodes yet (${swarm}/haicc boot <node>)`); return 1 }
+  // Each node in nodes.json, the master first.
+  const order = downOrder(s).reverse()
+  console.log(`The swarm ${swarm}: its nodes booted, the master first (${order.join(', ') || 'none in nodes.json'})`)
   for (const n of order) if (await bootNode(swarm, n)) return 1
   return 0
 }
 
+async function swarmShutdown (swarm, node, { asked = false } = {}) {
+  const s = readNodes(swarm)
+  if (node) {
+    if (!s.nodes[node]) { console.log(`haicc shutdown: no node ${node} in the swarm ${swarm}`); return 1 }
+    if (!asked && !(await confirm(`The node ${swarm}/${node}: its cold shutdown, its container and its folder removed (kept in nodes.json)`))) return 1
+    return removeNode(swarm, node)
+  }
+  const order = downOrder(s)
+  if (!asked && !(await confirm(`The swarm ${swarm}: its nodes' cold shutdown, the master last (${order.join(', ') || 'none'}): their folders removed; kept: nodes.json`))) return 1
+  console.log(`The swarm ${swarm}: its nodes shut down, the master last (${order.join(', ') || 'none'})`)
+  for (const n of order) if (await removeNode(swarm, n)) return 1
+  return 0
+}
+
+async function swarmTeardown (swarm, node) {
+  const s = readNodes(swarm)
+  if (!s.nodes[node]) { console.log(`haicc teardown: no node ${node} in the swarm ${swarm}`); return 1 }
+  if (!(await confirm(`The node ${swarm}/${node} removed: its container, its folder, its entry in nodes.json`))) return 1
+  if (await removeNode(swarm, node)) return 1
+  delete s.nodes[node]
+  jsonFile.write(nodesFile(swarm), s)
+  console.log(`The swarm ${swarm}: ${node} removed from nodes.json`)
+  return 0
+}
+
+// ---- the root: on swarms.json ------------------------------------------------
+
+// A swarm's folder, on first use: its launcher (the root's HAICC, in that
+// swarm) and nodes.json; its entry in swarms.json.
+function addSwarm (swarm) {
+  const all = readSwarms()
+  if (!all.swarms[swarm]) { all.swarms[swarm] = {}; jsonFile.write(swarmsFile, all); console.log(`The host: ${swarm} added to swarms.json`) }
+  if (existsSync(nodesFile(swarm))) return
+  mkdirSync(join(work, swarm), { recursive: true })
+  writeFileSync(join(work, swarm, 'haicc'), `#!/bin/sh
+# The swarm ${swarm} on this host (written by the root's HAICC): ${swarm}/haicc <command>,
+# the root's HAICC in this swarm.
+work=$(cd "$(dirname "$0")/.." && pwd)
+HAICC_WORK=$work; HAICC_SWARM=${swarm}; export HAICC_WORK HAICC_SWARM
+[ -x "$work/nodejs/bin/node" ] && PATH=$work/nodejs/bin:$PATH
+exec node "$work/packages/base-package-haicc/pear-full-square/haicc-base-boot/haicc.js" "$@"
+`)
+  chmodSync(join(work, swarm, 'haicc'), 0o755)
+  jsonFile.write(nodesFile(swarm), { swarm, nodes: {} })
+  console.log(`The swarm ${swarm}: its folder made (${join(work, swarm)}): its launcher ${swarm}/haicc, nodes.json`)
+}
+
+// A swarm's own command, through its launcher (it logs in the root's log too).
+const inSwarmRun = (swarm, args) => echoed(join(work, swarm, 'haicc'), args, { HAICC_WORK: work, HAICC_SWARM: swarm, HAICC_NOLOG: '1' })
+
+async function rootBoot (swarm) {
+  if (swarm) {
+    if (existsSync(join(work, swarm)) && !existsSync(nodesFile(swarm))) { console.log(`haicc boot: ${join(work, swarm)} is there, and not a swarm's folder: choose another name`); return 1 }
+    if (!hostReady()) return 1
+    addSwarm(swarm)
+    console.log(`The swarm ${swarm} (${swarm}/haicc boot):`)
+    return (await inSwarmRun(swarm, ['boot', ...(flags['no-echo'] ? ['--no-echo'] : [])])) ? 1 : 0
+  }
+  if (!(await hostPrerequisites())) return 1
+  const all = Object.keys(readSwarms().swarms)
+  if (all.length) {
+    console.log(`The host's swarms (swarms.json): ${all.join(', ')}`)
+    for (const sw of all) {
+      console.log(`The swarm ${sw} (${sw}/haicc boot):`)
+      if (await inSwarmRun(sw, ['boot', ...(flags['no-echo'] ? ['--no-echo'] : [])])) { console.log(`The host's boot stopped at the swarm ${sw}`); return 1 }
+    }
+  }
+  return installFile()
+}
+
+async function rootShutdown (swarm) {
+  const all = swarm ? [swarm] : Object.keys(readSwarms().swarms).reverse()
+  if (swarm && !readSwarms().swarms[swarm]) { console.log(`haicc shutdown: no swarm ${swarm} here (swarms.json)`); return 1 }
+  if (!(await confirm(`${swarm ? `The swarm ${swarm}` : `The host's swarms (${all.join(', ') || 'none'})`}: their nodes' cold shutdown, their folders removed; kept: each swarm's folder and nodes.json, swarms.json`))) return 1
+  for (const sw of all) {
+    console.log(`The swarm ${sw} (${sw}/haicc shutdown):`)
+    if (await inSwarmRun(sw, ['shutdown', '--yes'])) return 1
+  }
+  return 0
+}
+
+async function rootTeardown (swarm) {
+  const all = readSwarms()
+  if (!all.swarms[swarm] && !existsSync(nodesFile(swarm))) { console.log(`haicc teardown: no swarm ${swarm} here`); return 1 }
+  if (!(await confirm(`The swarm ${swarm} removed: its nodes' cold shutdown, its folder, its entry in swarms.json`))) return 1
+  if (existsSync(join(work, swarm, 'haicc'))) {
+    console.log(`The swarm ${swarm} (${swarm}/haicc shutdown):`)
+    if (await inSwarmRun(swarm, ['shutdown', '--yes'])) return 1
+  }
+  rmSync(join(work, swarm), { recursive: true, force: true })
+  console.log(`  removed ${swarm}/`)
+  delete all.swarms[swarm]
+  jsonFile.write(swarmsFile, all)
+  console.log(`The host: ${swarm} removed from swarms.json`)
+  return 0
+}
+
+// The cold shutdown (./shutdown): every swarm removed, then the root's own,
+// back to the setup.
+async function coldShutdown () {
+  const all = Object.keys(readSwarms().swarms).reverse()
+  if (!(await confirm(`The work folder, cold: every swarm (${all.join(', ') || 'none'}), swarms.json, packages/ and ./haicc removed; kept: haiccing/, log/, nodejs/ (./boot sets it up again)`))) return 1
+  for (const sw of all) {
+    if (existsSync(join(work, sw, 'haicc'))) {
+      console.log(`The swarm ${sw} (${sw}/haicc shutdown):`)
+      if (await inSwarmRun(sw, ['shutdown', '--yes'])) { console.log('The cold shutdown stopped: a swarm could not be shut down (above)'); return 1 }
+    }
+    rmSync(join(work, sw), { recursive: true, force: true }); console.log(`  removed ${sw}/`)
+  }
+  rmSync(swarmsFile, { force: true }); console.log('  removed swarms.json')
+  // Last: what runs this command (it is loaded: removing its files is safe).
+  rmSync(join(work, 'packages'), { recursive: true, force: true }); console.log('  removed packages/')
+  rmSync(join(work, 'haicc'), { force: true }); console.log('  removed ./haicc')
+  console.log(`The work folder: shut down, cold (kept: haiccing/, log/${existsSync(join(work, 'nodejs')) ? ', nodejs/' : ''}); ./boot sets it up again`)
+  return 0
+}
+
+function list () {
+  const all = inSwarm ? [inSwarm] : Object.keys(readSwarms().swarms)
+  console.log(`swarms (${inSwarm ? `${work}/${inSwarm}` : `${work}, swarms.json`}):${all.length ? '' : ' none yet'}`)
+  for (const sw of all) {
+    const s = readNodes(sw)
+    console.log(`  ${sw}`)
+    for (const n of downOrder(s).reverse()) console.log(`    ${n}  ${s.nodes[n].role}${existsSync(join(work, sw, n, 'haicc')) ? '' : '  (not built: shut down)'}`)
+  }
+  return 0
+}
+
+// What a command names: a swarm (at the root) or a node (in a swarm); null:
+// not a name.
+const named = arg => arg === undefined ? undefined : (inSwarm ? clean(arg, 'node', SWARM_OWN) : clean(arg, 'swarm', OWN))
+
 try {
-  if (verb === 'boot') process.exit(await boot(name))
-  else if (verb === 'teardown') process.exit(await teardown(name))
-  else if (verb === 'fetch') {
+  const n = named(name)
+  if (n === null) process.exit(2)
+  if (verb === 'boot') process.exit(inSwarm ? await swarmBoot(inSwarm, n) : await rootBoot(n))
+  else if (verb === 'shutdown') {
+    if (flags.cold && !inSwarm && !n) process.exit(await coldShutdown())
+    process.exit(inSwarm ? await swarmShutdown(inSwarm, n, { asked: Boolean(flags.yes) }) : await rootShutdown(n))
+  } else if (verb === 'teardown') {
+    if (!n) { console.log(`haicc teardown <${inSwarm ? 'node' : 'swarm'}>: which ${inSwarm ? 'node' : 'swarm'} to remove`); process.exit(2) }
+    process.exit(inSwarm ? await swarmTeardown(inSwarm, n) : await rootTeardown(n))
+  } else if (verb === 'fetch') {
     if (!name) usage()
     // As it happens, through our own stdout (the log sees it too).
     const code = await new Promise(resolve => {
