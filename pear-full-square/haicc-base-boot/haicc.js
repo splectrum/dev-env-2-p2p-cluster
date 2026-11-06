@@ -384,7 +384,18 @@ function list () {
 
 // What a command names: a swarm (at the root) or a node (in a swarm); null:
 // not a name.
-const named = arg => arg === undefined ? undefined : (inSwarm ? clean(arg, 'node', SWARM_OWN) : clean(arg, 'swarm', OWN))
+// One name, of this level's child: a path is refused, not cleaned into one name.
+const named = arg => {
+  if (arg === undefined || verb === 'fetch') return arg
+  if (arg.includes('/')) {
+    const [a, b] = arg.split('/')
+    console.log(inSwarm
+      ? `'${arg}': one node's name here (${inSwarm}/haicc ${verb} <node>)`
+      : `'${arg}': one swarm's name here; a node is its swarm's: ${a}/haicc ${verb} ${b || '<node>'}`)
+    return null
+  }
+  return inSwarm ? clean(arg, 'node', SWARM_OWN) : clean(arg, 'swarm', OWN)
+}
 
 try {
   const n = named(name)

@@ -178,3 +178,16 @@ test('the setup: a self-extracting release, extracting haiccing/ (boot, sources,
     assert.deepEqual(readFileSync(join(dir, 'work2', 'haiccing', 'sources'), 'utf8').split('\n').filter(l => l && !l.startsWith('#')), ['github haiccing'])
   } finally { rmSync(dir, { recursive: true, force: true }) }
 })
+
+test('a path for a name is refused, not cleaned into one name: a node is its swarm\'s', () => {
+  const work = mkdtempSync(join(tmpdir(), 'names-'))
+  try {
+    const r = spawnSync(process.execPath, [join(here, 'haicc.js'), 'boot', 'hosts/master'], { encoding: 'utf8', env: { ...process.env, HAICC_WORK: work } })
+    assert.equal(r.status, 2)
+    assert.match(r.stdout, /'hosts\/master': one swarm's name here; a node is its swarm's: hosts\/haicc boot master/)
+    assert.ok(!existsSync(join(work, 'swarms.json')) && !existsSync(join(work, 'hosts-master')), 'nothing made')
+    const s = spawnSync(process.execPath, [join(here, 'haicc.js'), 'teardown', 'a/b'], { encoding: 'utf8', env: { ...process.env, HAICC_WORK: work, HAICC_SWARM: 'hosts' } })
+    assert.equal(s.status, 2)
+    assert.match(s.stdout, /one node's name here \(hosts\/haicc teardown <node>\)/)
+  } finally { rmSync(work, { recursive: true, force: true }) }
+})
