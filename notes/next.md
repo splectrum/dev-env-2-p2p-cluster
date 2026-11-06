@@ -25,14 +25,23 @@ Phase 3, step 1 (packages and the boot): record
 - **The local agent's first run** (`5-validation/local-run.md`): the demos
   published, both run from GitHub's archives; one open finding.
 
-**Now: written up, to build once the human has read it (2026-11-06).**
-Decided with the human after the fourth release, in `notes/packages.md`,
-"Self-contained packages, the work folder, the log", and the request's
-part 7 (`pending/default` `2c5f2aa`): self-contained packages (no
-`requires`, installed whole, sealed); the work folder `packages/`, `node/`,
-`log/` (`install/` gone, one variable `HAICC_WORK`); the log on a
-timeline. Later: versioned packages (major.minor in the name), the host on
-Bare (`plan.md`).
+**Now: the root install on the new shape, built (2026-11-06); next, the
+swarm boot.** The root only (the human: not the package manager yet), boot
+0.6.0, `haicc-base-boot`: the work folder `haicc`, `haiccing/`,
+`packages/base-package-haicc/` (the repository copied whole at the first
+boot; HAICC's root runs from it), `node/`, `log/`; `install/` gone, one
+variable `HAICC_WORK`; the log on a timeline (files of 10 KB named by
+their first command's start in UTC; each command's real start and its
+duration, the setup's included); the instructions say `log/`, newest last.
+Tested: the boot's tests 9 of 9 (the work folder's shape among them); a
+fresh setup and boot, booted again, and rotated past 10 KB.
+**For the local agent**, with the human's OK: publish `base-package-haicc`
+and `haicc-base-boot`'s product, the fifth release (the setup, tag
+`setup-<hash>`), `haiccing`'s profile; the human's local test as before
+(the one command, the folder's shape, `ls log/`). The self-contained
+packages and the package manager's side (`notes/packages.md`) wait for the
+package manager work; the managers' HAICC (`haicc-deployment`) for the
+swarm boot.
 
 **Next here, first: the human's feedback on the fourth release (2026-11-06),
 for a fifth.** The human ran it: "that works a lot better". Decided with them:

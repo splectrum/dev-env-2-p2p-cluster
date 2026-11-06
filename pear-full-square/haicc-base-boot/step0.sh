@@ -3,14 +3,14 @@
 #   sh step0.sh check            each: found, required, ok, what fix would do
 #   sh step0.sh fix [--yes] [--dry-run]
 #                                Node.js, the official release for Linux x64,
-#                                checksum checked, into $HAICC_HOME/node (no
+#                                checksum checked, into $HAICC_WORK/node (no
 #                                sudo), only with your yes
 # check exits 0 when all is met, 1 when not.
 set -u
 here=$(cd "$(dirname "$0")" && pwd)
-home=${HAICC_HOME:-install}
+work=${HAICC_WORK:-.}
 . "$here/lib/download.sh"
-[ -x "$home/node/bin/node" ] && PATH=$home/node/bin:$PATH
+[ -x "$work/node/bin/node" ] && PATH=$work/node/bin:$PATH
 op=${1:-check}; shift 2>/dev/null || true
 yes=0; dry=0
 for a in "$@"; do case $a in --yes) yes=1 ;; --dry-run) dry=1 ;; esac; done
@@ -28,7 +28,7 @@ probe () {
     node)
       if has node; then found=$(node -v 2>/dev/null); fi
       v=${found#v}
-      [ "$found" != - ] && at_least "$v" "$2" && ok=yes || fix="install Node.js $2 (the official release for Linux x64) into $home/node, no sudo" ;;
+      [ "$found" != - ] && at_least "$v" "$2" && ok=yes || fix="install Node.js $2 (the official release for Linux x64) into $work/node, no sudo" ;;
   esac
 }
 
@@ -64,11 +64,11 @@ fix_node () {
   download "$base/$file" "$tmp/$file" || { rm -rf "$tmp"; return 1; }
   echo "  checking its checksum..."
   grep " $file\$" "$tmp/SHASUMS256.txt" | (cd "$tmp" && sha256sum -c - >/dev/null) || { echo "Node.js's checksum did not match"; rm -rf "$tmp"; return 1; }
-  echo "  unpacking into $home/node..."
-  mkdir -p "$home" && rm -rf "$home/node.new" && mkdir "$home/node.new" && tar -xzf "$tmp/$file" -C "$home/node.new" --strip-components=1 && rm -rf "$home/node" && mv "$home/node.new" "$home/node"
+  echo "  unpacking into $work/node..."
+  mkdir -p "$work" && rm -rf "$work/node.new" && mkdir "$work/node.new" && tar -xzf "$tmp/$file" -C "$work/node.new" --strip-components=1 && rm -rf "$work/node" && mv "$work/node.new" "$work/node"
   rm -rf "$tmp"
-  PATH=$home/node/bin:$PATH   # for the check that follows
-  echo "installed: Node.js $("$home/node/bin/node" -v) in $home/node"
+  PATH=$work/node/bin:$PATH   # for the check that follows
+  echo "installed: Node.js $("$work/node/bin/node" -v) in $work/node"
 }
 
 fix () {

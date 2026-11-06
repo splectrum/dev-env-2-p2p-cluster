@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // haicc at the root of a work folder (./haicc): the part of HAICC the host
-// needs, copied in by haiccing/boot (stage 1). Node.js built-ins only.
+// needs, run from packages/base-package-haicc (copied in by haiccing/boot,
+// stage 1). Node.js built-ins only. The work folder: HAICC_WORK.
 //   haicc boot [--yes]           the root's boot (stage 2): the host's prerequisites
 //                                (git, Docker Engine), checked and fixed with a yes;
 //                                then haiccing/install, if there, or the next commands
@@ -8,7 +9,7 @@
 //   haicc fetch <repository>     a repository, with what it requires, into haiccing/
 //   haicc list                   the managers in this work folder
 // --verbose: each check's detail too. What every command prints goes to
-// log/haicc.log as well, in order (files of 10 KB). Exit 0 when done,
+// log/ as well, in order (files of 10 KB named by their start, newest last). Exit 0 when done,
 // 1 when not (the output says what is missing), 2 on a bad call.
 import process from 'node:process'
 import { existsSync, readFileSync, readdirSync, openSync, closeSync, createReadStream, createWriteStream } from 'node:fs'
@@ -24,7 +25,6 @@ const argv = process.argv.slice(2)
 const flags = Object.fromEntries(argv.filter(a => a.startsWith('--')).map(a => { const [k, v] = a.slice(2).split('='); return [k, v ?? true] }))
 const [verb, name] = argv.filter(a => !a.startsWith('--'))
 const work = resolve(process.env.HAICC_WORK || '.')
-const root = join(work, 'install')
 const haiccing = join(work, 'haiccing')
 const log = openLog({ dir: join(work, 'log'), command: ['haicc', ...argv], level: flags.debug ? 'debug' : flags.verbose ? 'verbose' : 'normal' })
 
@@ -107,7 +107,8 @@ try {
     if (code !== 0) console.log(`haicc fetch: not all of ${name} could be fetched (haiccing/sources)`)
     process.exit(code === 0 ? 0 : 1)
   } else if (verb === 'list') {
-    const managers = readdirSync(work).filter(n => n !== 'install' && existsSync(join(work, n, 'install')))
+    // A manager: a folder of the same shape (its own packages/), not the root's own folders.
+    const managers = readdirSync(work).filter(n => !['packages', 'haiccing', 'node', 'log'].includes(n) && existsSync(join(work, n, 'packages')))
     console.log(`managers (${work}):${managers.length ? '' : ' none yet'}`)
     for (const m of managers) console.log(`  ${m}`)
     process.exit(0)
