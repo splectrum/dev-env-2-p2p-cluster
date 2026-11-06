@@ -221,6 +221,12 @@ Design: `packages.md`. Its own request is written as its scope settles.
 
 ## Further down the roadmap
 
+- **Teardown with checkpointing and backup** (the human, 2026-11-06). The
+  first teardowns are a plain remove (a manager's: leave the swarm, shut
+  its container down, remove what it made, keeping its HAICC setup; the
+  root's: each manager's, then its own, keeping `haiccing/`). Later: the
+  state saved before removal (the vaults, the swarm's repositories, the
+  deployments), so a teardown can be undone or its state restored.
 - **The host on Bare** (the human, 2026-11-06: where we need to get to).
   Today the host side runs on Node.js (the root's HAICC, the package
   manager, the managers, Splectral's server); Bare only in the nodes. One
