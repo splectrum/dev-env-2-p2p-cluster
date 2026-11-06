@@ -39,15 +39,26 @@ const [verb, name] = argv.filter(a => !a.startsWith('--'))
 const work = resolve(process.env.HAICC_WORK || '.')
 const packages = join(work, 'packages')
 const home = work
-const haiccing = existsSync(join(work, 'haiccing')) ? join(work, 'haiccing') : join(dirname(work), 'haiccing')
+// The root's haiccing/: a node is two down from it (<work>/<swarm>/<node>).
+const haiccing = [join(work, 'haiccing'), join(work, '..', 'haiccing'), join(work, '..', '..', 'haiccing')].find(d => existsSync(d)) || join(work, 'haiccing')
 const manager = join(work, 'manager')
 process.env.HAICC_PACKAGES = packages
 
 const log = openLog({ dir: join(work, 'log'), command: ['haicc', ...argv], level: flags.debug ? 'debug' : flags.verbose ? 'verbose' : 'normal' })
 
 const usage = () => { process.stderr.write(readFileSync(new URL(import.meta.url), 'utf8').split('\n').slice(1, 16).map(l => l.replace(/^\/\/ ?/, '')).join('\n') + '\n'); process.exit(2) }
-const pkgm = async () => import(pathToFileURL(join(packages, 'pear-full-square', 'pkgm-base-manager', 'index.js')).href)
-const fetchScript = join(packages, 'pear-full-square', 'haicc-base-boot', 'fetch.sh')
+const pkgm = async () => import(pathToFileURL(join(packages, 'base-package-pkgm', 'pear-full-square', 'pkgm-base-manager', 'index.js')).href)
+const fetchScript = join(packages, 'base-package-haicc', 'pear-full-square', 'haicc-base-boot', 'fetch.sh')
+// What is here: the packages copied in whole (no registry entry), and any the
+// package manager installed.
+const packagesHere = async () => {
+  const found = {}
+  for (const n of existsSync(packages) ? readdirSync(packages) : []) {
+    const f = join(packages, n, 'package.json')
+    if (existsSync(f)) { const h = JSON.parse(readFileSync(f, 'utf8')).pkgm?.hash; if (h) found[n] = { hash: h } }
+  }
+  return { ...found, ...(await pkgm()).installed(packages).packages }
+}
 
 // A repository and what it requires, into haiccing/ from the sources.
 function fetchRepos (repos) {
@@ -125,13 +136,11 @@ try {
     if (t.ok) console.log('  its container: none yet (nothing deployed here), nothing to start')
     process.exit(t.ok ? 0 : 1)
   } else if (verb === 'version') {
-    const reg = (await pkgm()).installed(packages)
     console.log(`haicc, the work folder ${work}`)
-    for (const [n, p] of Object.entries(reg.packages)) console.log(`  ${n}: ${p.hash.slice(0, 12)}${p.overrides ? ' (overridden)' : ''}`)
+    for (const [n, p] of Object.entries(await packagesHere())) console.log(`  ${n}: ${p.hash.slice(0, 12)}${p.overrides ? ' (overridden)' : ''}`)
   } else if (verb === 'list') {
-    const reg = (await pkgm()).installed(packages)
     console.log(`installed (${packages}):`)
-    for (const [n, p] of Object.entries(reg.packages)) console.log(`  ${n}  ${p.hash.slice(0, 12)}${p.overrides ? '  overridden' : ''}`)
+    for (const [n, p] of Object.entries(await packagesHere())) console.log(`  ${n}  ${p.hash.slice(0, 12)}${p.overrides ? '  overridden' : ''}`)
     const deployments = existsSync(manager) ? readdirSync(manager).filter(n => existsSync(join(manager, n, 'deployment'))) : []
     console.log(`deployments (${manager}):${deployments.length ? '' : ' none'}`)
     const { desiredOf } = await import('./index.js')
