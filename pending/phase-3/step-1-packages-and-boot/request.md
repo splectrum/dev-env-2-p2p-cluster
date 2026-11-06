@@ -81,6 +81,22 @@ repository, no `npm install`.
    - retired: `pkgm-base-boot`, the kicks, the demos' `run.sh`.
    Then (a follow-on): the logs as topics.
 
+7. **Self-contained packages, the work folder, the log on a timeline**
+   (amended 2026-11-06, `main:notes/packages.md`, "Self-contained
+   packages, the work folder, the log"):
+   - each package carries everything it runs on (no `requires`); installed
+     by copying its repository in, whole; once sealed, only its version
+     counts; Splectral's components the same; Bare's runtime stripped where
+     node images are built;
+   - the work folder: `haicc`, `haiccing/`, `packages/` (repositories,
+     whole), `node/`, `log/`, `manager/` (the same shape); one variable,
+     `HAICC_WORK`; no hidden folders;
+   - the log: files of 10 KB named by their first command's start (UTC),
+     reading in time order; each command's real start time and its
+     duration, the setup's included.
+   Later, not in this step: versioned packages (major.minor in the name,
+   side by side); the host on Bare (the roadmap).
+
 Not in this step: the p2p version (packages as Hyperdrives mirrored to
 the folder, the container's code the same way), pinning, other platforms,
 Android.
