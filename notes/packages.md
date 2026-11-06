@@ -46,6 +46,26 @@ Agreed 2026-11-04.
   the module's and the package's tests run. A module is never validated
   on its own, only in the package it is used in.
 
+**Decided with the human (2026-11-06), to build with the package manager
+work, not before:**
+- **A test is a normal executable** in the package (a script or a program:
+  it runs, prints, exits 0 or not); no HAICC harness to run it.
+- **The package manager runs them**: once released, wherever the package
+  is installed (`pkgm test <package>`); in the development environment,
+  writing the packages installs and tests them together.
+- **Only the latest run's log is kept**, with the package (small: logs
+  only); older runs in the repository's history, or later in a more
+  central HAICC solution. Benchmarks are tests like any other.
+- **Known issues** are kept with the package.
+- **Nothing of the environment a test ran in is kept**: the throwaway work
+  folder is removed; only the test and its output log stay.
+- **A harness, if one is ever needed,** is a `haiccing` package of its own,
+  installed first (a chicken and egg: so avoided).
+- **The release is stored once, clean**: the GitHub release of
+  `base-package-haicc`, nowhere else.
+- Until then, a test needed at the root is an `sh` script test on the
+  root's HAICC.
+
 ## The package manager, and booting it
 
 Agreed 2026-11-04. Managing packages is an application of its own

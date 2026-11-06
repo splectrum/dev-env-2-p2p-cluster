@@ -12,7 +12,7 @@ stopped (finding 1). Fixed, in the second release below.**
 
 | Case | Result |
 |---|---|
-| download from the release | 34,204 bytes, identical to `releases/haicc-setup.sh` |
+| download from the release | 34,204 bytes, identical to the setup as built |
 | `sh haicc-setup.sh ~/haicc-work` | exit 0, no network |
 | `haiccing/boot` | exit 0, 0.7 s: all met, nothing to fix |
 | `./haicc list` | "none yet", exit 0 |

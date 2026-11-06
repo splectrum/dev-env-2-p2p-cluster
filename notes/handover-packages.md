@@ -144,3 +144,38 @@ To do, in this order:
    demos (step 1 not done): `6-work-folder/local-run.md`. The link works.
    The second release, `setup-58fb397be615`, carries its fixes; the profile
    is trimmed.
+
+## The fixes after the third release (2026-11-06)
+
+On `main` (the session's commits up to "Testing decided; the environment
+copies removed"): the human's findings 4 to 7 and no hidden folders, the
+boot 0.5.0. Not published. In this order:
+
+1. **The packages**: `publish.sh ~/haiccing-publish` (from this repository
+   at `main`, `npm install` done). All eight change: `base-package-haicc`
+   (the boot 0.5.0, its readme: one command, `curl` retrying, where the log
+   is), `-pkgm` (`pkgm/` for the registry), `-p2p` (`haicc-owner`, the image
+   build skipping `pkgm/`), the rest by their readmes; the demos too (they
+   were behind).
+2. **The products**, merged as before (a split of each, merged, each equal
+   to its folder but for its LICENSE): `haicc-base-boot`, `haicc-reconcile`,
+   `haicc-deployment`, `pkgm-base-manager`, `p2p-swarm-manager`,
+   `p2p-node-manager`. Recorded in `5-validation/products.md`.
+3. **The setup**: `publish.sh` builds it (`~/haiccing-publish/haicc-setup.sh`);
+   released only with the human's OK (tag `setup-<hash>`, latest), stored
+   nowhere else.
+4. **`haiccing`'s profile** (`haiccing/.github/profile/README.md` here):
+   one command, `curl` retrying, where the log is. Pushed to `haiccing/.github`.
+5. **The human tests locally**, from the release, a new folder:
+   - the one command from the profile; a failed download stops it;
+   - nothing hidden in the work folder: `install/`, `log/`, `haiccing/`,
+     `haicc`;
+   - `log/haicc.log` from the setup's first line on (the setup's header and
+     result, then the boot's stages);
+   - the setup again over the same folder: `already set up with this
+     setup`, exit 0; an older setup's folder: both named, a new folder said,
+     exit 1;
+   - a boot without Node.js, through to the end, on a good connection (not
+     yet seen).
+   Recorded in `6-work-folder/local-run.md`: the log kept, nothing of the
+   work folder.
