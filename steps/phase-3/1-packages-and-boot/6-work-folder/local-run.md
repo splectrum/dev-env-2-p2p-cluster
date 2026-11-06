@@ -183,3 +183,7 @@ the built file: setup, `./boot`, a swarm, two nodes, shutdown and boot at each
 level, teardown, `./shutdown`, `./boot` again. After publishing, from the latest
 link with the default sources, through a node's boot and self-test: exit 0, no
 hidden files, one log file named by its start. What was left out: `notes/next.md`.
+
+The human's manual test, the published commands in a new folder: "the test
+worked well, looks really good". The products and `haiccing`'s profile
+followed; the other `haiccing` repositories stay at their last commits.
