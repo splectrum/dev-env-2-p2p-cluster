@@ -214,6 +214,61 @@ section and older ones differ, this one holds.
 - The instructions (the readmes, `haiccing`'s profile) say where the log
   is: in `log/`, newest last.
 
+## Swarms from config packages; haiccing/, user/, swarms/ (agreed 2026-11-06)
+
+Revises the next section's layout and its commands for making a swarm or a
+node; its level table stands.
+
+```
+<work>/
+  boot  shutdown  haicc            the cold boot and shutdown; the launcher
+  haiccing/                        haiccing's packages only (fetched from the sources)
+  user/                            the user's own packages (read in place; never written by HAICC)
+  packages/  nodejs/  log/         what runs; Node.js; the log
+  swarms/
+    swarms.json                    the host's swarms, each with the package it came from
+    <swarm>/                       any URI-part name
+      haicc  nodes.json            its launcher; its config (copied from its package)
+      <node>/                      haicc  packages/  log/
+```
+
+- **The top of the work folder is fixed**: no names of the user's there.
+  Swarms live in `swarms/`, their config `swarms/swarms.json` beside them.
+  The URI stays `/<swarm>/<node>`: `swarms/` is only the host's folder for
+  them.
+- **`haiccing/` holds haiccing's packages only**, fetched from the sources
+  (GitHub, or a local copy of haiccing's repositories for development).
+  **`user/` holds the user's own**, plain folders, read in place. **The
+  `base-` prefix is haiccing's**, and it says where a name is looked up:
+  `base-*` in `haiccing/` (fetched if missing), anything else in `user/`
+  (missing: exit 1). A name is never in both; the lookup never guesses.
+- **A swarm comes only from a config package**, one with a `nodes.json`
+  (its nodes, their roles, the packages each gets); recognized by that, not
+  by its name. No empty swarms, no building by hand.
+  - `./haicc boot <package>`: the swarm named after the package
+    (`swarms/base-swarm-three-nodes/`); its `nodes.json` copied in; the swarm
+    added to `swarms.json` with its package; its nodes booted, the master
+    first. No such package: exit 1, nothing made.
+  - `./haicc boot <name> --from=<package>`: the same under another name
+    (shorter, or two of one shape on a host). `<name>` already a swarm:
+    refused (exit 2); its config is not overwritten.
+  - `./haicc boot <swarm>` for a swarm already here: booted from its own
+    `nodes.json`; the package is not read again (versions later).
+- **A swarm's nodes are its config's.** `<swarm>/haicc boot|shutdown
+  <node>` only for a node in its `nodes.json` (e.g. one node rebuilt);
+  `teardown <node>` goes. A swarm changed: its package changed, the swarm
+  made again (with versions: an upgrade). `./haicc teardown <swarm>`: its
+  shutdown, its folder and its entry removed; its package stays.
+- **No current swarm**: the folder is the context. `cd swarms/<swarm>`
+  and its own `./haicc boot|shutdown [<node>]`; the log's header names the
+  folder. (KISS: no `use`, no hidden state.)
+- **A cold `./shutdown`** removes `swarms/`, `packages/`, `./haicc`; kept:
+  `haiccing/`, `user/`, `log/`, `nodejs/`.
+- First config package: `base-swarm-three-nodes` (a master, two nodes), as
+  a folder here first, published once it works. Then the master's swarm:
+  a node's boot installs its packages and starts its container; its
+  shutdown leaves the swarm and removes it.
+
 ## Boot and shutdown by level (agreed 2026-11-06)
 
 ```
