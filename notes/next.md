@@ -31,10 +31,11 @@ GitHub. Run from the latest link with the default sources, through a node:
 exit 0. **Only that repository went out**, the human's word: the other
 `haiccing` repositories had generated text changes only and stay at their last
 commits, so a node takes `base-package-pkgm` `cd28ada5126f` from GitHub, not the
-`ec1e96858df7` this repository writes (same code). **Not published:** the
-products (`pear-full-square`), `haiccing`'s profile, Codeberg's mirror of
-`base-package-haicc`. The profile still says `~/haicc-work/haiccing/boot`, which
-this release does not have: `~/haicc-work/boot`.
+`ec1e96858df7` this repository writes (same code). **The human tested it (2026-11-06)**: "the test worked well, looks really good".
+Then, the human's word: the products (`haicc-base-boot` `7feda86`,
+`haicc-deployment` `3b2bb7b`, `pkgm-base-manager` `7647b3b`), `haiccing`'s
+profile (`8a14f40`, `./boot`). The implementer continues: the master's swarm,
+and the three things below.
 
 **The local agent, on boot and shutdown by level (2026-11-06).** Built and
 tested: `setup-25a1bd107a92`, boot 0.6.0, from `001583e`; a new
