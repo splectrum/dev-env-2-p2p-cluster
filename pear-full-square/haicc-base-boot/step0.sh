@@ -9,6 +9,7 @@
 set -u
 here=$(cd "$(dirname "$0")" && pwd)
 home=${HAICC_HOME:-$HOME/.haicc}
+. "$here/lib/download.sh"
 [ -x "$home/node/bin/node" ] && PATH=$home/node/bin:$PATH
 op=${1:-check}; shift 2>/dev/null || true
 yes=0; dry=0
@@ -54,10 +55,16 @@ fix_node () {
   major=$1
   for t in curl tar sha256sum; do has $t || { echo "Node.js cannot be fetched: $t is missing"; return 1; }; done
   base=https://nodejs.org/dist/latest-v$major.x
-  file=$(curl -fsSL "$base/SHASUMS256.txt" | awk '/linux-x64.tar.gz$/ {print $2}' | head -1)
-  [ -n "$file" ] || { echo "no Node.js $major release found at $base"; return 1; }
   tmp=$(mktemp -d)
-  curl -fsSL "$base/$file" -o "$tmp/$file" && curl -fsSL "$base/SHASUMS256.txt" | grep " $file\$" | (cd "$tmp" && sha256sum -c - >/dev/null) || { echo "Node.js download failed, or its checksum did not match"; rm -rf "$tmp"; return 1; }
+  echo "  finding the latest Node.js $major at nodejs.org..."
+  download "$base/SHASUMS256.txt" "$tmp/SHASUMS256.txt" || { rm -rf "$tmp"; return 1; }
+  file=$(awk '/linux-x64.tar.gz$/ {print $2}' "$tmp/SHASUMS256.txt" | head -1)
+  [ -n "$file" ] || { echo "no Node.js $major release found at $base"; rm -rf "$tmp"; return 1; }
+  echo "  downloading $file (about 30 MB)..."
+  download "$base/$file" "$tmp/$file" || { rm -rf "$tmp"; return 1; }
+  echo "  checking its checksum..."
+  grep " $file\$" "$tmp/SHASUMS256.txt" | (cd "$tmp" && sha256sum -c - >/dev/null) || { echo "Node.js's checksum did not match"; rm -rf "$tmp"; return 1; }
+  echo "  unpacking into $home/node..."
   mkdir -p "$home" && rm -rf "$home/node.new" && mkdir "$home/node.new" && tar -xzf "$tmp/$file" -C "$home/node.new" --strip-components=1 && rm -rf "$home/node" && mv "$home/node.new" "$home/node"
   rm -rf "$tmp"
   PATH=$home/node/bin:$PATH   # for the check that follows

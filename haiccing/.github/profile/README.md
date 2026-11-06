@@ -9,7 +9,7 @@ makes it so.
 Linux on x86-64 (on Windows: inside WSL2), with `curl` and `tar`:
 
 ```sh
-curl -fsSL -o haicc-setup.sh https://github.com/haiccing/base-package-haicc/releases/latest/download/haicc-setup.sh
+curl -fL --progress-bar -o haicc-setup.sh https://github.com/haiccing/base-package-haicc/releases/latest/download/haicc-setup.sh
 sh haicc-setup.sh ~/haicc-work         # a work folder, with haiccing/boot in it
 ~/haicc-work/haiccing/boot             # checks the machine, sets up HAICC
 cd ~/haicc-work

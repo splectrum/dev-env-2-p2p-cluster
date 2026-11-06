@@ -13,7 +13,7 @@
 import process from 'node:process'
 import { existsSync, readFileSync, readdirSync, openSync, closeSync, createReadStream, createWriteStream } from 'node:fs'
 import { join, dirname, resolve } from 'node:path'
-import { spawnSync } from 'node:child_process'
+import { spawn, spawnSync } from 'node:child_process'
 import { createInterface } from 'node:readline'
 import { fileURLToPath } from 'node:url'
 import { openLog } from './lib/log.js'
@@ -36,7 +36,7 @@ async function ask (what) {
   let fd
   try { fd = openSync('/dev/tty', 'r+') } catch { console.log(`  not done, no terminal to ask (--yes to agree): ${what}`); return false }
   const rl = createInterface({ input: createReadStream(null, { fd, autoClose: false }), output: createWriteStream(null, { fd, autoClose: false }) })
-  const answer = await new Promise(resolve => rl.question(`  ${what}? [y/N] `, resolve))
+  const answer = await new Promise(resolve => { rl.once('close', () => resolve('')); rl.question(`  ${what}? [y/N] `, resolve) })   // no answer (Ctrl-D): a no
   rl.close(); closeSync(fd)
   const yes = /^y(es)?$/i.test(answer.trim())
   console.log(`  ${what}? ${yes ? 'yes' : 'no'}`)
@@ -49,14 +49,15 @@ async function hostPrerequisites () {
   console.log("The host's prerequisites (git, Docker Engine):")
   const missing = []
   for (const c of CHECKS) {
+    process.stdout.write(`  checking ${c.name}... `)
     let a = c.observe()
-    if (c.met(a)) { if (log.verbose) console.log(`  ok      ${c.name}  ${c.detail(a)}`); continue }
-    console.log(`  missing ${c.name}  ${c.detail(a)}`)
+    if (c.met(a)) { console.log(`ok (${c.detail(a)})`); continue }
+    console.log(`missing (${c.detail(a)})`)
     if (c.fix) {
       const r = await c.fix(ask, a)
       console.log(`  ${r.said}`)
-      a = c.observe()
-      if (c.met(a)) { console.log(`  ok      ${c.name}  ${c.detail(a)}`); continue }
+      if (r.done) a = c.observe()   // nothing changed otherwise
+      if (r.done && c.met(a)) { console.log(`  ok      ${c.name}  ${c.detail(a)}`); continue }
     }
     console.log(`  ${c.name}: ${c.hint}`)
     missing.push(c.name)
@@ -94,10 +95,15 @@ try {
   else if (verb === 'boot') { console.log(`haicc boot ${name}: a manager's boot is the next step, not built yet`); process.exit(1) }
   else if (verb === 'fetch') {
     if (!name) usage()
-    const r = spawnSync('sh', [join(here, 'fetch.sh'), haiccing, '--requires', name], { encoding: 'utf8', env: { ...process.env, PATH: `${dirname(process.execPath)}:${process.env.PATH}` } })
-    process.stdout.write(r.stdout || '')
-    if (r.status !== 0) console.log(`haicc fetch: not all of ${name} could be fetched (haiccing/sources)`)
-    process.exit(r.status === 0 ? 0 : 1)
+    // As it happens, through our own stdout (the log sees it too).
+    const code = await new Promise(resolve => {
+      const c = spawn('sh', [join(here, 'fetch.sh'), haiccing, '--requires', name], { stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, PATH: `${dirname(process.execPath)}:${process.env.PATH}` } })
+      c.stdout.on('data', d => process.stdout.write(d))
+      c.stderr.on('data', d => process.stderr.write(d))
+      c.on('close', resolve)
+    })
+    if (code !== 0) console.log(`haicc fetch: not all of ${name} could be fetched (haiccing/sources)`)
+    process.exit(code === 0 ? 0 : 1)
   } else if (verb === 'list') {
     const managers = readdirSync(work).filter(n => existsSync(join(work, n, '.haicc')) && n !== '.haicc')
     console.log(`managers (${work}):${managers.length ? '' : ' none yet'}`)
