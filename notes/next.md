@@ -25,6 +25,19 @@ Phase 3, step 1 (packages and the boot): record
 - **The local agent's first run** (`5-validation/local-run.md`): the demos
   published, both run from GitHub's archives; one open finding.
 
+**Now: the manager boot, built and tested on `master` (2026-11-06); for the
+human's look, then the swarm.** `./haicc boot <name>` (the name required,
+cleaned to a URI part and the change said; the host checked first):
+`<name>/` in the same shape, `base-package-pkgm` and `base-package-haicc`
+copied in whole, `<name>/haicc` written; then `<name>/haicc boot`, the
+manager's own boot: the self-test of what was copied in (each package's
+tests in place, nothing installed), ready when all pass; its output echoed
+to the root as it happens (`--no-echo`: its outcome), its log in
+`<name>/log/`. Tested from a fresh work folder: `Master` became `master`,
+6 test runs passed in 8 s; again (kept, tested again); refused: `log`,
+`!!!`, a folder that is not a manager; a host not ready stops it. The
+manager's other verbs (`run`, the lifecycle) wait for the swarm's step.
+
 **Now: the root install on the new shape, built (2026-11-06); next, the
 swarm boot.** The root only (the human: not the package manager yet), boot
 0.6.0, `haicc-base-boot`: the work folder `haicc`, `haiccing/`,

@@ -5,14 +5,17 @@
 //   haicc boot [--yes]           the root's boot (stage 2): the host's prerequisites
 //                                (git, Docker Engine), checked and fixed with a yes;
 //                                then haiccing/install, if there, or the next commands
-//   haicc boot <manager>         a manager: the next step (not built yet)
+//   haicc boot <name> [--no-echo] a manager, <work>/<name>: the package manager and HAICC
+//                                copied in whole; then its own boot (its self-test),
+//                                its output shown as it happens (--no-echo: its outcome only).
+//                                The name is made a URI part, and the change said.
 //   haicc fetch <repository>     a repository, with what it requires, into haiccing/
 //   haicc list                   the managers in this work folder
 // --verbose: each check's detail too. What every command prints goes to
 // log/ as well, in order (files of 10 KB named by their start, newest last). Exit 0 when done,
 // 1 when not (the output says what is missing), 2 on a bad call.
 import process from 'node:process'
-import { existsSync, readFileSync, readdirSync, openSync, closeSync, createReadStream, createWriteStream } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, openSync, closeSync, createReadStream, createWriteStream, mkdirSync, writeFileSync, chmodSync, renameSync } from 'node:fs'
 import { join, dirname, resolve } from 'node:path'
 import { spawn, spawnSync } from 'node:child_process'
 import { createInterface } from 'node:readline'
@@ -73,7 +76,7 @@ function installFile () {
   const file = join(haiccing, 'install')
   if (!existsSync(file)) {
     console.log(`\nBooted. Next, from ${work}:`)
-    console.log('  ./haicc boot manager     a manager: its own HAICC and packages (the next step)')
+    console.log('  ./haicc boot <name>      a manager (e.g. master): its own HAICC and package manager')
     console.log('  ./haicc list             the managers here')
     return 0
   }
@@ -90,11 +93,74 @@ function installFile () {
   return 0
 }
 
+// The work folder's own folders: not a manager's name.
+const OWN = ['packages', 'haiccing', 'node', 'log']
+// A name made a URI part: lowercase a-z, 0-9, words joined by single '-'.
+export const cleanName = raw => raw.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+
+// A manager: its folder in the work folder's shape, the package manager and
+// HAICC copied in whole (fetched first where they are not), its launcher;
+// then its own boot (its self-test), as it happens.
+async function bootManager (raw) {
+  const name = cleanName(raw)
+  if (!name) { console.log(`haicc boot: '${raw}': nothing in it makes a name (a-z, 0-9)`); return 2 }
+  if (name !== raw) console.log(`The name '${raw}' is not a URI part (lowercase a-z, 0-9, words joined by single '-'): the manager is named '${name}'.`)
+  if (OWN.includes(name)) { console.log(`haicc boot: '${name}' is one of the work folder's own folders (${OWN.join(', ')}): choose another name`); return 2 }
+  // The host first: its prerequisites met (checked only; ./haicc boot fixes them).
+  const notMet = CHECKS.filter(c => !c.met(c.observe())).map(c => c.name)
+  if (notMet.length) { console.log(`The host is not ready (${notMet.join(', ')}): ./haicc boot first`); return 1 }
+  const dir = join(work, name)
+  if (existsSync(dir) && !existsSync(join(dir, 'packages'))) { console.log(`haicc boot ${name}: ${dir} is there, and not a manager: choose another name`); return 1 }
+  console.log(`The manager ${name} (${dir}):`)
+  mkdirSync(join(dir, 'packages'), { recursive: true })
+  for (const repo of ['base-package-pkgm', 'base-package-haicc']) {
+    const at = join(dir, 'packages', repo)
+    if (existsSync(join(at, 'package.json'))) { console.log(`  ${repo}: there`); continue }
+    if (!existsSync(join(haiccing, repo, 'package.json'))) {
+      const f = spawnSync('sh', [join(here, 'fetch.sh'), haiccing, repo], { encoding: 'utf8', env: { ...process.env, PATH: `${dirname(process.execPath)}:${process.env.PATH}` } })
+      process.stdout.write(f.stdout || '')
+      if (f.status !== 0) { console.log(`  ${repo}: could not be fetched (haiccing/sources)`); return 1 }
+    }
+    const c = spawnSync('sh', ['-c', 'rm -rf "$2.new" && cp -a "$1" "$2.new" && rm -rf "$2.new/.git" && mv "$2.new" "$2"', 'copy', join(haiccing, repo), at], { encoding: 'utf8' })
+    if (c.status !== 0) { console.log(`  ${repo}: could not be copied in: ${(c.stderr || '').trim()}`); return 1 }
+    const hash = JSON.parse(readFileSync(join(at, 'package.json'), 'utf8')).pkgm?.hash?.slice(0, 12)
+    console.log(`  copied ${repo} (${hash}) into ${join(dir, 'packages')}`)
+  }
+  writeFileSync(join(dir, 'haicc.new'), `#!/bin/sh
+# HAICC for the manager ${name} (written by the root's ./haicc boot ${name}): ${name}/haicc <command>
+work=$(cd "$(dirname "$0")" && pwd)
+HAICC_WORK=$work; export HAICC_WORK
+[ -x "$work/../node/bin/node" ] && PATH=$work/../node/bin:$PATH
+exec node "$work/packages/base-package-haicc/pear-full-square/haicc-deployment/haicc.js" "$@"
+`)
+  chmodSync(join(dir, 'haicc.new'), 0o755)
+  renameSync(join(dir, 'haicc.new'), join(dir, 'haicc'))
+  console.log(`  written ${join(dir, 'haicc')}`)
+  // Its own boot: it logs itself (in <name>/log/); here, echoed as it happens.
+  console.log(`Its boot (${name}/haicc boot)${flags['no-echo'] ? ', its outcome only' : ''}:`)
+  const child = spawn(join(dir, 'haicc'), ['boot'], { env: { ...process.env, HAICC_WORK: dir }, stdio: ['ignore', 'pipe', 'pipe'] })
+  // Its last complete line: its outcome (an unfinished line kept apart).
+  let last = ''; let partial = ''
+  const echo = chunk => {
+    const s = String(chunk)
+    const lines = (partial + s).split('\n')
+    partial = lines.pop()
+    for (const l of lines) if (l.trim()) last = l
+    if (!flags['no-echo']) process.stdout.write(s.replace(/^(?=.)/gm, '  | '))
+  }
+  child.stdout.on('data', echo); child.stderr.on('data', echo)
+  const code = await new Promise(resolve => child.on('close', resolve))
+  if (partial.trim()) last = partial
+  if (flags['no-echo']) console.log(`  | ${last}`)
+  console.log(code === 0 ? `The manager ${name}: ready` : `The manager ${name}: its boot ended with exit ${code} (its log: ${name}/log/)`)
+  return code === 0 ? 0 : 1
+}
+
 try {
   if (verb === 'boot' && !name) {
     process.exit((await hostPrerequisites()) ? installFile() : 1)
   }
-  else if (verb === 'boot') { console.log(`haicc boot ${name}: a manager's boot is the next step, not built yet`); process.exit(1) }
+  else if (verb === 'boot') process.exit(await bootManager(name))
   else if (verb === 'fetch') {
     if (!name) usage()
     // As it happens, through our own stdout (the log sees it too).
