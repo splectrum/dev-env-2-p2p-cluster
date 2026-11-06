@@ -44,24 +44,14 @@
         "```sh",
         "curl -fsSL -o haicc-setup.sh https://github.com/haiccing/base-package-haicc/releases/latest/download/haicc-setup.sh",
         "sh haicc-setup.sh ~/haicc-work         # a work folder: haiccing/ with boot, sources and this package",
-        "~/haicc-work/haiccing/boot             # checks the machine, installs HAICC (and the package manager), writes ./haicc",
+        "~/haicc-work/haiccing/boot             # the root: Node.js, HAICC's root part, then git and Docker checked",
         "cd ~/haicc-work",
-        "./haicc run base-demo-liveness         # a demo: fetched, installed, deployed; the browser opens",
+        "./haicc list",
         "```",
         "",
-        "The boot checks the machine (Linux x86-64; Node.js 22 or later; git 2.25 or later; Docker Engine, rootful, native, running, and the user in the `docker` group) and fixes what is missing only with your yes (`haiccing/boot --yes` agrees beforehand): Node.js into `.haicc/node`, git and Docker Engine with `apt`. Then it stops, unless `haiccing/install` is there: one `./haicc` command a line, carried on with (`selftest.install` in `haicc-base-boot` is the self-test).",
+        "The boot runs in two stages. Stage 1, `haiccing/boot`, in plain shell: Linux x86-64 and Node.js (Node.js fixed with your yes, into `.haicc/node`); the root's part of HAICC (`haicc-base-boot`) copied into `.haicc/`; `./haicc` written. Stage 2, `./haicc boot`: the host's other prerequisites (git 2.25 or later; Docker Engine installed, running, rootful, native, and you in the `docker` group), each fixed only with your yes (`--yes` agrees beforehand); then `haiccing/install` if there (one `./haicc` command a line), or the next commands. Everything it prints goes to `.haicc/log/haicc.log` too.",
         "",
-        "## The work folder",
-        "",
-        "```",
-        "<work>/",
-        "  haicc        the launcher: ./haicc <command>",
-        "  haiccing/    boot, sources (where repositories come from: folder <path>, github <org>), [install], the repositories",
-        "  .haicc/      the install: node/, packages/, log/ (the boot's output, every command, every fetch)",
-        "  manager/     the deployments, one folder per project",
-        "```",
-        "",
-        "`./haicc` without arguments lists its commands."
+        "The rest of HAICC (`haicc-reconcile`, `haicc-deployment`) runs in managers: each swarm self-contained, with its own HAICC, package manager and packages (`./haicc boot <manager>`, next)."
       ]
     },
     "pkgm": {
