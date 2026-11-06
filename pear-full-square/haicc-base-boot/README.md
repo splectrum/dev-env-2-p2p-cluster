@@ -26,10 +26,10 @@ cd ~/haicc-work && ./haicc run base-demo-liveness
   written): one self-extracting file, `sh` and `tar` only, extracting
   `haiccing/boot`, `haiccing/sources` and `haiccing/base-package-haicc/`.
 - **`haiccing/boot`**: a stub naming its setup (`base-package-haicc`),
-  executable. It runs `boot.sh`: step 0; the package manager's and HAICC's
-  repositories, with what HAICC requires, fetched (`fetch.sh`); the package
-  manager installed by its own code, HAICC by the package manager, into
-  `.haicc`; `./haicc` written. Then `haiccing/install` if there (one
+  executable. It runs `boot.sh`: step 0; HAICC's repository and what it
+  requires (the package manager, mycelium, third-party) fetched
+  (`fetch.sh`); HAICC installed with them into `.haicc` by the package
+  manager's own code; `./haicc` written. Then `haiccing/install` if there (one
   `haicc` command a line, stopping at the first failure), or the next
   commands said. Again: what is current is left as it is.
 - **`haiccing/sources`**: where repositories come from, one a line, the

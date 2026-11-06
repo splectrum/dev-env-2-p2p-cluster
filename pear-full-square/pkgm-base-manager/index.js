@@ -174,17 +174,17 @@ function finish (dir, name, def, folders, extra = {}) {
 }
 
 function readme (name, def, m) {
-  const lines = [`# ${def.repo || repoName(name)}`, '', def.description, '',
-    `A package: self-contained, its code ready to run, laid out as it is installed. Written by the package manager (\`pear-full-square/pkgm-base-manager\`) from the development repository; do not edit here.`, '',
-    `- requires: ${m.requires.length ? m.requires.map(r => `\`${ORG}/${repoName(r)}\``).join(', ') : 'nothing'}`,
-    ...(m.platform ? [`- platform: ${m.platform}`] : []),
-    `- hash: \`${m.hash}\``, '']
+  const link = r => `[${ORG}/${repoName(r)}](https://github.com/${ORG}/${repoName(r)})`
+  const lines = [`# ${def.repo || repoName(name)}`, '', def.description, '']
   if (def.readme) lines.push(...def.readme, '')
-  lines.push('## Holds', '')
-  if (m.imported) lines.push(`${m.imported.modules} third-party modules, recorded in \`third-party.json\` (version, integrity, licence each).`, '')
-  else lines.push(...m.folders.map(f => `- \`${f}\``), '')
-  lines.push('## Installed', '', 'By the package manager, into the host\'s install folder (`~/.haicc/packages`), with the packages it requires; its tests run there:', '',
-    '```sh', `node <install folder>/pear-full-square/pkgm-base-manager/cli.js install ${name} --from <folder of haiccing repositories>`, `node <install folder>/pear-full-square/pkgm-base-manager/cli.js test ${name}`, '```', '')
+  lines.push('## The package', '')
+  if (m.imported) lines.push(`- holds: ${m.imported.modules} third-party modules, recorded in \`third-party.json\` (version, integrity, licence each)`)
+  else lines.push(`- holds: ${m.folders.map(f => `\`${f}\``).join(', ')}`)
+  lines.push(`- requires: ${m.requires.length ? m.requires.map(link).join(', ') : 'nothing'}`,
+    ...(m.platform ? [`- platform: ${m.platform}`] : []),
+    `- hash: \`${m.hash}\``, '',
+    `In a work folder (see [${ORG}/${repoName('haicc')}](https://github.com/${ORG}/${repoName('haicc')})), installed by HAICC as a project needs it, or by \`./haicc install ${name}\`, into \`.haicc/packages\` with what it requires; tested there, within the package: \`./haicc test ${name}\`.`, '',
+    'Written by the package manager from the development repository ([splectrum/dev-env-2-p2p-cluster](https://github.com/splectrum/dev-env-2-p2p-cluster)): not edited here.', '')
   return lines.join('\n')
 }
 

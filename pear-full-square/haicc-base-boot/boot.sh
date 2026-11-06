@@ -2,9 +2,10 @@
 # HAICC's boot, for a work folder: run as <work>/haiccing/boot (the stub).
 #   haiccing/boot [--yes]
 # 1. step 0, the host's prerequisites (fixed with your yes, or the boot stops);
-# 2. the repositories it needs fetched into haiccing/ from haiccing/sources;
-# 3. the package manager installed (by its own code), then HAICC (by the
-#    package manager), into <work>/.haicc;
+# 2. HAICC's repository and what it requires (the package manager among
+#    them) fetched into haiccing/ from haiccing/sources;
+# 3. HAICC installed into <work>/.haicc by the package manager's own code,
+#    with what it requires: the package manager, mycelium, third-party;
 # 4. <work>/haicc written: everything after is ./haicc <command>;
 # 5. haiccing/install, if there: one haicc command a line, stopping at the
 #    first failure; otherwise the next commands are said.
@@ -33,13 +34,12 @@ if ! sh "$here/step0.sh" check; then
 fi
 [ -x "$install/node/bin/node" ] && PATH=$install/node/bin:$PATH && export PATH
 
-# 2. The repositories: the package manager's, HAICC's and what it requires.
-sh "$here/fetch.sh" "$haiccing" --requires base-package-pkgm base-package-haicc || exit 1
+# 2. HAICC's repository and what it requires.
+sh "$here/fetch.sh" "$haiccing" --requires base-package-haicc || exit 1
 
-# 3. The package manager, by its own code; HAICC, by the package manager.
+# 3. HAICC, with what it requires, by the package manager's own code.
 summary () { node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{for(const d of JSON.parse(s).done)console.log('  '+d.package+': '+d.action)})"; }
-node "$haiccing/base-package-pkgm/pear-full-square/pkgm-base-manager/cli.js" install pkgm --from="$haiccing" --into="$install/packages" --quiet | summary || exit 1
-node "$install/packages/pear-full-square/pkgm-base-manager/cli.js" install haicc --from="$haiccing" --into="$install/packages" --quiet | summary || exit 1
+node "$haiccing/base-package-pkgm/pear-full-square/pkgm-base-manager/cli.js" install haicc --from="$haiccing" --into="$install/packages" --quiet | summary || exit 1
 
 # 4. The launcher.
 cat > "$work/haicc.new" <<EOS
