@@ -141,6 +141,25 @@ by line, so pasted whole they go on after a failed download, with an old
 `haicc-setup.sh` where there is one. Join them with `&&`, and give the curl
 retries (`--retry 5 --retry-all-errors --connect-timeout 20`).
 
+## The fourth release (2026-11-06)
+
+`setup-47f2b29b0194`, the boot 0.5.0: findings 4 to 7 and no hidden folders,
+built in the session. Its first build, tested before publishing, did not boot:
+on a new folder `install/` did not exist, so the copy failed, and the boot said
+`copied` and went on to Node.js's error. The move from `.haicc` had lost the
+folder's creation, and no test ran stage 1. Fixed here (`0a014eb`): the folder
+made first, a failed copy stops the boot, a test of stage 1 (fails without
+the fix). `package-lock.json` lost the retired `pkgm-base-boot`'s entry, which
+`npm install` removed each time and `publish.sh` then refused.
+
+Tested from the built file, then that file released: the packages' tests 232
+of 232; a new folder boots, exit 0; nothing hidden (`haicc`, `haiccing/`,
+`install/`, `log/`); `log/haicc.log` from the setup's first line; the same
+setup again: `already set up with this setup`, exit 0; over a 0.4.2 folder:
+both named, a new folder said, exit 1. The `latest` link serves that file
+byte for byte. Not seen by the agent: a failed download stopping the one
+command, the no-Node.js boot. The human's to run (`notes/handover-packages.md`).
+
 ## Left open
 
 - `5-validation/manual-run.sh` retired: this route replaces it.

@@ -51,6 +51,15 @@ to archive (the human).
 packages `base-package-p2p` `c71fb51`, `base-package-splectral` `5fcf3d7`
 (from dev `5414ae5`). The demos (their readmes) with the local agent.
 
+**The fourth release (2026-11-06)**, the boot 0.5.0, no hidden folders, by the
+local agent from dev `0a014eb`: products `haicc-base-boot` `6012226`,
+`haicc-reconcile` `86fbe8f`, `haicc-deployment` `d10db18`, `pkgm-base-manager`
+`06f3859` (the count of tests with it), `p2p-swarm-manager` `1db49a3`,
+`p2p-node-manager` `7eb9303`; packages `base-package-haicc` `68a0f10`, `-pkgm`
+`19428a8`, `-p2p` `ec317ca`, `base-demo-liveness` `5d340fc`,
+`base-demo-other-host` `85dc0a0` (the other three unchanged); the setup's
+release `setup-47f2b29b0194`; `haiccing/.github` `7d6acf7`.
+
 **The third release (2026-11-06)**, the boot 0.4.2, by the local agent from
 dev `6c756d7`: product `haicc-base-boot` `b3eef86` (split `2f44fd2`), package
 `base-package-haicc` `d816572` alone; the setup's release
