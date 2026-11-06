@@ -8,7 +8,7 @@ its scenario is the Splectral component of the same name
 
 ## Running it
 
-From a work folder (`haiccing/boot` done: the setup, `base-package-haicc`'s
+From a work folder (`./boot` done: the setup, `base-package-haicc`'s
 release, explains it), Linux x86-64 with Docker Engine:
 
 ```sh

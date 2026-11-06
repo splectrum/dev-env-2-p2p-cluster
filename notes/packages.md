@@ -214,40 +214,52 @@ section and older ones differ, this one holds.
 - The instructions (the readmes, `haiccing`'s profile) say where the log
   is: in `log/`, newest last.
 
-## Swarms and nodes on a host; teardown (agreed 2026-11-06)
+## Boot and shutdown by level (agreed 2026-11-06)
 
 ```
 <work>/
+  boot  shutdown                                  the cold boot and shutdown (stubs naming the setup)
   haicc  haiccing/  packages/  nodejs/  log/     the root
+  swarms.json                                     the host's swarms (the root's config)
   <swarm>/                                        a swarm on this host (e.g. hosts): the host's structure
     haicc                                         its launcher: the root's HAICC, in this swarm
-    swarm.json                                    its nodes here and their roles (the host's side of the swarm)
+    nodes.json                                    its nodes here and their roles (the swarm's config)
     <node>/                                       a node's manager (master, node-1, ...): the swarm's structure
       haicc  packages/  log/                      the node's own HAICC (installed for the swarm), its log
 ```
 
-- **Folders, mirroring the URI** (`/<swarm>/<node>` is `<swarm>/<node>/`):
-  no ambiguity, a swarm one folder, the same shape on every host a swarm
-  spans. Names required, made URI parts if they are not (the change said).
+- **A `haicc boot` or `shutdown` works on the config in the folder it is
+  called from**, and keeps it. Then there is the work folder's cold boot
+  and shutdown (`./boot`, `./shutdown`), which make and remove the root's
+  HAICC.
+
+| Called from | Its config (kept) | `haicc shutdown` | `haicc boot` |
+|---|---|---|---|
+| node `<swarm>/<node>/` | the node's own | its container removed | its container started again |
+| swarm `<swarm>/` | `nodes.json` (and its launcher) | each node's cold shutdown (node folder removed) | each node in `nodes.json` built from scratch and booted, master first |
+| root `<work>/` | `swarms.json` | each swarm's `haicc shutdown` | each swarm in `swarms.json` booted |
+| work folder, cold | `haiccing/`, `log/`, `nodejs/` | `./shutdown`: everything removed back to the setup | `./boot`: set up from `haiccing/`, then `./haicc boot` |
+
+- **One thing made or removed, from its parent:** `<swarm>/haicc boot
+  <node>` adds the node to `nodes.json` and boots it; `<swarm>/haicc
+  teardown <node>` removes the node and its entry. `./haicc boot <swarm>`
+  adds the swarm to `swarms.json` and makes its folder; `./haicc teardown
+  <swarm>` removes the swarm and its entry.
+- **A swarm's shutdown is a cold shutdown of its nodes** (their folders
+  removed), keeping the swarm's config: its boot builds them again from
+  `nodes.json`. A node's data backup: not in scope now.
+- **Folders, mirroring the URI** (`/<swarm>/<node>` is `<swarm>/<node>/`).
+  Names required, made URI parts if they are not (the change said).
 - **The host's structure** (the root, a swarm's folder) runs the root's
-  HAICC: `./haicc boot hosts/master` is `hosts/haicc boot master`; their
-  commands log in the root's `log/`. **The swarm's structure** (each node)
-  runs the node's own HAICC, installed for the swarm, logging in its own
-  `log/`, echoed back to the root (`--no-echo`: its outcome only).
-- **`swarm.json`** holds the swarm's node configuration on this host: its
-  nodes and their roles (the first booted is the master unless said
-  otherwise); written by the boots, read by the teardown for its order.
-  The swarm's deployment stays the swarm's (the master's repository).
+  HAICC and logs in the root's `log/`. **The swarm's structure** (each
+  node) runs the node's own HAICC, logging in its own `log/`, echoed back
+  (`--no-echo`: its outcome only).
 - **A node's boot**: its manager made, the package manager and HAICC
   copied in whole, then its own boot: the self-test of what was copied in.
-- **Teardown**, a plain remove for now, asked first: a node's (it leaves
-  the swarm, its container is shut down, its contents removed, its HAICC
-  kept for a reboot); a swarm's (its nodes, the master last); the root's
-  (every swarm, then the swarms' folders, `packages/`, `./haicc`; kept:
-  `haiccing/` for `haiccing/boot`). **Logs are kept** (the record, the
-  teardown's included); **external third-party downloads are retained**
-  (`nodejs/`; Bare's runtime later). Teardown with checkpointing and backup:
-  on the roadmap.
+  Its container: with the swarm's step.
+- A plain remove for now, asked first. **Logs are kept**; **external
+  third-party downloads are retained** (`nodejs/`; Bare's runtime later).
+  Teardown with checkpointing and backup: on the roadmap.
 
 ## The work folder, one route, a double boot (agreed 2026-11-05, revised 2026-11-06)
 

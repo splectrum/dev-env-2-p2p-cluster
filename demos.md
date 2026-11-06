@@ -25,7 +25,7 @@ from a work folder: no development repository, no `npm install`. The setup
 curl -fL --progress-bar --retry 5 --retry-all-errors --connect-timeout 20 \
      -o haicc-setup.sh https://github.com/haiccing/base-package-haicc/releases/latest/download/haicc-setup.sh \
   && sh haicc-setup.sh ~/haicc-work \
-  && ~/haicc-work/haiccing/boot \
+  && ~/haicc-work/boot \
   && cd ~/haicc-work && ./haicc list
 ```
 

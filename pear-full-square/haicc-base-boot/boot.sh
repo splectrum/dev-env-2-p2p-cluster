@@ -1,7 +1,7 @@
 #!/bin/sh
-# HAICC's boot, stage 1, for a work folder: run as <work>/haiccing/boot
+# HAICC's cold boot, stage 1, for a work folder: run as <work>/boot
 # (the stub). Only what HAICC needs to run:
-#   haiccing/boot [--yes] [--verbose|--debug]
+#   ./boot [--yes] [--verbose|--debug]
 # 1. step 0: Linux x86-64 and Node.js (fixed with your yes, or it stops);
 # 2. HAICC's package, base-package-haicc, copied whole into
 #    <work>/packages/ (at the first boot only), and <work>/haicc written;
@@ -26,7 +26,7 @@ if [ -z "${HAICC_BOOT_LOGGING:-}" ]; then
   if [ -z "$log" ] || [ "$(wc -c < "$logdir/$log")" -ge 10240 ]; then log=$(date -u +%Y%m%dT%H%M%SZ).log; fi
   log=$logdir/$log
   t0=$(date +%s)
-  echo "== $(date -u +%Y-%m-%dT%H:%M:%SZ) haiccing/boot $*  (in $(pwd))" >> "$log"
+  echo "== $(date -u +%Y-%m-%dT%H:%M:%SZ) ./boot $*  (in $(pwd))" >> "$log"
   { sh "$0" "$@" 2>&1; echo $? > "$logdir/boot.exit"; } | tee -a "$log"
   code=$(cat "$logdir/boot.exit" 2>/dev/null || echo 1); rm -f "$logdir/boot.exit"
   echo "== exit $code, $(( $(date +%s) - t0 )) s" >> "$log"
@@ -43,7 +43,7 @@ echo "Checking what HAICC needs to run..."
 if ! sh "$here/step0.sh" check; then
   echo
   echo "HAICC needs what is marked 'no' above to run."
-  sh "$here/step0.sh" fix $yes || { echo; echo "HAICC cannot run yet: fix what is marked 'no' (sh $here/step0.sh fix), then haiccing/boot again"; exit 1; }
+  sh "$here/step0.sh" fix $yes || { echo; echo "HAICC cannot run yet: fix what is marked 'no' (sh $here/step0.sh fix), then ./boot again"; exit 1; }
 fi
 [ -x "$work/nodejs/bin/node" ] && PATH=$work/nodejs/bin:$PATH && export PATH
 
@@ -61,7 +61,7 @@ else
 fi
 cat > "$work/haicc.new" <<EOS
 #!/bin/sh
-# HAICC for this work folder (written by haiccing/boot): ./haicc <command>
+# HAICC for this work folder (written by ./boot): ./haicc <command>
 work=\$(cd "\$(dirname "\$0")" && pwd)
 HAICC_WORK=\$work; export HAICC_WORK
 [ -x "\$work/nodejs/bin/node" ] && PATH=\$work/nodejs/bin:\$PATH
