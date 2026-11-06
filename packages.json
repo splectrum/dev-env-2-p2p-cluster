@@ -49,9 +49,9 @@
         "  && cd ~/haicc-work && ./haicc list",
         "```",
         "",
-        "The boot runs in two stages. Stage 1, `haiccing/boot`, in plain shell: Linux x86-64 and Node.js (Node.js fixed with your yes, into `node/`); HAICC's package copied whole into `packages/base-package-haicc/`; `./haicc` written. Stage 2, `./haicc boot`: the host's other prerequisites (git 2.25 or later; Docker Engine installed, running, rootful, native, and you in the `docker` group), each fixed only with your yes (`--yes` agrees beforehand); then `haiccing/install` if there (one `./haicc` command a line), or the next commands.",
+        "The boot runs in two stages. Stage 1, `haiccing/boot`, in plain shell: Linux x86-64 and Node.js (Node.js fixed with your yes, into `nodejs/`); HAICC's package copied whole into `packages/base-package-haicc/`; `./haicc` written. Stage 2, `./haicc boot`: the host's other prerequisites (git 2.25 or later; Docker Engine installed, running, rootful, native, and you in the `docker` group), each fixed only with your yes (`--yes` agrees beforehand); then `haiccing/install` if there (one `./haicc` command a line), or the next commands.",
         "",
-        "Everything it does is logged in the work folder's `log/` (`~/haicc-work/log/`): files named by their start, newest last. Everything is in plain sight: `haicc`, `haiccing/`, `packages/`, `node/`, `log/`; no hidden folders.",
+        "Everything it does is logged in the work folder's `log/` (`~/haicc-work/log/`): files named by their start, newest last. Everything is in plain sight: `haicc`, `haiccing/`, `packages/`, `nodejs/`, `log/`; no hidden folders.",
         "",
         "The rest of HAICC (`haicc-reconcile`, `haicc-deployment`) runs in managers: each swarm self-contained, with its own HAICC, package manager and packages (`./haicc boot <manager>`, next)."
       ]
@@ -64,7 +64,7 @@
       "readme": [
         "## Installed",
         "",
-        "Into a manager's `packages/`, by HAICC's manager boot (next); not at the root, which runs HAICC alone."
+        "Into each swarm node's manager (`<swarm>/<node>/packages/`), copied in whole by the root's `./haicc boot <swarm>/<node>`; not at the root, which runs HAICC alone."
       ]
     },
     "p2p": {

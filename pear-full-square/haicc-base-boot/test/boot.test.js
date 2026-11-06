@@ -27,7 +27,7 @@ test('check: Node.js too old (exit 1), with found, required and the fix; only wh
     const r = h.run('check')
     assert.equal(r.status, 1, r.stdout)
     assert.deepEqual(row(r.stdout, 'node').slice(0, 4), ['node', 'v20.11.0', '22 or later', 'no'])
-    assert.match(row(r.stdout, 'node')[4], /into .*\/node, no sudo/)
+    assert.match(row(r.stdout, 'node')[4], /into .*\/nodejs, no sudo/)
     assert.equal(row(r.stdout, 'os')[3], process.arch === 'x64' && process.platform === 'linux' ? 'yes' : 'no')
     assert.equal(row(r.stdout, 'git'), undefined, 'git and Docker: stage 2, HAICC itself')
     assert.equal(row(r.stdout, 'docker'), undefined)
@@ -51,7 +51,7 @@ test('fix without a terminal and without --yes changes nothing', () => {
   try {
     const f = spawnSync(execFileSync('sh', ['-c', 'command -v setsid'], { encoding: 'utf8' }).trim(), ['-w', join(h.dir, 'bin', 'sh'), join(here, 'step0.sh'), 'fix'], { encoding: 'utf8', env: { PATH: join(h.dir, 'bin'), HOME: h.dir, HAICC_WORK: h.dir }, input: '' })
     assert.match(f.stdout, /not fixed \(no terminal to ask; --yes to agree\): install Node\.js/)
-    assert.ok(!existsSync(join(h.dir, 'node')))
+    assert.ok(!existsSync(join(h.dir, 'nodejs')))
   } finally { rmSync(h.dir, { recursive: true, force: true }) }
 })
 

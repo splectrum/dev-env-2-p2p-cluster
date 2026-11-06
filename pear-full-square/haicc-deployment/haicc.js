@@ -1,8 +1,11 @@
 #!/usr/bin/env node
 // haicc: HAICC in a manager (<manager>/haicc <command>), the full HAICC,
 // copied in by the root's `./haicc boot <manager>`.
-//   haicc boot                        the manager's boot: the self-test of what was copied
+//   haicc boot                        the node's boot: the self-test of what was copied
 //                                     in (each package's tests, in place); 0 when all pass
+//   haicc teardown --yes              the node's teardown: it leaves the swarm, its container
+//                                     shut down (with the swarm's step), its contents removed;
+//                                     kept: haicc, log/, its HAICC and package manager
 //   haicc run <project> [--no-open]   fetched (with what it needs), installed, deployed and
 //                                     started, the browser opened
 //   haicc test <project|package>      a package's tests within the package; a project's: its
@@ -104,7 +107,26 @@ function printTest (n, t) {
 }
 
 try {
-  if (verb === 'boot') {
+  if (verb === 'teardown') {
+    // What the node made, removed; its HAICC kept, for a reboot.
+    const { rmSync } = await import('node:fs')
+    const KEEP = new Set(['haicc', 'log', 'packages'])
+    const KEEP_PACKAGES = new Set(['base-package-haicc', 'base-package-pkgm'])
+    const gone = [
+      ...readdirSync(work).filter(n => !KEEP.has(n)),
+      ...(existsSync(packages) ? readdirSync(packages).filter(n => !KEEP_PACKAGES.has(n)).map(n => `packages/${n}`) : [])
+    ]
+    console.log(`The node ${basename(dirname(work))}/${basename(work)}: its teardown`)
+    if (!flags.yes) {
+      console.log(`  would remove: ${gone.length ? gone.join(', ') : 'nothing'} (kept: haicc, log/, its HAICC and package manager)`)
+      console.log('  not done: a plain remove, no way back (--yes to go ahead; the root asks: ./haicc teardown <swarm>/<node>)')
+      process.exit(1)
+    }
+    console.log('  the swarm: nothing deployed here yet, nothing to leave or shut down')
+    for (const g of gone) { rmSync(join(work, g), { recursive: true, force: true }); console.log(`  removed ${g}`) }
+    console.log(`Torn down${gone.length ? '' : ' (nothing to remove)'}: kept haicc, log/, ${[...KEEP_PACKAGES].join(', ')}`)
+    process.exit(0)
+  } else if (verb === 'boot') {
     // The manager's boot: what was copied in, tested in place.
     console.log(`The manager ${basename(work)}: the self-test of its packages (${packages})`)
     const t = selfTest(packages)
