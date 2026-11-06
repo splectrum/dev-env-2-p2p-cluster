@@ -27,8 +27,9 @@ Phase 3, step 1 (packages and the boot): record
 
 **The first releases tested (2026-11-06)**: `6-work-folder/local-run.md`.
 `setup-96cfc58bc18f` stopped at the first boot without Node.js;
-`setup-58fb397be615` (boot 0.4.1, latest) fixes it, tested from the built
-file. `pkgm-base-manager`'s count of tests is fixed here, not yet published:
+`setup-58fb397be615` fixes it; `setup-b8c4a67a5e83` (boot 0.4.2, latest) says
+what it is doing as it happens, and resumes downloads. Still to run: a
+no-Node.js boot through to the end on a good connection. `pkgm-base-manager`'s count of tests is fixed here, not yet published:
 goes with its next merge. Not done, the human's word: the demos' publishing
 (they are behind `main`). **The human**: archive
 `pear-full-square/pkgm-base-boot`.

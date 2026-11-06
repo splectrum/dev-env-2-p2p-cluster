@@ -68,7 +68,7 @@ Node.js 24 prints `ℹ tests N`. Only the counts: pass or fail was always the
 exit code. Fixed in `pkgm-base-manager`'s source, not yet in its product or
 package.
 
-## Output as it happens (2026-11-06, in the source, not released)
+## Output as it happens: the third release (2026-11-06)
 
 The human, running the release on an intermittent connection: a blinking
 cursor and no idea what was happening. Now every step says what it is doing
@@ -93,6 +93,11 @@ connection, outages included: a real resume seen (3 MB kept after a lost
 connection). Not seen through to the end: the no-Node.js download and the
 144 MB fetch, stopped for the connection's slowness; both reported truthfully
 as far as they went. Tests 9 of 9.
+
+Published as `setup-b8c4a67a5e83`, boot 0.4.2, at the human's word, ahead of
+a full no-Node.js run: the built file booted with everything installed, and
+the `latest` link serves that file byte for byte. Still to run: the no-Node.js
+download through to the end, on a better connection; the human's manual test.
 
 ## Left open
 
