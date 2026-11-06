@@ -3,18 +3,15 @@
 # sources listed in haiccing/sources (in order; the first having one wins):
 #   folder <path>    a folder of repositories side by side (plain copies)
 #   github <org>     GitHub's archives (curl and tar)
-# A repository already there is kept as it is. Each fetch to
-# <work>/.haicc/log/sources.jsonl.
+# A repository already there is kept as it is. Each fetch is said (with its
+# source): in the log of the command that fetched.
 #   sh fetch.sh <haiccing> [--requires] <repository>...
 #     --requires   and what each requires, all the way down (from its manifest)
 set -u
 haiccing=$(cd "$1" && pwd); shift
 walk=0; [ "${1:-}" = --requires ] && { walk=1; shift; }
-log=$(dirname "$haiccing")/.haicc/log/sources.jsonl
-mkdir -p "$(dirname "$log")"
 sources=$haiccing/sources
 [ -f "$sources" ] || { echo "no $sources: where the repositories come from (e.g. 'github haiccing')"; exit 1; }
-record () { printf '{"time":"%s","repository":"%s","source":"%s","outcome":"%s"}\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$1" "$2" "$3" >> "$log"; }
 
 fetch_one () {
   r=$1
@@ -32,11 +29,10 @@ fetch_one () {
         [ -d "$tmp" ] || continue ;;
       *) echo "haiccing/sources: unknown source '$kind'"; continue ;;
     esac
-    mv "$tmp" "$haiccing/$r" && { echo "  fetched $r ($kind $where)"; record "$r" "$kind $where" fetched; rm -f "$haiccing/.sources.$$"; return 0; }
+    mv "$tmp" "$haiccing/$r" && { echo "  fetched $r ($kind $where)"; rm -f "$haiccing/.sources.$$"; return 0; }
   done < "$haiccing/.sources.$$"
   rm -f "$haiccing/.sources.$$"
   echo "  $r: in none of the sources ($(grep -v '^[[:space:]]*#' "$sources" | tr '\n' ';' | sed 's/;$//'))"
-  record "$r" "-" missing
   return 1
 }
 

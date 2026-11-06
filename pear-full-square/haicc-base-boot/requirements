@@ -1,11 +1,6 @@
-# The host's prerequisites, all needed to boot (nodes always run in Docker
-# containers), read by step0.sh check and fix alike.
-# name           required
-os               linux-x86_64
-node             22
-git              2.25
-docker           engine
-docker-running   yes
-docker-rootful   yes
-docker-native    yes
-docker-group     yes
+# What HAICC needs to run, checked by step0.sh (stage 1 of the boot, before
+# Node.js exists). The host's other prerequisites (git, Docker) are HAICC's
+# own requirements, checked and fixed by ./haicc boot.
+# name   required
+os       linux-x86_64
+node     22

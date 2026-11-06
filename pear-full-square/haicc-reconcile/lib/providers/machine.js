@@ -1,5 +1,11 @@
-// The machine's generic kinds, checked only: they report what is missing
-// and how to fix it, and never touch the machine.
+// The machine's generic kinds. Most are checked only: they report what is
+// missing and how to fix it. The host's prerequisites (git, Docker Engine
+// installed, running, the user in its group) are fixed too, each only with
+// a person's yes (ctx.ask), and with sudo where it needs it:
+//   git              { atLeast: '2.25' }   installed with apt
+//   docker-installed {}                    Docker Engine (docker.io) installed with apt
+//   docker-running   {}                    its daemon started
+//   docker-group     {}                    the user in the docker group (holds from the next login)
 //   os       { platform: 'linux', arch: 'x64' }
 //   docker   { native: true }              Docker Engine, rootful, not Docker Desktop
 //   nodejs   { atLeast: 22 }               Node.js, its major version
@@ -8,6 +14,55 @@
 //   udp      { network: 'bridge' }         a container reaches the host's address on it by UDP
 import { execFileSync, spawnSync } from 'node:child_process'
 import dgram from 'node:dgram'
+
+const has = cmd => spawnSync('sh', ['-c', `command -v ${cmd}`], { stdio: 'ignore' }).status === 0
+const atLeast = (v, min) => { const a = v.split('.').map(Number); const b = String(min).split('.').map(Number); for (let i = 0; i < b.length; i++) { if ((a[i] || 0) !== b[i]) return (a[i] || 0) > b[i] } return true }
+const root = () => process.getuid?.() === 0
+// A change to the machine: asked first; run (with sudo unless root),
+// its output the person's to see.
+async function change (ctx, what, cmds) {
+  if (!ctx.ask) throw new Error(`not done: ${what} (needs a yes: nothing here to ask)`)
+  if (!(await ctx.ask(what))) throw new Error(`not done: ${what} (declined)`)
+  for (const c of cmds) {
+    const argv = root() ? c : ['sudo', ...c]
+    const r = spawnSync(argv[0], argv.slice(1), { stdio: ['ignore', 'inherit', 'inherit'] })
+    if (r.status !== 0) throw new Error(`${argv.join(' ')}: exit ${r.status}`)
+  }
+  return { done: what }
+}
+
+export const git = {
+  observe () { const v = run('git', ['--version']); return v ? { version: v.split(' ')[2] } : null },
+  compare: (r, a) => a && atLeast(a.version, r.want.atLeast ?? '0') ? { status: 'met', detail: a } : { status: 'missing', detail: a ? `${a.version}, ${r.want.atLeast} or later needed` : 'not installed' },
+  create: (r, ctx) => change(ctx, 'install git with apt', [['apt-get', 'update', '-q'], ['apt-get', 'install', '-y', '-q', 'git']]),
+  hint: r => `git ${r.want.atLeast} or later is needed: install it (apt-get install git)`
+}
+
+export const dockerInstalled = {
+  observe: () => has('docker') ? { version: (run('docker', ['--version']) || '').split(' ')[2]?.replace(',', '') } : null,
+  compare: (r, a) => a ? { status: 'met', detail: a } : { status: 'missing', detail: 'not installed' },
+  create: (r, ctx) => change(ctx, 'install Docker Engine (docker.io) with apt', [['apt-get', 'update', '-q'], ['apt-get', 'install', '-y', '-q', 'docker.io']]),
+  hint: () => 'Docker Engine is needed: install it (apt-get install docker.io)'
+}
+
+export const dockerRunning = {
+  observe: () => run('docker', ['version', '--format', '{{.Server.Version}}']) ? { running: true } : { running: false },
+  compare: (r, a) => a.running ? { status: 'met' } : { status: 'missing', detail: 'not reachable (not running, or no access: docker-group)' },
+  create: (r, ctx) => change(ctx, 'start the Docker daemon', [has('systemctl') ? ['systemctl', 'start', 'docker'] : ['service', 'docker', 'start']]),
+  hint: () => 'start the Docker daemon (systemctl start docker, or service docker start)'
+}
+
+export const dockerGroup = {
+  observe () {
+    if (root()) return { member: true, as: 'root' }
+    const now = (run('id', ['-nG']) || '').split(' ').includes('docker')
+    const listed = (run('getent', ['group', 'docker']) || '').split(':')[3]?.split(',').includes(run('id', ['-un'])) ?? false
+    return { member: now, listed }
+  },
+  compare: (r, a) => a.member ? { status: 'met', detail: a.as || 'member' } : { status: 'missing', detail: a.listed ? 'added: holds from the next login (or: newgrp docker)' : 'not in the docker group' },
+  create: async (r, ctx, a) => a?.listed ? { done: 'already added: log in again' } : change(ctx, `add ${run('id', ['-un'])} to the docker group`, [['usermod', '-aG', 'docker', run('id', ['-un'])]]),
+  hint: () => 'log in again for the docker group to hold (or: newgrp docker), then boot again'
+}
 
 const run = (cmd, args) => { try { return execFileSync(cmd, args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim() } catch { return null } }
 const exact = (want, actual, keys) => keys.every(k => want[k] === undefined || actual[k] === want[k])

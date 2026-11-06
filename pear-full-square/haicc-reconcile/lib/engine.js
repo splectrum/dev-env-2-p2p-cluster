@@ -21,8 +21,10 @@
 // (the default) leaves extras; strict removes those it owns. Never what
 // someone else made.
 
-export function createEngine ({ providers, owner = 'haicc', record = null }) {
-  const ctx = { owner }
+export function createEngine ({ providers, owner = 'haicc', record = null, context = {} }) {
+  // What providers are given: the owner, and what the caller adds (ask: a
+  // yes asked of a person, for a provider that changes the machine).
+  const ctx = { ...context, owner }
   const note = async v => { if (record) await record({ time: Date.now(), ...v }) }
   const providerOf = req => {
     const p = providers[req.kind]

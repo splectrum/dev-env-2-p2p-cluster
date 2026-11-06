@@ -7,7 +7,7 @@
 // (check, apply) or done (plan, remove); 1 otherwise; 2 on a bad call.
 import { createEngine } from './index.js'
 import { readDeclaration } from './lib/declaration.js'
-import { openTopic, folderStorage } from '../mycelium-topic/index.js'
+import { journal } from './lib/journal.js'
 
 const [verb, file, ...rest] = process.argv.slice(2)
 if (!['check', 'plan', 'apply', 'remove'].includes(verb) || !file) {
@@ -17,8 +17,8 @@ if (!['check', 'plan', 'apply', 'remove'].includes(verb) || !file) {
 try {
   const d = await readDeclaration(file)
   const strict = d.strict || rest.includes('--strict')
-  const topic = d.record ? await openTopic({ storage: folderStorage(d.record) }) : null
-  const e = createEngine({ providers: d.providers, owner: d.owner, record: topic ? v => topic.produce({ value: { verb, ...v } }) : null })
+  const j = d.record ? journal(d.record) : null
+  const e = createEngine({ providers: d.providers, owner: d.owner, record: j ? v => j.append({ verb, ...v }) : null })
   const result = await e[verb](d.requirements, { strict })
   const ok = verb === 'check' ? result.every(x => x.status === 'met' || x.status === 'extra')
     : verb === 'apply' ? result.failed.length === 0 && result.blocked.length === 0 && result.after.every(x => x.status === 'met' || x.status === 'extra')

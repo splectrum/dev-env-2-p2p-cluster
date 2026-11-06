@@ -29,7 +29,6 @@
     "haicc": {
       "description": "HAICC: declare what a project needs, check it, make it so (haicc-reconcile), its lifecycle (haicc-deployment), and its boot (haicc-base-boot). The entry: everything starts here.",
       "requires": [
-        "mycelium",
         "pkgm"
       ],
       "modules": [

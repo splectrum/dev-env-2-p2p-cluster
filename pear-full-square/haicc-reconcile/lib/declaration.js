@@ -1,13 +1,13 @@
 // A declaration file, read once at the boundary:
 //   { "owner": "...", "providers": ["<module>", ...], "requirements": [...],
-//     "strict": false, "record": "<topic folder>" }
+//     "strict": false, "record": "<journal file>" }
 // "{here}" in any string is the file's folder; providers are modules
 // exporting { providers } (paths relative to the file).
 import { readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { providers as builtin } from '../index.js'
-import { validateName } from '../../mycelium-uri/index.js'
+import { validateName } from './names.js'
 
 export async function readDeclaration (file) {
   const here = dirname(resolve(file))
