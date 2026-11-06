@@ -7,4 +7,4 @@ the release is where it is downloaded from, not here.
 
 | File | base-package-haicc | Release tag |
 |---|---|---|
-| `haicc-setup.sh` | `96cfc58bc18f` (`90fe587`) | `setup-96cfc58bc18f` |
+| `haicc-setup.sh` | `96cfc58bc18f` (`90fe587`) | `setup-96cfc58bc18f`, published 2026-11-06 (latest) |

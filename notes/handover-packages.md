@@ -122,7 +122,9 @@ the setup is built from it (`haicc-setup.sh`, 34 KB, hash `96cfc58bc18f`).
 To do, in this order:
 1. **The demos**: `publish.sh ~/haiccing-publish` pushes the two demos (the
    six packages show unchanged), then builds the setup.
-2. **The release** of `haiccing/base-package-haicc`, the setup attached
+2. **The release**: done by the human (2026-11-06), `setup-96cfc58bc18f`,
+   marked latest; its download link checked, the file identical to the one
+   built. Was: the release of `haiccing/base-package-haicc`, the setup attached
    (`gh release create`, as `publish.sh` does with `gh`; or by hand: Releases,
    "Draft a new release", tag `setup-96cfc58bc18f`, attach
    `haicc-setup.sh`, mark latest).
