@@ -81,11 +81,15 @@ base-package-haicc/test` (expect 7 passed; the setup is now 36 MB), and
 `steps/phase-3/2-package-structure/3-bare/local-run.md`. Then the package
 manager as the second package, on Bare from the start.
 
-**The seventh release: built and tested locally, not published (2026-11-07).**
-`setup-bb5ab8f7a96d`: 7 passed and 2 passed with Node.js off the PATH. Before
-publishing, the human's to settle: the 92.6 MB runtime in git, or a downloadable
-asset (the human's proposal). Findings:
-`steps/phase-3/2-package-structure/3-bare/local-run.md`.
+**Published: the seventh release (2026-11-07), the human's word.**
+`setup-bb5ab8f7a96d`, boot 0.6.0, latest; `base-package-haicc` `cb60f4b`, the
+runtime in git as built. From GitHub: 7 passed and 2 passed; the human's manual
+test: 7 passed. Findings, for the implementer:
+`steps/phase-3/2-package-structure/3-bare/local-run.md` (the 92.6 MB runtime and
+the human's proposal of a downloadable asset; the published `curl` not resuming;
+`package-lock.json`; the prompt; the echoed command). Not pushed: `haiccing`'s
+profile (the live one still says the boot checks Node.js), the products,
+Codeberg's mirror of `base-package-haicc`.
 
 **Done (below, seen working on the seventh release): the human's feedback on the
 sixth release (2026-11-07): the commands are not on stdout.** "What I notice is that the commands are not
