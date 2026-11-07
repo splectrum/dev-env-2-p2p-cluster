@@ -229,13 +229,14 @@ not by what exists: the rebuild is step by step. Reviewed independently
 ```
 <package>/
   package.json  README.md
-  modules/
+  modules/                       shared by its swarms (and what runs at the host level, in a platform package)
     <org>/<module>/              each module whole, as developed
       test/                      the module's own tests
+    node_modules/                the third-party code they use (Bare's runtime stripped)
   swarms/
     <swarm>/                     one per swarm, named by its folder
       nodes.json                 its nodes and their roles
-      install.json               what each node gets: whole packages, by role
+      modules.json               its codebase: the package's modules it uses (one list, the swarm's)
       splectral.json             its Splectral components: which, on which node, their settings
       host.json                  what the host must provide for it (networks, Docker): requirements
       README.md
@@ -254,9 +255,10 @@ not by what exists: the rebuild is step by step. Reviewed independently
   package of code), swarms only (a configured swarm), both (a demo: swarms
   and the Splectral components they show), a platform. Recognized by its
   contents, not its name. `base-` is a convention for a package group.
-- **One concern per file** (`rules.md`): a swarm's nodes, what they get,
+- **One concern per file** (`rules.md`): a swarm's nodes, its codebase,
   what Splectral shows, what the host provides.
-- **Modules once, at the package's top.** A named test's `modules/`,
+- **Modules once, at the package's top**, shared by its swarms; each swarm
+  uses its own selection (`modules.json`). A named test's `modules/`,
   `swarms/`, `platform/` add to the package's parts (test-only ones); a
   name the package already has: refused.
 - **The platform is a part like any other**: any package may carry
@@ -281,15 +283,26 @@ not by what exists: the rebuild is step by step. Reviewed independently
   trees, other branches, `user/` packages; for development. A swarm made so
   is **mixed**; `./haicc list` says which a swarm is. Local and
   self-contained, even mixed, beats importing from remote (air-gapping).
-- **`install.json`** names whole packages by role (nothing taken apart),
-  each by its root and path, like a swarm's source. The platform's levels
-  are separate: the host and swarm folders run the root's HAICC (the work
-  folder's `packages/`); each node gets its own HAICC and package manager,
-  always, plus what `install.json` names. A node's HAICC can differ from
-  the root's. A role without an entry: nothing more.
-- **Recorded, not refused**: `swarms.json` records each package's hash as
-  the swarm is made. A node rebuilt later takes what the roots hold now,
-  and says what differs from what the swarm was made with.
+- **The codebase is per swarm**: the master node's **package repository**
+  is assembled by the package manager from the swarm's reference list
+  (`modules.json`) and the code in its package's `modules/`. **Nodes use
+  only what is in the master's repository**: an application refers to it,
+  carries no copies. A package it refers to that is not there: it fails
+  (and the failure may trigger an install request, with the p2p step). For
+  now the repository is a folder on the master, mounted read-only into the
+  containers on its host; replicated to other hosts with the p2p step (a
+  repository in mycelium's sense).
+- The platform's levels are separate: the host and swarm folders run the
+  root's HAICC (the work folder's `packages/`); a node's own HAICC and
+  package manager are the platform's node level. A node's HAICC can differ
+  from the root's.
+- **Recorded, not refused**: `swarms.json` records the package's hash as
+  the swarm is made. The master's repository assembled again later takes
+  what the root holds now, and says what differs from what the swarm was
+  made with.
+- **Bare**: only the stripped runtime in packages and in production. The
+  full executable is kept at the platform level (the root's HAICC), used
+  by an override where it is needed.
 
 ### A work folder
 
@@ -304,8 +317,9 @@ not by what exists: the rebuild is step by step. Reviewed independently
     swarms/
       swarms.json                the host's swarms, fully qualified
       <swarm>/                   a swarm: its whole folder from its package, and its launcher
-        haicc  nodes.json  install.json  splectral.json  host.json  README.md  test/
-        <node>/                  haicc  packages/ (with contents.json)  log/
+        haicc  nodes.json  modules.json  splectral.json  host.json  README.md  test/
+        master/                  haicc  log/  repository/ (the swarm's package repository, with contents.json)
+        <node>/                  haicc  log/  (the master's repository, read-only)
       test/                      reserved: test runs
         <test>/                  one run: swarms.json, <swarm>/<node>/, the same shape
 ```
@@ -348,8 +362,8 @@ called from, and keeps it.
 - The host's structure (the root, a swarm's folder) runs the root's HAICC
   and logs in the root's `log/`; each node runs its own, logging in its
   own `log/`, echoed back (`--no-echo`: the outcome only).
-- Whole packages copied into each node: a step, until the swarm's code
-  replicates (`vision.md`: links, not copies).
+- No copies in the nodes: they refer to the master's repository
+  (`vision.md`: links, not copies).
 
 ### `./haicc boot`: what, and from where
 
@@ -378,6 +392,18 @@ called from, and keeps it.
   each package's `contents.json` entry as it was when the swarm was made
   (source, commit, uncommitted, hash).
 
+### Two sides of the airgap
+
+- **Creating packages is the development environment's**, on the
+  connected side: a tool of this repository (not shipped) writes
+  haiccing's packages from its modules (the third-party import with it,
+  the one contact with npm): the code-only packages (`p2p`, `mycelium`,
+  `splectral`: published, for development) and the platform and swarm
+  packages, in the structure above.
+- **The package manager works only from packages made**: from the host's
+  packages (`haiccing/`, `user/`) into a master's package repository. It
+  installs and tests; it never creates.
+
 ### Sources and contents: each packages folder describes itself
 
 ```
@@ -393,7 +419,7 @@ base-package-p2p    git    /home/you/repos/haiccing feature-x   # committed, a l
   clones in `<org>/<repo>`: a `folder` or `git` line on the org's folder.
 - **Mix and match**, per package: the folder's `contents.json` shows it.
 - **`contents.json`** in every packages folder (`haiccing/`, `user/`, the
-  root's and each node's `packages/`): each package, its source, commit,
+  root's `packages/`, each master's `repository/`): each package, its source, commit,
   uncommitted or not, hash (SHA-256 over its sorted paths and contents,
   `.git` excluded), when it came; written by what put it there. A hash
   that no longer matches: "changed since fetched". A package placed by

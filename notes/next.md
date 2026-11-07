@@ -56,6 +56,16 @@ package manager work:
    **Done (2026-11-06):** a path for a name is refused (exit 2, nothing
    made), naming the command to use: `hosts/haicc boot master`; a test added.
 
+**Next, agreed, not built (2026-11-07): the design reviewed and settled.**
+Since the review: a package's `modules/` shared by its swarms, each swarm's
+codebase its `modules.json`; the master's package repository assembled
+from it, nodes using only that (a missing package fails); creating
+packages is the development environment's (the other side of the
+airgap), the package manager only installs and tests; stripped Bare in
+production, the full one at the root. Step 1: the development tool
+writing packages in the new structure; the package manager assembling a
+swarm's codebase into a master's repository.
+
 **Next, agreed, not built (2026-11-06): packages, platforms, swarms and
 tests.** `notes/packages.md`, that section: a package's structure
 (`modules/`, `swarms/<swarm>/` with one file a concern, `platform/`,
