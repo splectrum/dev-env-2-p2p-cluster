@@ -1,8 +1,8 @@
 # The local agent's run: the seventh release (2026-11-07)
 
-`setup-bb5ab8f7a96d`, boot 0.6.0, from `8d11242`: built with `publish.sh
---no-push`, **not published**. `base-package-haicc` `cb60f4b` is in the local
-clone only; the latest link still serves the sixth release.
+`setup-bb5ab8f7a96d`, boot 0.6.0, latest, from `8d11242`: published with the
+human's word, the runtime in git as built: `base-package-haicc` `cb60f4b` and the
+release, nothing else. Built and tested first with `publish.sh --no-push`.
 
 ## Tested, the built file in a new folder, Node.js off the PATH
 
@@ -21,6 +21,15 @@ clone only; the latest link still serves the sixth release.
 Not run: from GitHub (nothing published), a failed download, `./haicc boot` with
 git missing.
 
+## After publishing, from GitHub
+
+The latest link, the default sources, a new folder: every command exit 0,
+`Passed: 7 passed, 0 failed, 0 skipped` (the platform's 19 steps), `Passed: 2
+passed, 0 failed, 0 skipped`, no hidden files. The download took about 3 minutes
+here, the publish about 2. GitHub's warning on the push: `File
+modules/node_modules/bare-runtime-linux-x64/bin/bare is 92.60 MB; this is larger
+than GitHub's recommended maximum` (`GH001: Large files detected`); accepted.
+
 ## Findings, for the implementer
 
 1. **The runtime in git: size, and a limit close by.** The package went from
@@ -29,8 +38,9 @@ git missing.
    the history, and each Bare upgrade adds about the same again.
    `bare-runtime-linux-x64/bin/bare` is one 92.6 MB file (97,094,392 bytes):
    GitHub warns above 50 MB and rejects a file over 100 MiB (104,857,600 bytes),
-   about 8% away. Codeberg's limit not checked. It has to be settled before
-   publishing: the history cannot be undone.
+   about 8% away. Codeberg's limit not checked. Published as built, the human's
+   word, so the 34.6 MB is now in the history; the proposal below stands for
+   what comes after.
 
    **The human's proposal: if the large file is an issue, a downloadable
    asset.** The runtime kept out of `base-package-haicc`'s git and uploaded with
@@ -59,5 +69,4 @@ git missing.
 The built file in `~/haicc-r7`, on the human's machine: setup, `./boot` and the
 host's checks ok, `Passed: 7 passed, 0 failed, 0 skipped`, the platform's 19
 steps in 26.9 s, 38.0 s in all. Each command on stdout, as asked. Not in the
-output handed back: `--set=validation`, the prompt (finding 4). Not published:
-the runtime's place is still the human's to settle (finding 1).
+output handed back: `--set=validation`, the prompt (finding 4).
