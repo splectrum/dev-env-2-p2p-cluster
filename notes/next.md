@@ -81,6 +81,12 @@ base-package-haicc/test` (expect 7 passed; the setup is now 36 MB), and
 `steps/phase-3/2-package-structure/3-bare/local-run.md`. Then the package
 manager as the second package, on Bare from the start.
 
+**Published: the eighth release (2026-11-07), the human's word.**
+`setup-ab3193778713`, Bare v1.36.0, latest; `base-package-haicc` `969a4cd`;
+`haiccing`'s profile `3728924`. From GitHub: 7 passed, 2 passed. Record:
+`steps/phase-3/2-package-structure/3-bare/local-run.md`. Not pushed: the products,
+Codeberg's mirror of `base-package-haicc`.
+
 **The local agent's findings on the seventh release, done (2026-11-07)**:
 1. the runtime in the setup, not in git (the human's call): `release.sh
 <package> <out> [<runtime>]`, pinned by its sha256, extracted to `bare/`,
