@@ -126,6 +126,9 @@ test('verify: a package intact against the hash it was written with; changed, or
     t.ok(/^intact \([0-9a-f]{12}\)$/.test(v.said))
     // The manifest is not part of what is hashed: rewriting it changes nothing.
     t.is(packageHash(dir), v.hash)
+    // The repository's LICENSE, there after the hash was taken: still intact.
+    put(join(dir, 'LICENSE'), 'the repository\'s licence\n')
+    t.ok(verify(dir).ok, 'a LICENSE: not part of what is hashed')
     // A file replaced (a new file, as a hard-linked copy is changed without touching its original).
     rmSync(join(dir, 'modules/org/cmod/index.js'))
     put(join(dir, 'modules/org/cmod/index.js'), 'export const c = 2\n')
