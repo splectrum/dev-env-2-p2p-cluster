@@ -116,6 +116,11 @@ untested here). From a fresh release, Node.js off the PATH: haicc's full set
 through the root (its swarm made from its configuration, its codebase
 assembled into the master's repository).
 
+**No release until the phase's last part (the human, 2026-11-07)**: parts
+4 and 5 are done first; then one release, the tenth, and the local agent's
+check of everything at once (the lines "for the local agent" below are
+folded into it).
+
 **Part 3 built (2026-11-07): nodes running the swarm's codebase in
 containers.** `docs/design/platform.md`, "A node runs the swarm's codebase,
 in a container". A node's config `node.json` (its key in readable text,
