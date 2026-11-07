@@ -4,6 +4,15 @@ Written 2026-11-01 after step 7, updated through 2026-11-07 (phase 3, step 2 bui
 compaction). Read this first, then `rules.md` (single concern first), then
 `notes/plan.md`. Everything below is on `main`.
 
+## Now: phase 3 closed (2026-11-08)
+
+Report: `steps/phase-3/readme.md`; the last step's record:
+`steps/phase-3/3-demos-again/readme.md`. The tenth release published and
+checked by the local agent (below); its findings fixed on `main`, to go out
+with the next packages; the human's browser check of the demos to come.
+Next: the proposed phase, applications on mycelium repositories
+(`notes/plan.md`), designed step by step with the human.
+
 ## The tenth release, published (2026-11-08, the human's word)
 
 `setup-795612ec9e16`, latest, from `2e3eb0a`; the five repositories pushed. The
