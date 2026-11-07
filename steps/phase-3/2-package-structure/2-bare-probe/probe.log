@@ -1,0 +1,27 @@
+ok 1 - fs: mkdir -p, write, append, read, readdir: b
+ok 2 - fs: stat mode, chmod, exec bit: 755
+ok 3 - fs: symlink, readlink, lstat: b/f
+ok 4 - fs: rename, copyFile, exists: false,true
+ok 5 - fs: rm -rf, rmdir: false
+ok 6 - fs: mkdtemp: ok
+ok 7 - path: join, resolve, relative, dirname, basename: /a/c ../c/d /x y.js
+ok 8 - os: platform, arch, tmpdir, homedir: linux x64 /tmp /root
+ok 9 - process: argv, env, cwd, execPath: 2 string /tmp/claude-0/-home-user/d01f3080-f030-5051-8c75-7cd188d75161/scratchpad/bare-probe /tmp/claude-0/-home-user/d01f3080-f030-5051-8c75-7cd188d75161/scratchpad/bare-probe/node_modules/bare-runtime-linux-x64/bin/bare
+ok 10 - url: import.meta.url to a path, and back: /tmp/claude-0/-home-user/d01f3080-f030-5051-8c75-7cd188d75161/scratchpad/bare-probe/probe.js
+ok 11 - crypto: sha256: ba7816bf8f01
+ok 12 - subprocess: spawnSync, its output and exit code, env, cwd: 3 hi in /tmp
+ok 13 - subprocess: spawn, output streamed as it comes, exit code: exit 5, 2 chunks: ["one\n","two"]
+  (from the child, inherited)
+ok 14 - subprocess: inherit stdio (a child writing to our terminal): 0
+  (written)
+ok 15 - stdout: write, as it comes: ok
+ok 16 - readline: lines from a stream: ["a","b","c"]
+ok 17 - http1: a server; fetch: a GET to it: 200 served
+not ok 18 - fetch: https (through the proxy, if any): NETWORK_ERROR: Network error
+ok 19 - tcp: connect to a local port: connected
+ok 20 - dgram: bind, send, receive: ping
+not ok 21 - import(): a module by file URL: Unexpected token 'export'
+ok 22 - /dev/tty: open (none here, expect an error): no terminal: ENXIO
+# tests 22
+# pass 20
+# fail 2
