@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // pkgm: the package manager.
 //   pkgm assemble <package folder> <swarm> --into=<repository>   a swarm's codebase into its master's repository
-//   pkgm test     <package folder | repository>                 its tests, bottom up
+//   pkgm test     <package folder | repository> [--set=<set>]   its tests run in place, bottom up (a set: test/<set>.json)
 //   pkgm contents <repository>                                  what is there, and where from
 // Progress to stderr as JSON lines (--quiet: none); the result to stdout,
 // as JSON; exit 1 when a test fails or the operation is refused, 2 on a bad call.
@@ -18,7 +18,7 @@ const need = (v, what) => { if (!v) { process.stderr.write(`pkgm ${op}: ${what} 
 
 try {
   if (op === 'assemble') out(assemble({ from: need(args[0], 'a package folder'), swarm: need(args[1], 'a swarm'), into: need(flags.into, '--into'), log }))
-  else if (op === 'test') { const r = testPackage(need(args[0], 'a folder'), { log }); out(r, r.ok) }
+  else if (op === 'test') { const r = testPackage(need(args[0], 'a folder'), { log, set: flags.set || null }); out(r, r.ok) }
   else if (op === 'contents') out(contentsOf(need(args[0], 'a repository')))
   else { process.stderr.write(readFileSync(new URL(import.meta.url), 'utf8').split('\n').slice(1, 8).map(l => l.replace(/^\/\/ ?/, '')).join('\n') + '\n'); process.exit(2) }
 } catch (err) {

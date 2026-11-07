@@ -392,6 +392,46 @@ called from, and keeps it.
   each package's `contents.json` entry as it was when the swarm was made
   (source, commit, uncommitted, hash).
 
+### Functionality: a URI, a cold boot, a teardown (agreed 2026-11-07)
+
+Everything a package offers (a swarm, a test, whatever comes next) is a
+**functionality**: a folder in the package, addressed by URI, booted the same
+way.
+
+- **URI: `<repo>[/<type>/<name>]`**, booted by `./haicc boot <uri>`
+  (`--from=` for another root than `haiccing/`). The repository alone: its
+  swarms (all of them). The type decides where it lands in the work folder
+  (`swarms/<name>/`, a test's run in `swarms/test/<name>/`) and its
+  defaults. `<repo>/test`: a set of tests (`--set=`, default `full`).
+- **Its cold boot**: the functionality's own `boot` (sh), when it has one,
+  else its type's default from the platform (`platform/<type>/boot`). The
+  cold boot can be customised as required: it sets up what it needs, hands
+  over to the warm boot (`./haicc ...`), does what it is for, cleans up as
+  part of its execution. Nothing else distinguishes the types.
+- **Its teardown**: its own `teardown` (sh), else its type's default. A
+  test is torn down on completion by default; its result is its cold
+  boot's exit code; what it printed stays in the log.
+- **A test that changes what is outside its run** (the host, shared
+  resources, the install itself) repairs it in its teardown, or declares it
+  (`test.json`: `"destroys": "<what, and how to restore it>"`) and is run
+  only with a yes, the message saying a new install may be needed.
+- **Tests**: `test/<test>/` with `test.json` (`categories`, `needs`,
+  `destroys`); a test with a `boot` is booted (it needs a work folder); one
+  with only a `test` script runs in place (the package manager runs it, no
+  work folder: what an install's validation can run). The sets:
+  `test/validation.json` (in place, nothing started: an install, a node's
+  warm boot), `test/full.json` (everything: before a release, a downloaded
+  release); each lists its tests, and whether the modules' own tests are in
+  it. A test's `categories` and the sets agree (a validation test checks
+  it).
+- **The platform test** needs no special case: its cold boot sets up a
+  fresh install from the package under test, inside its run's folder,
+  boots it, works the levels with its `./haicc`, and its teardown removes it.
+- **A downloaded release tests itself**: `sh haicc-setup.sh ~/haicc-work &&
+  ~/haicc-work/boot && ~/haicc-work/haicc boot base-package-haicc/test`.
+  The package is the environment; the development repository is storage
+  and communication.
+
 ### Built: step 1, haicc (2026-11-07)
 
 The rebuild goes one package a step, each tested on the platform before the
@@ -417,6 +457,15 @@ narrowed back to haicc, the human's call.)
   (written, released, set up, booted, a swarm and two nodes, every level
   shut down and booted, teardown, the cold shutdown, `./boot` again): 21
   steps passed (`run.log`).
+- **Tests on the platform, carried by the package** (2026-11-07): `./haicc
+  boot <repo>/test[/<test>]` (the functionality design above, for type
+  test); the package manager's `test --set=`; `base-package-haicc/test/`:
+  `validation.json` (`modules-load`, `sets`), `full.json` (the modules, both,
+  and `platform`: a fresh install inside its run, every level, 19 steps);
+  `platform/test/teardown`, the default teardown. A node's warm boot runs
+  the validation set. On a freshly set up release: `./haicc boot
+  base-package-haicc/test`, 7 passed, 26 s. The first script
+  (`steps/.../1-haicc/run.sh`) is gone: the package carries its tests.
 - **A node's boot, cold and warm** (the human): cold makes the node's
   folder and copies in the minimum code; then warm takes over.
 - **Next: the package manager, the second package**: its named tests run

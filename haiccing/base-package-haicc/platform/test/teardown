@@ -1,0 +1,6 @@
+#!/bin/sh
+# The platform's default teardown for a test: its run removed
+# ($HAICC_RUN, swarms/test/<test>/), everything it made inside it with it.
+# What it printed stays in the log.
+[ -n "${HAICC_RUN:-}" ] && [ -d "$HAICC_RUN" ] || exit 0
+rm -rf "$HAICC_RUN"

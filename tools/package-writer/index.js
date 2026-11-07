@@ -109,7 +109,8 @@ function stage (dev, defs, name, ours, lock, dir) {
     package: name,
     modules: { ours: set.ours, third: set.third.length },
     swarms: has('swarms') ? readdirSync(join(dir, 'swarms')).sort() : [],
-    tests: readdirSync(join(dir, 'test')).sort(),
+    tests: readdirSync(join(dir, 'test')).filter(n => lstatSync(join(dir, 'test', n)).isDirectory()).sort(),
+    sets: readdirSync(join(dir, 'test')).filter(n => n.endsWith('.json')).map(n => n.slice(0, -5)).sort(),
     platform: has('platform'),
     ...(set.missing.length ? { unresolved: set.missing.map(m => `${m.from}: ${m.name}`) } : {})
   }

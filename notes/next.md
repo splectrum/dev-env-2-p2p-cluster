@@ -56,6 +56,14 @@ package manager work:
    **Done (2026-11-06):** a path for a name is refused (exit 2, nothing
    made), naming the command to use: `hosts/haicc boot master`; a test added.
 
+**Tests on the platform (2026-11-07)**: a package's functionality booted
+by its URI (`./haicc boot <repo>/test[/<test>]`, its cold boot, its
+teardown); `base-package-haicc` carries its tests (`validation`, `full`,
+the platform test); a downloaded release tests itself. `notes/packages.md`,
+"Functionality" and "Built: step 1, haicc". Next: the package manager as
+the second package, its tests booting node creation on the haicc platform;
+waiting for the human's go.
+
 **Step 1, haicc, built and tested on the platform (2026-11-07)**: the
 package writer (`tools/package-writer`), the package manager's `assemble`
 and bottom-up `test`, the new `base-package-haicc` (a node's cold boot: this

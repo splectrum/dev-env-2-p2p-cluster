@@ -1,0 +1,38 @@
+#!/bin/sh
+# The platform test's cold boot: a fresh install of the package under test
+# ($HAICC_PACKAGE), inside this run ($HAICC_RUN), worked through its levels
+# with its own ./haicc. Stops at the first step that fails (exit 1), saying which.
+set -u
+pkg=$HAICC_PACKAGE; run=$HAICC_RUN
+# The install is its own: its launchers set its HAICC_WORK; it logs itself.
+unset HAICC_WORK HAICC_NOLOG HAICC_SWARM
+w=$run/install
+n=0
+step () { n=$((n + 1)); what=$1; shift; printf '%2d %s ... ' "$n" "$what"; if out_=$("$@" 2>&1); then echo ok; else echo FAILED; echo "$out_" | tail -30 | sed 's/^/     /'; exit 1; fi; }
+expect () { printf '%s' "$out_" | grep -q "$1" || { echo "   expected: $1"; echo "$out_" | tail -20 | sed 's/^/     /'; exit 1; }; }
+
+step 'its setup, built from the package under test' sh "$pkg/modules/pear-full-square/haicc-base-boot/release.sh" "$pkg" "$run/haicc-setup.sh"
+step 'set up: a fresh install, sourced from this haiccing/' sh "$run/haicc-setup.sh" "$w" "--sources=folder:$(dirname "$pkg")"
+step './boot (cold, then warm)' "$w/boot" --yes
+expect 'Booted'
+step 'the install: base-package-haicc in packages/, ./haicc' sh -c "[ -x '$w/haicc' ] && [ -f '$w/packages/base-package-haicc/modules/pear-full-square/haicc-base-boot/haicc.js' ]"
+step 'a swarm: ./haicc boot hosts' "$w/haicc" boot hosts --no-echo
+step 'its master, cold and warm: ./hosts/haicc boot master' "$w/hosts/haicc" boot master
+expect 'Ready: '
+expect 'The node hosts/master: up'
+step "the node's cold boot: the platform's package only" sh -c "[ \"\$(ls '$w/hosts/master/packages')\" = base-package-haicc ]"
+step 'the node tests a package' "$w/hosts/master/haicc" test base-package-haicc
+expect 'test base-package-haicc: passed'
+step 'a second node: ./hosts/haicc boot node-1' "$w/hosts/haicc" boot node-1 --no-echo
+step 'the node level: shutdown, boot' sh -c "'$w/hosts/node-1/haicc' shutdown && '$w/hosts/node-1/haicc' boot"
+step 'the swarm level: shutdown' "$w/hosts/haicc" shutdown --yes
+step '  its nodes gone, nodes.json kept' sh -c "[ ! -e '$w/hosts/master' ] && [ -f '$w/hosts/nodes.json' ]"
+step '  boot: rebuilt from nodes.json, the master first' "$w/hosts/haicc" boot --no-echo
+step '  both up again' sh -c "[ -x '$w/hosts/master/haicc' ] && [ -x '$w/hosts/node-1/haicc' ]"
+step 'the root level: shutdown, boot' sh -c "'$w/haicc' shutdown --yes && '$w/haicc' boot --no-echo"
+step 'teardown: the swarm and its entry' "$w/haicc" teardown hosts --yes
+step 'the cold shutdown: ./shutdown' "$w/shutdown" --yes
+step '  kept: haiccing/, log/; gone: packages/, ./haicc' sh -c "[ -d '$w/haiccing' ] && [ -d '$w/log' ] && [ ! -e '$w/packages' ] && [ ! -e '$w/haicc' ]"
+step './boot again: set up from haiccing/' "$w/boot" --yes
+expect 'Booted'
+echo "the platform: all $n steps passed"

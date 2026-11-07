@@ -73,8 +73,19 @@ export function assemble ({ from, swarm, into, log = () => {} }) {
 
 const executable = f => { try { return (statSync(f).mode & 0o111) !== 0 && statSync(f).isFile() } catch { return false } }
 
-export function testPackage (dir, { log = () => {}, env: extra = {}, timeout = 10 * 60 * 1000 } = {}) {
+// A set (test/<set>.json): { description, modules: true|false, tests: [...] }.
+// Without one: everything that runs in place. A test with a `boot` is booted
+// (it needs a work folder: ./haicc boot <repo>/test/<test>): listed, not run here.
+export function testSet (dir, set) {
+  const f = join(dir, 'test', `${set}.json`)
+  if (!existsSync(f)) throw new Error(`${basename(dir)} has no test set ${set} (test/${set}.json)`)
+  return readJson(f)
+}
+
+export function testPackage (dir, { log = () => {}, env: extra = {}, timeout = 10 * 60 * 1000, set = null } = {}) {
   dir = resolve(dir)
+  const chosen = set ? testSet(dir, set) : null
+  const booted = []
   const runs = []
   const run = (what, cmd, args, cwd) => {
     const t0 = Date.now()
@@ -91,21 +102,26 @@ export function testPackage (dir, { log = () => {}, env: extra = {}, timeout = 1
     runs.push(result)
   }
   // The modules' own: each module's "test" script, in its folder.
-  for (const o of [...oursIn(join(dir, 'modules')).values()].sort((a, b) => a.path.localeCompare(b.path))) {
+  if (!chosen || chosen.modules) for (const o of [...oursIn(join(dir, 'modules')).values()].sort((a, b) => a.path.localeCompare(b.path))) {
     const pj = join(o.dir, 'package.json')
     const script = readJson(pj).scripts?.test
     if (script && existsSync(join(o.dir, 'test'))) run(`modules/${o.path}`, 'sh', ['-c', script], o.dir)
   }
   // The swarms': each executable in swarms/<swarm>/test/, in the swarm's folder.
   const swarms = join(dir, 'swarms')
-  if (existsSync(swarms)) for (const s of readdirSync(swarms).sort()) {
+  if (!chosen && existsSync(swarms)) for (const s of readdirSync(swarms).sort()) {
     const t = join(swarms, s, 'test')
     if (existsSync(t)) for (const f of readdirSync(t).sort()) if (executable(join(t, f))) run(`swarms/${s}/test/${f}`, join(t, f), [], join(swarms, s))
   }
-  // The named tests: test/<test>/test, in its folder.
+  // The named tests run in place: test/<test>/test, in its folder.
   const tests = join(dir, 'test')
-  if (existsSync(tests)) for (const n of readdirSync(tests).sort()) if (executable(join(tests, n, 'test'))) run(`test/${n}`, join(tests, n, 'test'), [], join(tests, n))
-  return { dir, ok: runs.length > 0 && runs.every(r => r.ok), runs }
+  const names = chosen ? chosen.tests || [] : existsSync(tests) ? readdirSync(tests).filter(n => statSync(join(tests, n)).isDirectory()).sort() : []
+  for (const n of names) {
+    if (executable(join(tests, n, 'boot'))) { booted.push(n); continue }
+    if (executable(join(tests, n, 'test'))) run(`test/${n}`, join(tests, n, 'test'), [], join(tests, n))
+    else runs.push({ what: `test/${n}`, ok: false, tests: 0, pass: 0, fail: 0, skipped: 0, ms: 0, output: `test/${n}: no test or boot script` })
+  }
+  return { dir, ok: runs.length > 0 && runs.every(r => r.ok), runs, booted }
 }
 
 export { walk, copy, hashTree, closure, oursIn }
