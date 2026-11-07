@@ -487,6 +487,18 @@ narrowed back to haicc, the human's call.)
   writer: in order, nothing lost to an exit); `brittle` takes relative
   paths. The full set from a fresh release, Node.js off the PATH: 7
   passed, 41 s.
+- **Step 2: a node's boot, validated by the node itself** (2026-11-07):
+  the warm boot checks each package copied in intact (its hash, the
+  package manager's `packageHash`, the one the package writer records:
+  everything but `package.json` and `.git`, the readme last), then runs its
+  validation set; up only when both pass, else it says which, its tests are
+  not run, and the swarm's boot stops there. On demand: `./<swarm>/<node>/
+  haicc test <package> [--set=]`, intact first. Copies are hard links: a
+  file changed in place would change every copy (and the original); a file
+  replaced breaks the link for that copy only, and its hash says so. The
+  platform test: 23 steps (a node validated; a file replaced in node-1's
+  copy: not intact, not up, the swarm's boot stops; repaired by its
+  shutdown and a boot from scratch). From a fresh release: 7 passed.
 - **A node's boot, cold and warm** (the human): cold makes the node's
   folder and copies in the minimum code; then warm takes over.
 - **Next: the package manager, the second package**: its named tests run
