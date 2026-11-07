@@ -18,7 +18,7 @@ The probe that preceded it: `steps/phase-3/2-package-structure/2-bare-probe/`.
 ## The runtime is carried by the setup
 
 **Built** (from the eighth release). The setup (`haicc-setup.sh`) carries
-Bare's full runtime (97 MB; the setup 36 MB), pinned by its sha256; it is
+Bare's runtime, stripped (68 MB; below), pinned by its sha256; it is
 extracted to `bare/` and checked; step 0 checks it runs on the host; every
 launcher runs `bare`. The package's git does not carry it.
 
@@ -27,9 +27,15 @@ one 92.6 MB file sat near GitHub's 100 MiB limit and every Bare upgrade
 would have added to the history (the seventh release carried it; its 34.6
 MB stay in the history: no force-push).
 
-**Built** (part 3): the nodes' containers get the stripped runtime (68 MB,
-`bare/bare-stripped`, carried by the setup beside the full one: the setup
-66 MB); the full one stays at the root.
+**Built** (part 3; the human, 2026-11-07, revises "the full one at the
+root"): **the stripped runtime only**, for the root and the nodes'
+containers alike. `release.sh` strips the published runtime (its version
+said in the setup, and that it was stripped); 68 MB of the full one's 97
+MB, the rest debug information; the setup about 39 MB.
+
+*Why*: the two behave the same; debug information serves only a native
+crash's diagnosis, which is the development side's (the full runtime is
+in its `node_modules`; the containers dump no cores anyway).
 
 ## Copies within a work folder are hard links
 

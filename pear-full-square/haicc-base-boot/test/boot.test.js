@@ -111,8 +111,6 @@ test('the setup: a self-extracting release, extracting haiccing/ (boot, sources,
     run('cp', ['-a', here, join(pkg, 'modules', 'pear-full-square', 'haicc-base-boot')])
     mkdirSync(join(dir, 'rt'))
     const rt = runtime(join(dir, 'rt'))
-    // Its stripped one beside it (for the nodes' containers).
-    run('cp', [rt, join(dir, 'rt', 'bare-stripped')])
     writeFileSync(join(pkg, 'package.json'), JSON.stringify({ name: 'base-package-haicc', pkgm: { package: 'haicc', hash: 'abcdef1234567890' } }))
     // The package manager's package beside it: the platform is a pair.
     mkdirSync(join(dir, 'base-package-pkgm', 'modules'), { recursive: true })
@@ -126,7 +124,6 @@ test('the setup: a self-extracting release, extracting haiccing/ (boot, sources,
     t.ok(/next: .*\/work\/boot/.test(r.stdout))
     // Bare's runtime: carried by the setup, placed in bare/, not in the package.
     t.ok(/v1\.36\.0/.test(run(join(work, 'bare', 'bare'), ['--version']).stdout), "Bare's runtime in bare/")
-    t.ok(existsSync(join(work, 'bare', 'bare-stripped')), "and its stripped one, for the nodes' containers")
     t.ok(!existsSync(join(work, 'haiccing', 'base-package-haicc', 'modules', 'node_modules')), 'not in the package')
     t.ok(existsSync(join(work, 'haiccing', 'base-package-haicc', 'modules', 'pear-full-square', 'haicc-base-boot', 'boot.sh')))
     // The stubs, ./boot and ./shutdown: executable, naming their setup.

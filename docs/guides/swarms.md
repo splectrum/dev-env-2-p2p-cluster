@@ -59,7 +59,7 @@ master's `packages/` (read-only):
   |   ok     base-package-haicc: intact (0163b1b5643b)
   |   ...
   | Ready: 6 test runs passed (base-package-haicc, base-package-pkgm)
-  |   its image: haicc-node:de24f4f1b7fb (Bare's bare-stripped; the code mounted, not in it)
+  |   its image: haicc-node:de24f4f1b7fb (Bare's runtime; the code mounted, not in it)
   |   its container haicc-43311a2c-three-nodes-master (master, 172.18.0.10 on haicc-43311a2c-three-nodes): ...
   |   ok     the node running: /three-nodes/master, its key 393a439519f0, the swarm's DHT at 172.18.0.10:49737 (11.7 s)
   | Running
