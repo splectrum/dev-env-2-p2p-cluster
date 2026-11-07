@@ -14,7 +14,7 @@
 # close line (the exit, the duration) each. No hidden folders. No secrets.
 set -u
 here=$(cd "$(dirname "$0")" && pwd)
-haiccing=$(cd "$here/../../.." && pwd)
+haiccing=$(cd "$here/../../../.." && pwd)
 work=$(dirname "$haiccing")
 logdir=$work/log
 mkdir -p "$logdir"
@@ -50,7 +50,7 @@ fi
 # 2. HAICC's package, copied whole into packages/ at the first boot.
 pkg=$work/packages/base-package-haicc
 if [ -f "$pkg/package.json" ]; then
-  there=$(cat "$pkg/pear-full-square/haicc-base-boot/VERSION"); this=$(cat "$here/VERSION")
+  there=$(cat "$pkg/modules/pear-full-square/haicc-base-boot/VERSION"); this=$(cat "$here/VERSION")
   if [ "$there" = "$this" ]; then echo "  HAICC's package: there (copied at the first boot)"
   else echo "  HAICC's package: boot $there is there, this setup is $this: kept, no updates yet (a new work folder has $this)"; fi
 else
@@ -65,7 +65,7 @@ cat > "$work/haicc.new" <<EOS
 work=\$(cd "\$(dirname "\$0")" && pwd)
 HAICC_WORK=\$work; export HAICC_WORK
 [ -x "\$work/nodejs/bin/node" ] && PATH=\$work/nodejs/bin:\$PATH
-exec node "\$work/packages/base-package-haicc/pear-full-square/haicc-base-boot/haicc.js" "\$@"
+exec node "\$work/packages/base-package-haicc/modules/pear-full-square/haicc-base-boot/haicc.js" "\$@"
 EOS
 chmod 755 "$work/haicc.new" && mv "$work/haicc.new" "$work/haicc"
 echo "  written $work/haicc"

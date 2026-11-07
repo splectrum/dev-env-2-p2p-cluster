@@ -56,6 +56,15 @@ package manager work:
    **Done (2026-11-06):** a path for a name is refused (exit 2, nothing
    made), naming the command to use: `hosts/haicc boot master`; a test added.
 
+**Step 1 built (2026-11-07)**: the package writer (`tools/package-writer`),
+the package manager's `assemble` and bottom-up `test`, the first swarm
+package (`base-swarm-three-nodes`), HAICC on the new package layout (a
+node's cold boot: `base-package-haicc` only). `notes/packages.md`, "Built:
+step 1". **For the human**: create `haiccing/base-swarm-three-nodes`;
+`base-package-third-party` is no longer written (archive it). Publishing:
+`publish.sh`, now with the package writer. Next: step 2, the work folder's
+new top.
+
 **Next, agreed, not built (2026-11-07): the design reviewed and settled.**
 Since the review: a package's `modules/` shared by its swarms, each swarm's
 codebase its `modules.json`; the master's package repository assembled

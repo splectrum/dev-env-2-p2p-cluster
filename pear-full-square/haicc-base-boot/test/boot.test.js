@@ -135,19 +135,19 @@ test('the setup: a self-extracting release, extracting haiccing/ (boot, sources,
   try {
     // base-package-haicc in miniature: its manifest and this boot.
     const pkg = join(dir, 'base-package-haicc')
-    mkdirSync(join(pkg, 'pear-full-square'), { recursive: true })
-    execFileSync('cp', ['-a', here, join(pkg, 'pear-full-square', 'haicc-base-boot')])
+    mkdirSync(join(pkg, 'modules', 'pear-full-square'), { recursive: true })
+    execFileSync('cp', ['-a', here, join(pkg, 'modules', 'pear-full-square', 'haicc-base-boot')])
     writeFileSync(join(pkg, 'package.json'), JSON.stringify({ name: 'base-package-haicc', pkgm: { package: 'haicc', hash: 'abcdef1234567890' } }))
     execFileSync('sh', [join(here, 'release.sh'), pkg, join(dir, 'haicc-setup.sh')])
     const work = join(dir, 'work')
     const r = spawnSync('sh', [join(dir, 'haicc-setup.sh'), work, `--sources=folder:${dir}/repos`, '--sources=github:haiccing'], { encoding: 'utf8' })
     assert.equal(r.status, 0, r.stdout + r.stderr)
     assert.match(r.stdout, /next: .*\/work\/boot/)
-    assert.ok(existsSync(join(work, 'haiccing', 'base-package-haicc', 'pear-full-square', 'haicc-base-boot', 'boot.sh')))
+    assert.ok(existsSync(join(work, 'haiccing', 'base-package-haicc', 'modules', 'pear-full-square', 'haicc-base-boot', 'boot.sh')))
     // The stubs, ./boot and ./shutdown: executable, naming their setup.
     for (const s of ['boot', 'shutdown']) {
       assert.ok(statSync(join(work, s)).mode & 0o100)
-      assert.match(readFileSync(join(work, s), 'utf8'), new RegExp(`base-package-haicc/pear-full-square/haicc-base-boot/${s}\\.sh`))
+      assert.match(readFileSync(join(work, s), 'utf8'), new RegExp(`base-package-haicc/modules/pear-full-square/haicc-base-boot/${s}\\.sh`))
     }
     assert.deepEqual(readFileSync(join(work, 'haiccing', 'sources'), 'utf8').split('\n').filter(l => l && !l.startsWith('#')), [`folder ${dir}/repos`, 'github haiccing'])
     // Logged from the start: the setup's own lines in the work folder's log.
@@ -159,9 +159,9 @@ test('the setup: a self-extracting release, extracting haiccing/ (boot, sources,
     // The first boot's stage 1, on a folder with no packages/ yet: HAICC's package copied in whole.
     const stage1 = spawnSync('sh', [join(work, 'boot')], { encoding: 'utf8', env: { ...process.env, HAICC_BOOT_LOGGING: '1' } })
     assert.equal(stage1.status, 0, stage1.stdout + stage1.stderr)
-    assert.ok(existsSync(join(work, 'packages', 'base-package-haicc', 'pear-full-square', 'haicc-base-boot', 'haicc.js')), stage1.stdout + stage1.stderr)
+    assert.ok(existsSync(join(work, 'packages', 'base-package-haicc', 'modules', 'pear-full-square', 'haicc-base-boot', 'haicc.js')), stage1.stdout + stage1.stderr)
     assert.ok(existsSync(join(work, 'haicc')))
-    assert.match(readFileSync(join(work, 'haicc'), 'utf8'), /packages\/base-package-haicc\/pear-full-square\/haicc-base-boot\/haicc\.js/)
+    assert.match(readFileSync(join(work, 'haicc'), 'utf8'), /packages\/base-package-haicc\/modules\/pear-full-square\/haicc-base-boot\/haicc\.js/)
     // Nothing hidden, no install/: the work folder's shape.
     assert.deepEqual(readdirSync(work).sort(), ['boot', 'haicc', 'haiccing', 'log', 'packages', 'shutdown'])
     // Again, the same setup: said, exit 0, nothing changed.
@@ -182,7 +182,7 @@ test('the setup: a self-extracting release, extracting haiccing/ (boot, sources,
 test('a path for a name is refused, not cleaned into one name: a node is its swarm\'s', () => {
   const work = mkdtempSync(join(tmpdir(), 'names-'))
   try {
-    const r = spawnSync(process.execPath, [join(here, 'haicc.js'), 'boot', 'hosts/master'], { encoding: 'utf8', env: { ...process.env, HAICC_WORK: work } })
+    const r = spawnSync(process.execPath, [join(here, 'haicc.js'), 'boot', 'hosts/master'], { encoding: 'utf8', env: { ...process.env, HAICC_WORK: work, HAICC_SWARM: '' } })
     assert.equal(r.status, 2)
     assert.match(r.stdout, /'hosts\/master': one swarm's name here; a node is its swarm's: hosts\/haicc boot master/)
     assert.ok(!existsSync(join(work, 'swarms.json')) && !existsSync(join(work, 'hosts-master')), 'nothing made')

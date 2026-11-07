@@ -1,200 +1,103 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync, chmodSync, readlinkSync } from 'node:fs'
-import { join } from 'node:path'
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync, chmodSync, readlinkSync, symlinkSync } from 'node:fs'
+import { join, dirname } from 'node:path'
 import { tmpdir } from 'node:os'
-import { execFileSync } from 'node:child_process'
-import { importThirdParty, writePackages, install, testPackage, installed, uninstall, findPackage, manifest, platform } from '../index.js'
+import { assemble, testPackage, contentsOf, closure, oursIn } from '../index.js'
 
-const put = (f, s) => { mkdirSync(join(f, '..'), { recursive: true }); writeFileSync(f, s) }
+const put = (f, s, x = false) => { mkdirSync(dirname(f), { recursive: true }); writeFileSync(f, s); if (x) chmodSync(f, 0o755) }
 const json = (f, v) => put(f, JSON.stringify(v, null, 2))
 
-// A development repository in miniature: one third-party module (with a
-// prebuild per platform and a test folder), Bare's runtime as a script, and
-// one module of ours using the third-party one.
-function devRepo () {
-  const dev = mkdtempSync(join(tmpdir(), 'pkgm-dev-'))
-  json(join(dev, 'node_modules/dep-x/package.json'), { name: 'dep-x', version: '1.2.3', license: 'MIT', type: 'module', exports: './index.js' })
-  put(join(dev, 'node_modules/dep-x/index.js'), 'export const x = 42\n')
-  put(join(dev, 'node_modules/dep-x/test/t.js'), 'not shipped\n')
-  put(join(dev, `node_modules/dep-x/prebuilds/${platform()}/dep-x.node`), 'this platform\n')
-  put(join(dev, 'node_modules/dep-x/prebuilds/other-arch/dep-x.node'), 'not shipped\n')
-  json(join(dev, `node_modules/bare-runtime-${platform()}/package.json`), { name: `bare-runtime-${platform()}`, version: '9.9.9', license: 'Apache-2.0' })
-  put(join(dev, `node_modules/bare-runtime-${platform()}/bin/bare`), '#!/bin/sh\necho v9.9.9\n')
-  json(join(dev, 'package-lock.json'), {
-    packages: {
-      '': {},
-      'node_modules/dep-x': { version: '1.2.3', resolved: 'https://example/dep-x-1.2.3.tgz', integrity: 'sha512-x', license: 'MIT' },
-      [`node_modules/bare-runtime-${platform()}`]: { version: '9.9.9', integrity: 'sha512-b' },
-      'node_modules/amod': { link: true }
-    }
-  })
-  json(join(dev, 'org/amod/package.json'), { name: 'amod', type: 'module', exports: './index.js', scripts: { test: 'node --test test/*.test.js' } })
-  put(join(dev, 'org/amod/index.js'), "import { x } from 'dep-x'\nexport const a = () => x + 1\n")
-  put(join(dev, 'org/amod/test/a.test.js'), "import { test } from 'node:test'\nimport assert from 'node:assert/strict'\nimport { a } from 'amod'\ntest('a', () => assert.equal(a(), 43))\n")
-  json(join(dev, 'packages.json'), {
-    packages: {
-      'third-party': { description: 'Theirs.' },
-      apkg: { description: 'Ours.', requires: ['third-party'], modules: ['org/amod'] }
-    }
-  })
-  return dev
+// A package in miniature, as the package writer makes them: two modules of
+// ours (one using the other by name, one by a relative path), a third one
+// no swarm uses, third-party code with a dependency of its own, links to
+// ours by name, a swarm, a named test.
+function pkg () {
+  const dir = mkdtempSync(join(tmpdir(), 'pkgm-pkg-'))
+  const m = join(dir, 'modules')
+  json(join(m, 'org/amod/package.json'), { name: 'amod', type: 'module', exports: './index.js', scripts: { test: 'node --test test/*.test.js' } })
+  put(join(m, 'org/amod/index.js'), "import { b } from 'bmod'\nimport { x } from 'dep-x'\nexport const a = () => b() + x\n")
+  put(join(m, 'org/amod/test/a.test.js'), "import { test } from 'node:test'\nimport assert from 'node:assert/strict'\nimport { a } from 'amod'\ntest('a', () => assert.equal(a(), 42))\n")
+  json(join(m, 'org/bmod/package.json'), { name: 'bmod', type: 'module', exports: './index.js' })
+  put(join(m, 'org/bmod/index.js'), "import { c } from '../cmod/index.js'\nexport const b = () => c\n")
+  json(join(m, 'org/cmod/package.json'), { name: 'cmod', type: 'module', exports: './index.js' })
+  put(join(m, 'org/cmod/index.js'), 'export const c = 1\n')
+  json(join(m, 'org/unused/package.json'), { name: 'unused', type: 'module', exports: './index.js' })
+  put(join(m, 'org/unused/index.js'), "import 'dep-z'\nexport const u = 0\n")
+  json(join(m, 'node_modules/dep-x/package.json'), { name: 'dep-x', version: '1.0.0', type: 'module', exports: './index.js', dependencies: { 'dep-y': '1' } })
+  put(join(m, 'node_modules/dep-x/index.js'), "import { y } from 'dep-y'\nexport const x = y\n")
+  json(join(m, 'node_modules/dep-y/package.json'), { name: 'dep-y', version: '2.0.0', type: 'module', exports: './index.js' })
+  put(join(m, 'node_modules/dep-y/index.js'), 'export const y = 41\n')
+  json(join(m, 'node_modules/dep-z/package.json'), { name: 'dep-z', version: '3.0.0' })
+  for (const n of ['amod', 'bmod', 'cmod', 'unused']) symlinkSync(`../org/${n}`, join(m, 'node_modules', n))
+  json(join(m, 'third-party.json'), { modules: ['dep-x', 'dep-y', 'dep-z'].map(name => ({ name, version: '1' })) })
+  json(join(dir, 'swarms/s1/modules.json'), { modules: ['org/amod'] })
+  put(join(dir, 'swarms/s1/test/config'), '#!/bin/sh\necho "# tests 1"\necho "# pass 1"\n', true)
+  put(join(dir, 'test/t1/test'), '#!/bin/sh\necho "# tests 2"\necho "# pass 2"\n', true)
+  json(join(dir, 'package.json'), { name: 'base-x', pkgm: { package: 'x', hash: 'abc123' } })
+  return dir
 }
 
-test('import, write, install, test: the whole flow', () => {
-  const dev = devRepo()
-  const out = mkdtempSync(join(tmpdir(), 'pkgm-out-'))
-  const into = mkdtempSync(join(tmpdir(), 'pkgm-into-'))
+test('closure: ours by name and by relative path, third-party all the way down; nothing else', () => {
+  const dir = pkg()
   try {
-    // The import: this platform only, tests dropped, recorded.
-    const tp = importThirdParty({ dev, out })
-    assert.equal(tp.platform, platform())
-    const tpDir = findPackage('third-party', out)
-    assert.ok(existsSync(join(tpDir, `node_modules/dep-x/prebuilds/${platform()}/dep-x.node`)))
-    assert.ok(!existsSync(join(tpDir, 'node_modules/dep-x/prebuilds/other-arch')))
-    assert.ok(!existsSync(join(tpDir, 'node_modules/dep-x/test')))
-    const record = JSON.parse(readFileSync(join(tpDir, 'third-party.json'), 'utf8'))
-    assert.deepEqual(record.modules.find(m => m.name === 'dep-x'), { path: 'node_modules/dep-x', name: 'dep-x', version: '1.2.3', license: 'MIT', resolved: 'https://example/dep-x-1.2.3.tgz', integrity: 'sha512-x' })
-    assert.equal(tp.bare, '9.9.9')
+    const r = closure({ ours: oursIn(join(dir, 'modules')), third: join(dir, 'modules', 'node_modules'), start: ['org/amod'] })
+    assert.deepEqual(r.ours, ['org/amod', 'org/bmod', 'org/cmod'])
+    assert.deepEqual(r.third, ['dep-x', 'dep-y'])
+    assert.deepEqual(r.missing, [])
+  } finally { rmSync(dir, { recursive: true, force: true }) }
+})
 
-    // Writing: installed and tested together first, then written.
-    const w = writePackages({ dev, out })
-    assert.equal(w.ok, true, JSON.stringify(w.results))
-    const ap = findPackage('apkg', out)
-    assert.ok(existsSync(join(ap, 'org/amod/index.js')))
-    assert.ok(existsSync(join(ap, 'README.md')))
-    assert.deepEqual(manifest(ap).requires, ['third-party'])
-    // Written again unchanged: the same hash (nothing in it depends on when).
-    const before = manifest(ap).hash
-    writePackages({ dev, out })
-    assert.equal(manifest(ap).hash, before)
-
-    // Installing: what it requires first, fully qualified, our module by name.
-    const done = install('apkg', { from: out, into })
-    assert.deepEqual(done.map(d => [d.package, d.action]), [['third-party', 'installed'], ['apkg', 'installed']])
-    assert.ok(existsSync(join(into, 'org/amod/index.js')))
-    assert.equal(readlinkSync(join(into, 'node_modules/amod')), '../org/amod')
-    assert.equal(execFileSync(process.execPath, ['--input-type=module', '-e', "import { a } from 'amod'; console.log(a())"], { cwd: into, encoding: 'utf8' }).trim(), '43')
-    // Current: skipped.
-    assert.deepEqual(install('apkg', { from: out, into }).map(d => d.action), ['current', 'current'])
-    // Tested within the package: the module's tests and the package's.
-    const t = testPackage('apkg', { into })
+test("assemble: a swarm's codebase into a repository, its contents said; again: unchanged; a name the package lacks: refused", () => {
+  const dir = pkg()
+  const repo = join(dir, '..', `${dir.split('/').at(-1)}-repo`)
+  try {
+    const r = assemble({ from: dir, swarm: 's1', into: repo })
+    assert.equal(r.changed, true)
+    assert.deepEqual([r.ours, r.third], [3, 2])
+    assert.ok(existsSync(join(repo, 'modules/org/cmod/index.js')))
+    assert.ok(!existsSync(join(repo, 'modules/org/unused')), 'only what the swarm uses')
+    assert.ok(!existsSync(join(repo, 'modules/node_modules/dep-z')))
+    assert.equal(readlinkSync(join(repo, 'modules/node_modules/amod')), '../org/amod')
+    const c = contentsOf(repo)
+    assert.deepEqual([c.package.name, c.package.hash, c.swarm], ['base-x', 'abc123', 's1'])
+    assert.deepEqual(c.modules.third, ['dep-x', 'dep-y'])
+    assert.deepEqual(JSON.parse(readFileSync(join(repo, 'modules/third-party.json'), 'utf8')).modules.map(m => m.name), ['dep-x', 'dep-y'])
+    assert.ok(!existsSync(`${repo}.assembling`))
+    assert.equal(assemble({ from: dir, swarm: 's1', into: repo }).changed, false)
+    // The repository runs: its module tests, in place.
+    const t = testPackage(repo)
     assert.equal(t.ok, true, JSON.stringify(t.runs))
-    assert.deepEqual(t.runs.map(r => r.what), ['org/amod', 'base-package-apkg/test'])
-    assert.equal(testPackage('third-party', { into }).ok, true)
-
-    // A changed module: a new hash, the package updated as one unit.
-    put(join(dev, 'org/amod/index.js'), "import { x } from 'dep-x'\nexport const a = () => x + 1\nexport const b = 2\n")
-    writePackages({ dev, out })
-    assert.notEqual(manifest(ap).hash, before)
-    assert.deepEqual(install('apkg', { from: out, into }).map(d => d.action), ['current', 'updated'])
-    assert.match(readFileSync(join(into, 'org/amod/index.js'), 'utf8'), /b = 2/)
-
-    // A failing test: nothing written.
-    put(join(dev, 'org/amod/index.js'), 'export const a = () => 0\n')
-    const bad = writePackages({ dev, out })
-    assert.equal(bad.ok, false)
-    assert.match(readFileSync(join(ap, 'org/amod/index.js'), 'utf8'), /b = 2/)
-
-    // An override: the module replaced by another folder, then tested
-    // within its package; recorded, and a plain install puts it back.
-    const alt = join(dev, 'alt-amod')
-    json(join(alt, 'package.json'), { name: 'amod', type: 'module', exports: './index.js', scripts: { test: 'node --test test/*.test.js' } })
-    put(join(alt, 'index.js'), "import { x } from 'dep-x'\nexport const a = () => x + 1\nexport const c = 3\n")
-    put(join(alt, 'test/a.test.js'), readFileSync(join(dev, 'org/amod/test/a.test.js')))
-    put(join(alt, 'node_modules/junk/x.js'), 'not copied\n')
-    assert.deepEqual(install('apkg', { from: out, into, overrides: { 'org/amod': alt } }).map(d => d.action), ['current', 'updated'])
-    assert.match(readFileSync(join(into, 'org/amod/index.js'), 'utf8'), /c = 3/)
-    assert.ok(!existsSync(join(into, 'org/amod/node_modules')))
-    assert.deepEqual(installed(into).packages.apkg.overrides, { 'org/amod': alt })
-    assert.equal(testPackage('apkg', { into }).ok, true)
-    assert.throws(() => install('apkg', { from: out, into, overrides: { 'org/other': alt } }), /not a folder of base-package-apkg/)
-    install('apkg', { from: out, into })
-    assert.match(readFileSync(join(into, 'org/amod/index.js'), 'utf8'), /b = 2/)
-    assert.equal(installed(into).packages.apkg.overrides, undefined)
-
-    // A folder is one package's only.
-    const clash = join(out, 'base-package-clash')
-    json(join(clash, 'package.json'), { name: 'base-package-clash', pkgm: { package: 'clash', requires: [], folders: ['org/amod'], hash: 'h' } })
-    mkdirSync(join(clash, 'org/amod'), { recursive: true })
-    assert.throws(() => install('clash', { from: out, into }), /org\/amod belongs to base-package-apkg/)
-
-    // Missing siblings are said, with where to get them.
-    assert.throws(() => install('nope', { from: out, into }), /missing: haiccing\/base-package-nope .*https:\/\/github.com\/haiccing\/base-package-nope/)
-
-    // Uninstall: refused while required, then one unit at a time.
-    assert.throws(() => uninstall('third-party', { into }), /required by base-package-apkg/)
-    assert.equal(uninstall('apkg', { into }), true)
-    assert.ok(!existsSync(join(into, 'org/amod')) && !existsSync(join(into, 'node_modules/amod')))
-    assert.equal(uninstall('third-party', { into }), true)
-    assert.ok(!existsSync(join(into, 'node_modules/dep-x')))
-    // Every change, a record.
-    const changes = readFileSync(join(into, 'pkgm/changes.jsonl'), 'utf8').trim().split('\n').map(l => JSON.parse(l))
-    assert.deepEqual(changes.map(c => `${c.package}:${c.action}`), ['third-party:installed', 'apkg:installed', 'apkg:updated', 'apkg:updated', 'apkg:updated', 'apkg:removed', 'third-party:removed'])
-    assert.deepEqual(Object.keys(changes[3].overrides), ['org/amod'])
-  } finally {
-    for (const d of [dev, out, into]) rmSync(d, { recursive: true, force: true })
-  }
+    json(join(dir, 'swarms/s2/modules.json'), { modules: ['org/nope'] })
+    assert.throws(() => assemble({ from: dir, swarm: 's2', into: repo }), /does not hold: org\/nope/)
+    assert.throws(() => assemble({ from: dir, swarm: 's9', into: repo }), /no swarm s9/)
+    assert.equal(contentsOf(repo).swarm, 's1', 'a refused assembly changes nothing')
+  } finally { for (const d of [dir, repo]) rmSync(d, { recursive: true, force: true }) }
 })
 
-test('the platform is checked', () => {
-  const out = mkdtempSync(join(tmpdir(), 'pkgm-out-'))
-  const into = mkdtempSync(join(tmpdir(), 'pkgm-into-'))
+test('test: bottom up, the modules, the swarms, the named tests; a failure said with its output', () => {
+  const dir = pkg()
   try {
-    json(join(out, 'base-package-elsewhere/package.json'), { pkgm: { package: 'elsewhere', requires: [], folders: [], hash: 'h', platform: 'android-arm64' } })
-    if (platform() !== 'android-arm64') assert.throws(() => install('elsewhere', { from: out, into }), /is for android-arm64/)
-  } finally {
-    for (const d of [out, into]) rmSync(d, { recursive: true, force: true })
-  }
+    const t = testPackage(dir)
+    assert.equal(t.ok, true, JSON.stringify(t.runs))
+    assert.deepEqual(t.runs.map(r => r.what), ['modules/org/amod', 'swarms/s1/test/config', 'test/t1'])
+    assert.deepEqual(t.runs.map(r => r.pass), [1, 1, 2])
+    put(join(dir, 'test/t1/test'), '#!/bin/sh\necho broken\nexit 1\n', true)
+    const f = testPackage(dir)
+    assert.equal(f.ok, false)
+    assert.match(f.runs.at(-1).output, /broken/)
+  } finally { rmSync(dir, { recursive: true, force: true }) }
 })
 
-test('an interrupted install is redone', () => {
-  const dev = devRepo()
-  const out = mkdtempSync(join(tmpdir(), 'pkgm-out-'))
-  const into = mkdtempSync(join(tmpdir(), 'pkgm-into-'))
+test('test: a run that does not end is stopped, and fails; the rest still run', () => {
+  const dir = pkg()
   try {
-    importThirdParty({ dev, out })
-    install('third-party', { from: out, into })
-    const reg = installed(into)
-    reg.packages['third-party'].state = 'installing'
-    writeFileSync(join(into, 'pkgm/installed.json'), JSON.stringify(reg))
-    rmSync(join(into, 'node_modules/dep-x'), { recursive: true })
-    assert.deepEqual(install('third-party', { from: out, into }).map(d => d.action), ['updated'])
-    assert.ok(existsSync(join(into, 'node_modules/dep-x/index.js')))
-    chmodSync(join(into, `node_modules/bare-runtime-${platform()}/bin/bare`), 0o755)
-  } finally {
-    for (const d of [dev, out, into]) rmSync(d, { recursive: true, force: true })
-  }
-})
-
-// The package manager is installed on its own (it requires nothing): its
-// provider is tested where HAICC is installed beside it.
-const reconcile = await import('haicc-reconcile').catch(() => null)
-
-test('the provider for HAICC: a package as a prerequisite', { skip: reconcile ? false : 'haicc-reconcile is not installed beside the package manager' }, async () => {
-  const { createEngine } = reconcile
-  const { providers } = await import('../reconcile.js')
-  const dev = devRepo()
-  const out = mkdtempSync(join(tmpdir(), 'pkgm-out-'))
-  const into = mkdtempSync(join(tmpdir(), 'pkgm-into-'))
-  try {
-    importThirdParty({ dev, out })
-    writePackages({ dev, out })
-    const e = createEngine({ providers, owner: 'test' })
-    const reqs = [{ name: 'apkg', kind: 'package', want: { name: 'apkg', from: out, into } }]
-    assert.deepEqual((await e.check(reqs)).map(c => [c.status, c.fixable]), [['missing', true]])
-    await e.apply(reqs)
-    assert.deepEqual((await e.check(reqs)).map(c => c.status), ['met'])
-    assert.ok(installed(into).packages['third-party'])
-    // A new version beside the others: different, and updated.
-    put(join(dev, 'org/amod/index.js'), "import { x } from 'dep-x'\nexport const a = () => x + 1\nexport const d = 4\n")
-    writePackages({ dev, out })
-    assert.deepEqual((await e.check(reqs)).map(c => c.status), ['different'])
-    await e.apply(reqs)
-    assert.deepEqual((await e.check(reqs)).map(c => c.status), ['met'])
-    await e.remove(reqs)
-    assert.equal(installed(into).packages.apkg, undefined)
-  } finally {
-    for (const d of [dev, out, into]) rmSync(d, { recursive: true, force: true })
-  }
+    put(join(dir, 'swarms/s1/test/config'), '#!/bin/sh\nsleep 30\n', true)
+    const t = testPackage(dir, { timeout: 500 })
+    assert.equal(t.ok, false)
+    const hung = t.runs.find(r => r.what === 'swarms/s1/test/config')
+    assert.equal(hung.ok, false)
+    assert.match(hung.output, /stopped: no end after 0.5 s/)
+    assert.equal(t.runs.find(r => r.what === 'test/t1').ok, true)
+  } finally { rmSync(dir, { recursive: true, force: true }) }
 })

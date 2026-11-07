@@ -7,7 +7,7 @@ set -eu
 pkg=$(cd "$1" && pwd)
 out=$2
 name=$(basename "$pkg")
-version=$(cat "$pkg/pear-full-square/haicc-base-boot/VERSION")
+version=$(cat "$pkg/modules/pear-full-square/haicc-base-boot/VERSION")
 hash=$(node -p "require('$pkg/package.json').pkgm.hash.slice(0, 12)")
 tmp=$(mktemp -d); trap 'rm -rf "$tmp"' EXIT
 mkdir "$tmp/haiccing"
@@ -17,12 +17,12 @@ cp -a "$pkg" "$tmp/haiccing/$name" && rm -rf "$tmp/haiccing/$name/.git"
 cat > "$tmp/boot" <<EOS
 #!/bin/sh
 # This work folder's cold boot: the setup $name. Run it as ./boot.
-exec sh "\$(cd "\$(dirname "\$0")" && pwd)/haiccing/$name/pear-full-square/haicc-base-boot/boot.sh" "\$@"
+exec sh "\$(cd "\$(dirname "\$0")" && pwd)/haiccing/$name/modules/pear-full-square/haicc-base-boot/boot.sh" "\$@"
 EOS
 cat > "$tmp/shutdown" <<EOS
 #!/bin/sh
 # This work folder's cold shutdown: the setup $name. Run it as ./shutdown.
-exec sh "\$(cd "\$(dirname "\$0")" && pwd)/haiccing/$name/pear-full-square/haicc-base-boot/shutdown.sh" "\$@"
+exec sh "\$(cd "\$(dirname "\$0")" && pwd)/haiccing/$name/modules/pear-full-square/haicc-base-boot/shutdown.sh" "\$@"
 EOS
 chmod 755 "$tmp/boot" "$tmp/shutdown"
 cat > "$tmp/haiccing/sources" <<EOS
@@ -61,7 +61,7 @@ end () { echo "== exit \$1, \$(( \$(date +%s) - t0 )) s" >> "\$log"; exit "\$1";
 say "haicc-setup: $name $hash (boot $version)"
 if [ -e "\$work/haiccing/$name/package.json" ]; then
   there=\$(sed -n 's/.*"hash": *"\\([0-9a-f]\\{12\\}\\).*/\\1/p' "\$work/haiccing/$name/package.json" | head -1)
-  boot=\$(cat "\$work/haiccing/$name/pear-full-square/haicc-base-boot/VERSION" 2>/dev/null || echo '?')
+  boot=\$(cat "\$work/haiccing/$name/modules/pear-full-square/haicc-base-boot/VERSION" 2>/dev/null || echo '?')
   if [ "\$there" = "$hash" ]; then say "already set up with this setup: \$work/haiccing (next: \$work/boot)"; end 0; fi
   say "already set up with another setup: \$work/haiccing has $name \$there (boot \$boot), this one is $hash (boot $version)."
   say "Nothing changed. For this setup, use a new folder: sh haicc-setup.sh <new folder>"

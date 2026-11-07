@@ -178,14 +178,15 @@ const hostReady = () => {
 
 // ---- a swarm, from its folder: on nodes.json ----------------------------
 
-// A node built if its folder is not there (its manager: the package manager
-// and HAICC copied in whole, its launcher); then its own boot, as it happens.
+// A node built if its folder is not there (its cold boot: the platform's
+// package, base-package-haicc, copied in whole: HAICC and the package
+// manager; its launcher); then its own boot (warm), as it happens.
 async function bootNode (swarm, node) {
   const dir = join(work, swarm, node)
   if (existsSync(dir) && !existsSync(join(dir, 'packages'))) { console.log(`The node ${swarm}/${node}: ${dir} is there, and not a node's manager`); return 1 }
   console.log(`The node ${swarm}/${node} (${readNodes(swarm).nodes[node]?.role}), its manager (${dir}):`)
   mkdirSync(join(dir, 'packages'), { recursive: true })
-  for (const repo of ['base-package-pkgm', 'base-package-haicc']) {
+  for (const repo of ['base-package-haicc']) {
     const at = join(dir, 'packages', repo)
     if (existsSync(join(at, 'package.json'))) { console.log(`  ${repo}: there`); continue }
     if (!existsSync(join(haiccing, repo, 'package.json'))) {
@@ -205,14 +206,14 @@ async function bootNode (swarm, node) {
 work=$(cd "$(dirname "$0")" && pwd)
 HAICC_WORK=$work; export HAICC_WORK
 [ -x "$work/../../nodejs/bin/node" ] && PATH=$work/../../nodejs/bin:$PATH
-exec node "$work/packages/base-package-haicc/pear-full-square/haicc-deployment/haicc.js" "$@"
+exec node "$work/packages/base-package-haicc/modules/pear-full-square/haicc-deployment/haicc.js" "$@"
 `)
     chmodSync(join(dir, 'haicc.new'), 0o755)
     renameSync(join(dir, 'haicc.new'), join(dir, 'haicc'))
     console.log(`  written ${join(dir, 'haicc')}`)
   }
   console.log(`Its boot (${swarm}/${node}/haicc boot)${flags['no-echo'] ? ', its outcome only' : ''}:`)
-  const code = await echoed(join(dir, 'haicc'), ['boot'], { HAICC_WORK: dir, HAICC_NOLOG: '' })
+  const code = await echoed(join(dir, 'haicc'), ['boot'], { HAICC_WORK: dir, HAICC_NOLOG: '', HAICC_SWARM: '' })
   console.log(code === 0 ? `The node ${swarm}/${node}: up` : `The node ${swarm}/${node}: its boot ended with exit ${code} (its log: ${swarm}/${node}/log/)`)
   return code === 0 ? 0 : 1
 }
@@ -224,7 +225,7 @@ async function removeNode (swarm, node) {
   if (!existsSync(dir)) { console.log(`The node ${swarm}/${node}: not here (nothing to remove)`); return 0 }
   if (existsSync(join(dir, 'haicc'))) {
     console.log(`The node ${swarm}/${node} (${swarm}/${node}/haicc shutdown):`)
-    const code = await echoed(join(dir, 'haicc'), ['shutdown'], { HAICC_WORK: dir, HAICC_NOLOG: '' })
+    const code = await echoed(join(dir, 'haicc'), ['shutdown'], { HAICC_WORK: dir, HAICC_NOLOG: '', HAICC_SWARM: '' })
     if (code !== 0) { console.log(`The node ${swarm}/${node}: its shutdown ended with exit ${code}: not removed (its log: ${swarm}/${node}/log/)`); return 1 }
   }
   rmSync(dir, { recursive: true, force: true })
@@ -294,7 +295,7 @@ function addSwarm (swarm) {
 work=$(cd "$(dirname "$0")/.." && pwd)
 HAICC_WORK=$work; HAICC_SWARM=${swarm}; export HAICC_WORK HAICC_SWARM
 [ -x "$work/nodejs/bin/node" ] && PATH=$work/nodejs/bin:$PATH
-exec node "$work/packages/base-package-haicc/pear-full-square/haicc-base-boot/haicc.js" "$@"
+exec node "$work/packages/base-package-haicc/modules/pear-full-square/haicc-base-boot/haicc.js" "$@"
 `)
   chmodSync(join(work, swarm, 'haicc'), 0o755)
   jsonFile.write(nodesFile(swarm), { swarm, nodes: {} })
