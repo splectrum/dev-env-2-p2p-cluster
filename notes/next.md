@@ -61,7 +61,7 @@ package manager work:
 GitHub: 7 passed and 2 passed, as expected. One finding for the implementer, a
 test run's log in the source and the release:
 `steps/phase-3/2-package-structure/1-haicc/local-run.md`. The human's manual test
-is next. Not pushed: the products (`pear-full-square`), Codeberg's mirror of
+passed the same (7 passed). Not pushed: the products (`pear-full-square`), Codeberg's mirror of
 `base-package-haicc`.
 
 **Done (above): for the local agent (2026-11-07, the human's word): the sixth
