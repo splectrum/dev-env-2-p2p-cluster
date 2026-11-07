@@ -42,7 +42,8 @@ checking itself.
 
 1. **intact**: its hash against the one the package writer recorded
    (`package.json`'s `pkgm.hash`; the package manager's `packageHash`:
-   everything but `package.json` and `.git`, the readme last). A changed or
+   everything but `package.json` and `.git`, its `LICENSE` included, the
+   readme last). A changed or
    incomplete copy is said and not run;
 2. **working**: its `validation` test set, in place.
 
@@ -86,7 +87,9 @@ what the swarm was made with.
 - **Each command says itself** on stdout and in the log, at its start
   (`== <start> <command as called>  (in <folder>)`) and at its end
   (`== exit <code>, <seconds> s`). The command is the one called (the
-  launchers pass their `$0`).
+  launchers pass their `$0`). The start is wall-clock time; how long is
+  measured on a clock that never steps back (`bare-hrtime`; in the shell,
+  the machine's uptime): a wall clock can (WSL2's did).
 - **Nested commands**: a command run by another is echoed by it, each line
   marked `  | ` (`--no-echo`: only its last line); a swarm's command run by
   the root does not log itself (the root logs what it echoes).

@@ -65,10 +65,10 @@ mkdir -p "\$work/log"
 log=\$(ls "\$work/log" | grep -E '^[0-9]{8}T[0-9]{6}Z\\.log\$' | sort | tail -1)
 if [ -z "\$log" ] || [ "\$(wc -c < "\$work/log/\$log")" -ge 10240 ]; then log=\$(date -u +%Y%m%dT%H%M%SZ).log; fi
 log=\$work/log/\$log
-t0=\$(date +%s)
+t0=\$(cut -d' ' -f1 /proc/uptime)
 echo "== \$(date -u +%Y-%m-%dT%H:%M:%SZ) sh \$0 \$*  (in \$(pwd))" | tee -a "\$log"
 say () { echo "\$*"; echo "\$*" >> "\$log"; }
-end () { echo "== exit \$1, \$(( \$(date +%s) - t0 )) s" | tee -a "\$log"; exit "\$1"; }
+end () { echo "== exit \$1, \$(awk -v a="\$t0" -v b="\$(cut -d' ' -f1 /proc/uptime)" 'BEGIN { printf "%.1f", b - a }') s" | tee -a "\$log"; exit "\$1"; }
 say "haicc-setup: $name $hash (boot $version, Bare $runtime_version)"
 if [ -e "\$work/haiccing/$name/package.json" ]; then
   there=\$(sed -n 's/.*"hash": *"\\([0-9a-f]\\{12\\}\\).*/\\1/p' "\$work/haiccing/$name/package.json" | head -1)

@@ -101,6 +101,18 @@ platform's 23 steps; the tamper checks as asked; the human's manual test from th
 local file: passed. Next: step 3, with the human's go. Record and findings:
 `steps/phase-3/2-package-structure/4-node-validated/local-run.md`.
 
+**The ninth release's findings, done (2026-11-07)** (`setup-434506b82414`
+published, 7 passed from GitHub, the human: "great, all passed"; the
+candidate as handed over had failed, fixed by the local agent: the hash was
+taken before the repository's `LICENSE` was back). 1 and 2: the `LICENSE` is
+part of the package again: the writer puts it in (the repository's own,
+else this repository's) before testing and hashing; `packageHash` counts it;
+the writer's test checks it (a published repository's `LICENSE` there before
+writing); a run with one, from a fresh setup: 7 passed. 3: durations on a
+clock that never steps back (`bare-hrtime`; `/proc/uptime` in the shell).
+**For the local agent, with the human's OK: the tenth release**, as the
+ninth (`npm install` first: `bare-hrtime` is a new dependency).
+
 **Step 2 built (2026-11-07): a node's boot, validated by the node itself.**
 `notes/packages.md`, "Step 2". From a fresh release, Node.js off the PATH:
 7 passed, the platform test 23 steps. **For the local agent, with the

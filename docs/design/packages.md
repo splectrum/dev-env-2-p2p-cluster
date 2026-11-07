@@ -82,9 +82,14 @@ tested elsewhere, and can be carried across an airgap as files.
 ## A package's hash
 
 **Built.** Its identity: everything in it but `package.json` and `.git`,
-the readme last (paths, exec bits, links, contents; sha256). Recorded by
-the package writer in `package.json`; checked by the package manager
-(`verify`) wherever a copy is used.
+its `LICENSE` included, the readme last (paths, exec bits, links,
+contents; sha256). Recorded by the package writer in `package.json`;
+checked by the package manager (`verify`) wherever a copy is used. The
+writer puts the `LICENSE` in (the published repository's own, else this
+repository's) before it tests and hashes: what is tested and hashed is
+what ships. (The ninth release's candidate failed without it: the hash was
+taken before the repository's `LICENSE` was back, so every node refused
+its copy; found by the local agent.)
 
 ## Packages in this repository
 

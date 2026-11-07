@@ -24,11 +24,10 @@ import process from 'bare-process'
 const readJson = f => JSON.parse(readFileSync(f, 'utf8'))
 const writeJson = (f, v) => { mkdirSync(dirname(f), { recursive: true }); writeFileSync(f + '.tmp', JSON.stringify(v, null, 2) + '\n'); renameSync(f + '.tmp', f) }
 export const manifest = dir => existsSync(join(dir, 'package.json')) ? readJson(join(dir, 'package.json')).pkgm || null : null
-// A package's identity: everything in it but its manifest, git and its LICENSE
-// (the repository's own, kept when the package is written into it, so not there
-// when the hash is taken), its readme last. The package writer records it; a
-// copy is checked against it.
-export const packageHash = dir => hashTree(dir, [...readdirSync(dir).filter(n => !['package.json', 'README.md', '.git', 'LICENSE'].includes(n)).sort(), ...(existsSync(join(dir, 'README.md')) ? ['README.md'] : [])])
+// A package's identity: everything in it but its manifest and git (its LICENSE
+// included: the package writer puts it in before the hash is taken), its readme
+// last. The package writer records it; a copy is checked against it.
+export const packageHash = dir => hashTree(dir, [...readdirSync(dir).filter(n => !['package.json', 'README.md', '.git'].includes(n)).sort(), ...(existsSync(join(dir, 'README.md')) ? ['README.md'] : [])])
 export function verify (dir) {
   const recorded = manifest(dir)?.hash
   if (!recorded) return { ok: false, said: 'no hash recorded (no package.json with pkgm.hash)' }

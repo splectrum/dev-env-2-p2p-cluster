@@ -3,6 +3,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync
 import { join, dirname } from 'bare-path'
 import { tmpdir } from 'bare-os'
 import { writePackages } from '../index.js'
+import { verify } from '../../../pear-full-square/pkgm-base-manager/index.js'
 import { closure } from '../../../pear-full-square/pkgm-base-manager/lib/closure.js'
 import { copy } from '../../../pear-full-square/pkgm-base-manager/lib/tree.js'
 import { fileURLToPath } from 'bare-url'
@@ -45,8 +46,14 @@ test('written: self-contained, in the package structure, tested first', (t) => {
   const dev = devRepo()
   const out = mkdtempSync(join(tmpdir(), 'writer-out-'))
   try {
+    // A published repository's own LICENSE, there before writing (as a clone has it).
+    mkdirSync(join(out, 'base-swarm-y'), { recursive: true })
+    writeFileSync(join(out, 'base-swarm-y', 'LICENSE'), 'its own licence\n')
     const r = writePackages({ dev, out })
     t.is(r.ok, true, JSON.stringify(r.results))
+    // The LICENSE is part of the package: kept, hashed with it; the copy as written is intact.
+    t.is(readFileSync(join(out, 'base-swarm-y', 'LICENSE'), 'utf8'), 'its own licence\n')
+    t.ok(verify(join(out, 'base-swarm-y')).ok, 'intact as written, its LICENSE included')
     const y = join(out, 'base-swarm-y')
     // Its swarm's codebase and what that uses, all the way down.
     t.ok(existsSync(join(y, 'modules/org/amod/index.js')))
