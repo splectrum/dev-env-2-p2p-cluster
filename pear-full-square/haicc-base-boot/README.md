@@ -80,6 +80,21 @@ Making and removing one thing, from its parent:
 - **The host checks are the boot's own copy**: `haicc-reconcile`'s machine
   kinds hold the same for projects; a test keeps the two agreeing.
 
+## A package's functionality, by its URI: tests
+
+`./haicc boot <repo>/test/<test>` boots a package's test (from `haiccing/`,
+or `--from=<folder>`): its folder copied into its run, `swarms/test/<test>/`;
+its cold boot (its `boot` script) run there, with `HAICC_WORK`,
+`HAICC_PACKAGE` (the package under test), `HAICC_RUN` (its run) and
+`HAICC_PLATFORM`; its result its exit code; then its teardown (its own
+`teardown`, else the platform's, `platform/test/teardown`: the run removed;
+`--keep` leaves it). `./haicc boot <repo>/test` runs a set (`--set=`,
+default `full`; `test/<set>.json`): the tests that run in place first (the
+package manager), then each booted one. A test that needs Docker Engine
+where it is not ready: skipped, said; one that changes what is outside its
+run (`test.json`: `destroys`) runs only with a yes. Everything it prints
+goes to the root's log.
+
 ## Logged
 
 Everything a command prints, the setup's and stage 1's included, goes to

@@ -1,0 +1,40 @@
+== 2026-11-07T06:23:39.501Z haicc  (in /home/user/dev-env-2-p2p-cluster/pear-full-square/haicc-base-boot)
+haicc at the root of a work folder (./haicc): the part of HAICC the host
+needs, run from packages/base-package-haicc (copied in by ./boot,
+stage 1). Node.js built-ins only. The work folder: HAICC_WORK.
+Each `haicc boot` or `haicc shutdown` works on the configuration of the folder
+it is called from, and keeps it; removing a child is `teardown <child>`.
+At the root (./haicc), on swarms.json, the host's swarms:
+  haicc boot [--yes]           the host's prerequisites (git, Docker Engine), checked
+                               and fixed with a yes; each swarm in swarms.json booted;
+                               then haiccing/install, if there, or the next commands
+  haicc boot <swarm>           the swarm: added (its folder, launcher, nodes.json) if new,
+                               then booted
+  haicc shutdown [<swarm>]     each swarm's (or the one's) shutdown: its nodes removed,
+                               its folder and nodes.json kept
+  haicc teardown <swarm>       the swarm removed: its nodes, its folder, its entry
+  haicc shutdown --cold        (./shutdown) everything removed back to the setup: the
+                               swarms, swarms.json, packages/, ./haicc; kept: haiccing/,
+                               log/, nodejs/ (external downloads are retained)
+In a swarm (<swarm>/haicc), on its nodes.json, its nodes and roles:
+  haicc boot [<node>] [--role=master|node] [--no-echo]
+                               each node (or the one: added if new, the first the
+                               master), built if its folder is not there (its manager:
+                               the package manager and HAICC copied in, its launcher),
+                               then its own boot (<swarm>/<node>/haicc boot), as it happens
+  haicc shutdown [<node>]      each node's (or the one's) cold shutdown: its container
+                               removed, its folder removed; nodes.json kept
+  haicc teardown <node>        the node removed, and its entry
+A functionality of a package, by its URI (from haiccing/, or --from=<folder>):
+  haicc boot <repo>/test/<test> [--keep]   a test: its folder copied into swarms/test/<test>/,
+                               its cold boot (its boot script) run there, its result its
+                               exit code; then its teardown (its own, else the platform's)
+  haicc boot <repo>/test [--set=full]      a set (test/<set>.json): its tests run in place
+                               (the package manager), then each booted one
+Both: haicc fetch <repository> (into haiccing/, with what it requires), haicc list.
+Removing is asked first (--yes agrees). Names are made URI parts, the changes said.
+--verbose: each check's detail too. What every command prints goes to
+log/ as well, in order (files of 10 KB named by their start, newest last). Exit 0 when done,
+1 when not (the output says what is missing), 2 on a bad call.
+import process from 'node:process'
+== exit 2, 0.0 s

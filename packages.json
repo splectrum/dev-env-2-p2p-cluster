@@ -26,7 +26,9 @@
         "",
         "Everything it does is logged in the work folder's `log/` (`~/haicc-work/log/`): files named by their start, newest last. Everything is in plain sight: `boot`, `shutdown`, `haicc`, `haiccing/`, `packages/`, `nodejs/`, `log/`; no hidden folders. `./shutdown` takes it all back to the setup (keeping `haiccing/`, `log/`, `nodejs/`); `./boot` again sets it up.",
         "",
-        "The rest of HAICC (`haicc-reconcile`, `haicc-deployment`) runs in the nodes: `./haicc boot <swarm>` makes a swarm (in `swarms.json`), `<swarm>/haicc boot <node>` a node in it (in `<swarm>/nodes.json`; the first is the master), with its own HAICC and package manager. `haicc boot` and `haicc shutdown` work on the config of the folder they are called from."
+        "The rest of HAICC (`haicc-reconcile`, `haicc-deployment`) runs in the nodes: `./haicc boot <swarm>` makes a swarm (in `swarms.json`), `<swarm>/haicc boot <node>` a node in it (in `<swarm>/nodes.json`; the first is the master), with its own HAICC and package manager. `haicc boot` and `haicc shutdown` work on the config of the folder they are called from.",
+        "",
+        "Tested by its own tests, on your machine: after the boot, `./haicc boot base-package-haicc/test` (the full set: the modules' tests, the package's, and the platform test, which sets up a fresh install inside its run and works it through every level), or `--set=validation` (the package as it is, nothing started)."
       ]
     }
   }

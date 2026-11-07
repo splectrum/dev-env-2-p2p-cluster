@@ -191,3 +191,39 @@ test('a path for a name is refused, not cleaned into one name: a node is its swa
     assert.match(s.stdout, /one node's name here \(hosts\/haicc teardown <node>\)/)
   } finally { rmSync(work, { recursive: true, force: true }) }
 })
+
+test('a test booted by its URI: in place first, then each booted one in its run, torn down; its result its exit code', () => {
+  const work = mkdtempSync(join(tmpdir(), 'tests-'))
+  const put = (f, s, x = false) => { mkdirSync(dirname(join(work, f)), { recursive: true }); writeFileSync(join(work, f), s); if (x) chmodSync(join(work, f), 0o755) }
+  try {
+    const pkg = 'haiccing/base-x'
+    put(`${pkg}/package.json`, JSON.stringify({ name: 'base-x', pkgm: { package: 'x', hash: 'abc' } }))
+    put(`${pkg}/test/full.json`, JSON.stringify({ modules: false, tests: ['a', 'b'] }))
+    put(`${pkg}/test/a/test`, '#!/bin/sh\necho "# tests 1"\necho "# pass 1"\n', true)
+    // A booted test: its cold boot runs in its run, with what it is told.
+    put(`${pkg}/test/b/boot`, '#!/bin/sh\nprintf "in %s, " "$(basename "$PWD")"; echo "the package $(basename "$HAICC_PACKAGE")"\n[ "$HAICC_RUN" = "$PWD" ] && touch made\n', true)
+    put(`${pkg}/test/c/boot`, '#!/bin/sh\necho broken\nexit 3\n', true)
+    put(`${pkg}/test/d/boot`, '#!/bin/sh\nexit 0\n', true)
+    put(`${pkg}/test/d/teardown`, '#!/bin/sh\necho "its own teardown"\nrm -rf "$HAICC_RUN"\n', true)
+    const haicc = (...args) => spawnSync(process.execPath, [join(here, 'haicc.js'), 'boot', ...args], { encoding: 'utf8', env: { ...process.env, HAICC_WORK: work, HAICC_SWARM: '', HAICC_NOLOG: '' } })
+    const set = haicc('base-x/test')
+    assert.equal(set.status, 0, set.stdout)
+    assert.match(set.stdout, /ok {5}base-x\/test\/a \(1\/1/)
+    assert.match(set.stdout, / {2}\| in b, the package base-x\n/)
+    assert.match(set.stdout, /torn down: swarms\/test\/b\//)
+    assert.match(set.stdout, /Passed: 2 passed, 0 failed, 0 skipped/)
+    assert.ok(!existsSync(join(work, 'swarms')), 'its run removed, no empty folders left')
+    // One test, failing: its exit code is the result; torn down all the same.
+    const c = haicc('base-x/test/c')
+    assert.equal(c.status, 1)
+    assert.match(c.stdout, /FAILED base-x\/test\/c \(.* s, exit 3\)/)
+    // --keep: its run left to look at.
+    assert.equal(haicc('base-x/test/b', '--keep').status, 0)
+    assert.ok(existsSync(join(work, 'swarms', 'test', 'b', 'made')))
+    // Its own teardown.
+    assert.match(haicc('base-x/test/d').stdout, /\| its own teardown/)
+    assert.equal(haicc('base-x/test/nope').status, 1)
+    // Logged: the root's log has what it printed.
+    assert.match(readdirSync(join(work, 'log')).map(f => readFileSync(join(work, 'log', f), 'utf8')).join(''), /in b, the package base-x/)
+  } finally { rmSync(work, { recursive: true, force: true }) }
+})

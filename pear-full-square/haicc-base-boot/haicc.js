@@ -25,13 +25,19 @@
 //   haicc shutdown [<node>]      each node's (or the one's) cold shutdown: its container
 //                                removed, its folder removed; nodes.json kept
 //   haicc teardown <node>        the node removed, and its entry
+// A functionality of a package, by its URI (from haiccing/, or --from=<folder>):
+//   haicc boot <repo>/test/<test> [--keep]   a test: its folder copied into swarms/test/<test>/,
+//                                its cold boot (its boot script) run there, its result its
+//                                exit code; then its teardown (its own, else the platform's)
+//   haicc boot <repo>/test [--set=full]      a set (test/<set>.json): its tests run in place
+//                                (the package manager), then each booted one
 // Both: haicc fetch <repository> (into haiccing/, with what it requires), haicc list.
 // Removing is asked first (--yes agrees). Names are made URI parts, the changes said.
 // --verbose: each check's detail too. What every command prints goes to
 // log/ as well, in order (files of 10 KB named by their start, newest last). Exit 0 when done,
 // 1 when not (the output says what is missing), 2 on a bad call.
 import process from 'node:process'
-import { existsSync, readFileSync, openSync, closeSync, createReadStream, createWriteStream, mkdirSync, writeFileSync, chmodSync, renameSync, rmSync } from 'node:fs'
+import { existsSync, readFileSync, openSync, closeSync, createReadStream, createWriteStream, mkdirSync, writeFileSync, chmodSync, renameSync, rmSync, rmdirSync } from 'node:fs'
 import { join, dirname, resolve } from 'node:path'
 import { spawn, spawnSync } from 'node:child_process'
 import { createInterface } from 'node:readline'
@@ -50,7 +56,7 @@ const haiccing = join(work, 'haiccing')
 const level = flags.debug ? 'debug' : flags.verbose ? 'verbose' : 'normal'
 const log = process.env.HAICC_NOLOG === '1' ? { level, verbose: level !== 'normal', debug: level === 'debug' } : openLog({ dir: join(work, 'log'), command: flags.cold ? ['./shutdown', ...argv.filter(a => a !== 'shutdown' && a !== '--cold')] : [process.env.HAICC_SWARM ? `${process.env.HAICC_SWARM}/haicc` : 'haicc', ...argv], level })
 
-const usage = () => { process.stderr.write(readFileSync(new URL(import.meta.url), 'utf8').split('\n').slice(1, 33).map(l => l.replace(/^\/\/ ?/, '')).join('\n') + '\n'); process.exit(2) }
+const usage = () => { process.stderr.write(readFileSync(new URL(import.meta.url), 'utf8').split('\n').slice(1, 39).map(l => l.replace(/^\/\/ ?/, '')).join('\n') + '\n'); process.exit(2) }
 
 // A yes, asked of the person (or given with --yes; none without a terminal).
 async function ask (what) {
@@ -115,7 +121,7 @@ function installFile () {
 
 // The work folder's own folders and files: not a swarm's name; a swarm's
 // own files: not a node's name.
-const OWN = ['packages', 'haiccing', 'nodejs', 'log', 'haicc', 'boot', 'shutdown', 'swarms.json']
+const OWN = ['packages', 'haiccing', 'nodejs', 'log', 'haicc', 'boot', 'shutdown', 'swarms.json', 'swarms', 'user']
 const SWARM_OWN = ['haicc', 'nodes.json']
 const ROLES = ['master', 'node']
 const inSwarm = process.env.HAICC_SWARM || null
@@ -146,15 +152,17 @@ const downOrder = s => Object.keys(s.nodes).sort((a, b) => (s.nodes[a].role === 
 
 // A child HAICC run, its output here as it happens (each line marked), or
 // only its last line; its exit code.
-async function echoed (cmd, args, env) {
-  const child = spawn(cmd, args, { env: { ...process.env, ...env }, stdio: ['ignore', 'pipe', 'pipe'] })
-  let last = ''; let partial = ''
+async function echoed (cmd, args, env, cwd = undefined) {
+  const child = spawn(cmd, args, { cwd, env: { ...process.env, ...env }, stdio: ['ignore', 'pipe', 'pipe'] })
+  let last = ''; let partial = ''; let atStart = true
   const echo = chunk => {
     const s = String(chunk)
     const lines = (partial + s).split('\n')
     partial = lines.pop()
     for (const l of lines) if (l.trim()) last = l
-    if (!flags['no-echo']) process.stdout.write(s.replace(/^(?=.)/gm, '  | '))
+    // Each line marked once, where it starts (a chunk can end mid-line).
+    if (!flags['no-echo']) process.stdout.write((atStart ? '  | ' : '') + s.replace(/\n(?=.)/g, '\n  | '))
+    atStart = s.endsWith('\n')
   }
   child.stdout.on('data', echo); child.stderr.on('data', echo)
   const code = await new Promise(resolve => child.on('close', resolve))
@@ -352,6 +360,97 @@ async function rootTeardown (swarm) {
   return 0
 }
 
+// ---- a functionality, by its URI: tests ------------------------------------
+
+// The package a URI starts from: in haiccing/ (fetched if not there), or in
+// the folder --from names.
+function packageDir (repo) {
+  const root = flags.from ? resolve(work, String(flags.from)) : haiccing
+  const dir = join(root, repo)
+  if (!existsSync(join(dir, 'package.json')) && !flags.from) {
+    const f = spawnSync('sh', [join(here, 'fetch.sh'), haiccing, repo], { encoding: 'utf8', env: { ...process.env, PATH: `${dirname(process.execPath)}:${process.env.PATH}` } })
+    process.stdout.write(f.stdout || '')
+  }
+  if (!existsSync(join(dir, 'package.json'))) { console.log(`no package ${repo} in ${root}`); return null }
+  return dir
+}
+
+// The platform's default teardown for a test (platform/test/teardown in
+// the platform's package), else: its run's folder removed.
+const platformPackage = resolve(here, '..', '..', '..')
+async function teardownTest (run, env) {
+  const own = join(run, 'teardown')
+  const standard = join(platformPackage, 'platform', 'test', 'teardown')
+  const script = existsSync(own) ? own : existsSync(standard) ? standard : null
+  if (script) return echoed('sh', [script], env)
+  rmSync(run, { recursive: true, force: true })
+  return 0
+}
+
+// One booted test: its folder copied into its run's (swarms/test/<test>/),
+// its cold boot run there, as it happens; then its teardown.
+async function bootTest (repo, pkg, t) {
+  const src = join(pkg, 'test', t)
+  const meta = existsSync(join(src, 'test.json')) ? JSON.parse(readFileSync(join(src, 'test.json'), 'utf8')) : {}
+  const uri = `${repo}/test/${t}`
+  if ((meta.needs || []).includes('docker') && !hostReady()) { console.log(`  skipped ${uri}: it needs Docker Engine, not ready here`); return 'skipped' }
+  if (meta.destroys) {
+    console.log(`The test ${uri} changes what is outside its run: ${meta.destroys}. A new install may be needed after it.`)
+    if (!(await ask('run it'))) { console.log(`  skipped ${uri}: not agreed`); return 'skipped' }
+  }
+  const run = join(work, 'swarms', 'test', t)
+  rmSync(run, { recursive: true, force: true })
+  mkdirSync(dirname(run), { recursive: true })
+  const c = spawnSync('cp', ['-a', src, run], { encoding: 'utf8' })
+  if (c.status !== 0) { console.log(`  FAILED ${uri}: its folder could not be copied: ${c.stderr.trim()}`); return 'failed' }
+  console.log(`The test ${uri} (its run: swarms/test/${t}/), its cold boot:`)
+  const env = { HAICC_WORK: work, HAICC_PACKAGE: pkg, HAICC_RUN: run, HAICC_PLATFORM: platformPackage, HAICC_NOLOG: '1', HAICC_SWARM: '' }
+  const t0 = Date.now()
+  const code = existsSync(join(run, 'boot')) ? await echoed('sh', [join(run, 'boot')], { ...env, PWD: run }, run) : 1
+  const secs = ((Date.now() - t0) / 1000).toFixed(1)
+  if (flags.keep) console.log(`  kept (--keep): swarms/test/${t}/`)
+  else {
+    const td = await teardownTest(run, env)
+    console.log(td === 0 ? `  torn down: swarms/test/${t}/` : `  its teardown ended with exit ${td}: swarms/test/${t}/ may be left`)
+    // No empty folders left: swarms/test/, swarms/.
+    for (const d of [join(work, 'swarms', 'test'), join(work, 'swarms')]) { try { rmdirSync(d) } catch {} }
+  }
+  console.log(`  ${code === 0 ? 'ok    ' : 'FAILED'} ${uri} (${secs} s${code === 0 ? '' : `, exit ${code}`})`)
+  return code === 0 ? 'passed' : 'failed'
+}
+
+// A test, or a set: in place first (the package manager), then the booted ones.
+async function bootTests (uri) {
+  const [repo, , t] = uri.split('/')
+  const pkg = packageDir(repo)
+  if (!pkg) return 1
+  const tally = { passed: 0, failed: 0, skipped: 0 }
+  const { testPackage } = await import('../pkgm-base-manager/index.js')
+  let booted = []
+  if (t) {
+    if (!existsSync(join(pkg, 'test', t))) { console.log(`no test ${t} in ${repo} (test/${t})`); return 1 }
+    if (existsSync(join(pkg, 'test', t, 'boot'))) booted = [t]
+    else {
+      const r = spawnSync('sh', [join(pkg, 'test', t, 'test')], { cwd: join(pkg, 'test', t), encoding: 'utf8' })
+      process.stdout.write((r.stdout || '') + (r.stderr || ''))
+      const ok = r.status === 0
+      console.log(`  ${ok ? 'ok    ' : 'FAILED'} ${uri}`); tally[ok ? 'passed' : 'failed']++
+    }
+  } else {
+    const set = String(flags.set || 'full')
+    console.log(`The tests of ${repo}, the set ${set} (test/${set}.json): in place first`)
+    let r
+    try {
+      r = testPackage(pkg, { set, log: e => { if (e.kind === 'tested') console.log(`  ${e.ok ? 'ok    ' : 'FAILED'} ${repo}/${e.what} (${e.pass}/${e.tests}, ${(e.ms / 1000).toFixed(1)} s)`) } })
+    } catch (err) { console.log(err.message); return 1 }
+    for (const x of r.runs) { tally[x.ok ? 'passed' : 'failed']++; if (!x.ok) console.log(x.output.split('\n').slice(-20).map(l => `         ${l}`).join('\n')) }
+    booted = r.booted
+  }
+  for (const b of booted) tally[await bootTest(repo, pkg, b)]++
+  console.log(`${tally.failed ? 'FAILED' : 'Passed'}: ${tally.passed} passed, ${tally.failed} failed, ${tally.skipped} skipped`)
+  return tally.failed ? 1 : 0
+}
+
 // The cold shutdown (./shutdown): every swarm removed, then the root's own,
 // back to the setup.
 async function coldShutdown () {
@@ -365,6 +464,7 @@ async function coldShutdown () {
     rmSync(join(work, sw), { recursive: true, force: true }); console.log(`  removed ${sw}/`)
   }
   rmSync(swarmsFile, { force: true }); console.log('  removed swarms.json')
+  if (existsSync(join(work, 'swarms'))) { rmSync(join(work, 'swarms'), { recursive: true, force: true }); console.log('  removed swarms/ (test runs)') }
   // Last: what runs this command (it is loaded: removing its files is safe).
   rmSync(join(work, 'packages'), { recursive: true, force: true }); console.log('  removed packages/')
   rmSync(join(work, 'haicc'), { force: true }); console.log('  removed ./haicc')
@@ -386,8 +486,9 @@ function list () {
 // What a command names: a swarm (at the root) or a node (in a swarm); null:
 // not a name.
 // One name, of this level's child: a path is refused, not cleaned into one name.
+const isTestUri = arg => /^[^/]+\/test(\/[^/]+)?$/.test(arg || '')
 const named = arg => {
-  if (arg === undefined || verb === 'fetch') return arg
+  if (arg === undefined || verb === 'fetch' || (verb === 'boot' && !inSwarm && isTestUri(arg))) return arg
   if (arg.includes('/')) {
     const [a, b] = arg.split('/')
     console.log(inSwarm
@@ -401,6 +502,7 @@ const named = arg => {
 try {
   const n = named(name)
   if (n === null) process.exit(2)
+  if (verb === 'boot' && !inSwarm && isTestUri(n)) process.exit(await bootTests(n))
   if (verb === 'boot') process.exit(inSwarm ? await swarmBoot(inSwarm, n) : await rootBoot(n))
   else if (verb === 'shutdown') {
     if (flags.cold && !inSwarm && !n) process.exit(await coldShutdown())

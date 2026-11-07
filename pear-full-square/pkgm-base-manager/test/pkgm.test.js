@@ -101,3 +101,17 @@ test('test: a run that does not end is stopped, and fails; the rest still run', 
     assert.equal(t.runs.find(r => r.what === 'test/t1').ok, true)
   } finally { rmSync(dir, { recursive: true, force: true }) }
 })
+
+test('test: a set, its in-place tests and (or not) the modules; a booted test listed, not run', () => {
+  const dir = pkg()
+  try {
+    put(join(dir, 'test/b1/boot'), '#!/bin/sh\nexit 1\n', true)
+    json(join(dir, 'test/validation.json'), { description: 'v', modules: false, tests: ['t1'] })
+    json(join(dir, 'test/full.json'), { description: 'f', modules: true, tests: ['t1', 'b1'] })
+    const v = testPackage(dir, { set: 'validation' })
+    assert.deepEqual([v.ok, v.runs.map(r => r.what), v.booted], [true, ['test/t1'], []])
+    const f = testPackage(dir, { set: 'full' })
+    assert.deepEqual([f.ok, f.runs.map(r => r.what), f.booted], [true, ['modules/org/amod', 'test/t1'], ['b1']])
+    assert.throws(() => testPackage(dir, { set: 'nope' }), /no test set nope/)
+  } finally { rmSync(dir, { recursive: true, force: true }) }
+})
