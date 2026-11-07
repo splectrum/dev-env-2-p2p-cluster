@@ -29,7 +29,10 @@ published as a haiccing repository. Its structure, every part optional:
 - **One concern per file** in a swarm: its nodes (`nodes.json`), its
   codebase (`modules.json`), what Splectral shows (`splectral.json`), what
   the host must provide (`host.json`). *Agreed.*
-- **The platform is a part like any other** (`platform/`): the levels'
+- **The platform is a pair of packages** (agreed): `base-package-haicc` and
+  `base-package-pkgm`; HAICC uses the package manager from beside it, the
+  one exception to self-containment (`design/platform.md`).
+- **The platform's definitions are a part like any other** (`platform/`): the levels'
   definitions and defaults (built: `platform/test/teardown`; agreed: each
   level's layout and the swarm config schemas). Any package that carries
   the platform can be released.

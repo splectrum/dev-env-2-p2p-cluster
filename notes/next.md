@@ -101,6 +101,15 @@ platform's 23 steps; the tamper checks as asked; the human's manual test from th
 local file: passed. Next: step 3, with the human's go. Record and findings:
 `steps/phase-3/2-package-structure/4-node-validated/local-run.md`.
 
+**Agreed (2026-11-07), the start of part 2: the platform as two packages,
+refreshed from the sources at every root boot.** `docs/design/platform.md`:
+`base-package-pkgm` the package manager's own package again (a concern of
+its own); every level has both (the cold boot copies both in, the warm boot
+has the package manager deploy both properly); the setup carries the pair as
+a bootstrap; every root boot fetches both from the sources and redeploys
+(root, then the nodes), nothing compared, nothing kept; the sources listed
+into a manifest of their content; names switched by a shortcut link, later.
+
 **Phase 3, step 2, the demos again (the phase's last): request
 `pending/default:pending/phase-3/step-2-the-demos-again/request.md`.
 Part 1 built (2026-11-07): `p2p` and `mycelium` on Bare.** The 13 modules

@@ -43,7 +43,9 @@ work in this repository, branches, commits, URIs and data names: the root
 ## Packages
 
 12. **A package is self-contained**: it carries everything it runs on (no
-    `requires`, nothing resolved across packages); `brittle` included.
+    `requires`, nothing resolved across packages); `brittle` included. The
+    one exception: the platform's pair (HAICC uses the package manager from
+    beside it, at every level).
 13. **A package is written only by the package writer**, from this
     repository; never edited by hand where it is used. *(the writer's tests)*
 14. **A package file is never edited in place** where it is used (copies
