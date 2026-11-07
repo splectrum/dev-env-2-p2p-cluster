@@ -298,7 +298,15 @@ const labels = swarm => ({ 'haicc.install': work, 'haicc.swarm': swarm })
 function ensureNetwork (swarm) {
   const name = networkOf(swarm)
   if (!dockerRun('network', 'inspect', name).ok) {
-    const c = dockerRun('network', 'create', ...Object.entries(labels(swarm)).flatMap(([k, v]) => ['--label', `${k}=${v}`]), name)
+    const labelArgs = Object.entries(labels(swarm)).flatMap(([k, v]) => ['--label', `${k}=${v}`])
+    let c = dockerRun('network', 'create', ...labelArgs, name)
+    // Docker 28 gives a node its address (--ip) only on a network made with a
+    // subnet: the one Docker picked, made again with it given.
+    if (c.ok) {
+      const [sub, gw] = dockerRun('network', 'inspect', '-f', '{{(index .IPAM.Config 0).Subnet}} {{(index .IPAM.Config 0).Gateway}}', name).out.split(' ')
+      dockerRun('network', 'rm', name)
+      c = dockerRun('network', 'create', ...labelArgs, '--subnet', sub, ...(gw ? ['--gateway', gw] : []), name)
+    }
     if (!c.ok) { console.log(`  the swarm's network ${name}: could not be made: ${c.err}`); return null }
     console.log(`  the swarm's network ${name}: made`)
   }
