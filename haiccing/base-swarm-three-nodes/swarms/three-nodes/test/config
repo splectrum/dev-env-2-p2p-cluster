@@ -1,0 +1,16 @@
+#!/bin/sh
+# The swarm's config: each file there and JSON; one master; its codebase named.
+# (Against the platform's schemas once the platform carries them.)
+cd "$(dirname "$0")/.." || exit 1
+exec node -e '
+const fs = require("fs")
+const read = f => JSON.parse(fs.readFileSync(f, "utf8"))
+let n = 0, pass = 0
+const check = (c, what) => { n++; if (c) pass++; console.log(`${c ? "ok" : "not ok"} - ${what}`) }
+for (const f of ["nodes.json", "modules.json", "splectral.json", "host.json"]) { let v = null; try { v = read(f) } catch {} check(v !== null, `${f}: there, and JSON`) }
+const nodes = Object.values(read("nodes.json").nodes || {})
+check(nodes.filter(n => n.role === "master").length === 1, "nodes.json: one master")
+check((read("modules.json").modules || []).length > 0, "modules.json: its codebase named")
+console.log(`# tests ${n}\n# pass ${pass}`)
+process.exit(pass === n ? 0 : 1)
+'

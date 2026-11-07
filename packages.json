@@ -1,18 +1,8 @@
 {
-  "description": "The packages (haiccing/base-package-<name>), as the package manager writes them from this repository's modules: each a set of modules, self-contained, with what it requires. third-party is imported from the workspace's installed tree (pkgm import); the others are written from the modules (pkgm write).",
+  "description": "haiccing's packages, as the development tool (tools/package-writer) writes them: each self-contained (no requires), in the package structure (notes/packages.md). modules: ours it starts from (and its swarms' modules.json); with: other definitions' modules, written in with it (this tool's convenience); the hand-written parts from haiccing/<repo>/.",
   "packages": {
-    "third-party": {
-      "description": "The third-party code below mycelium, not ours: Bare's runtime and modules, the Holepunch stack, isomorphic-git, React and htm. Imported once from the development workspace (the one contact with npm), Linux x64 only, recorded in third-party.json.",
-      "license": "SEE third-party.json",
-      "exclude": [
-        "p2p-git"
-      ]
-    },
     "mycelium": {
-      "description": "The repository layer: layered git repositories (mycelium-git, -layer, -repo), topics, URIs and paths; with p2p-git, git on Hyperdrive, which mycelium-git runs on.",
-      "requires": [
-        "third-party"
-      ],
+      "description": "The repository layer: layered git repositories (mycelium-git, -layer, -repo), topics, URIs and paths; with p2p-git, git on Hyperdrive, which mycelium-git runs on. Code only: published for development.",
       "modules": [
         "pear-full-square/mycelium-uri",
         "pear-full-square/mycelium-xpath",
@@ -27,14 +17,12 @@
       ]
     },
     "haicc": {
-      "description": "HAICC: declare what a project needs, check it, make it so (haicc-reconcile), its lifecycle (haicc-deployment), and its boot (haicc-base-boot). The entry: everything starts here.",
-      "requires": [
-        "pkgm"
-      ],
+      "description": "HAICC, the platform: its boot (haicc-base-boot), declaring and reconciling (haicc-reconcile), the lifecycle (haicc-deployment) and the package manager (pkgm-base-manager). The entry: everything starts here.",
       "modules": [
         "pear-full-square/haicc-reconcile",
         "pear-full-square/haicc-deployment",
-        "pear-full-square/haicc-base-boot"
+        "pear-full-square/haicc-base-boot",
+        "pear-full-square/pkgm-base-manager"
       ],
       "readme": [
         "## Start here",
@@ -57,7 +45,7 @@
       ]
     },
     "pkgm": {
-      "description": "The package manager: packages as self-contained folders, installed into the host's install folder, tested within the package. Node's built-ins only.",
+      "description": "The package manager: a swarm's codebase assembled from a package into its master's package repository; a package's tests, bottom up. Node's built-ins only. (Published for development; the platform carries it.)",
       "modules": [
         "pear-full-square/pkgm-base-manager"
       ],
@@ -68,11 +56,7 @@
       ]
     },
     "p2p": {
-      "description": "The p2p substrate, ours: store, discovery, connections, replication, channels, repositories on Hypercore, the name service, the node and its managers.",
-      "requires": [
-        "mycelium",
-        "haicc"
-      ],
+      "description": "The p2p substrate, ours: store, discovery, connections, replication, channels, repositories on Hypercore, the name service, the node and its managers. Code only: published for development.",
       "modules": [
         "pear-full-square/p2p-store",
         "pear-full-square/p2p-dht",
@@ -87,10 +71,7 @@
       ]
     },
     "splectral": {
-      "description": "The Splectral platform: the server, its shell, the contract and model, transports, and the extensions for p2p swarms (watchers, actions, observer), scenarios, the timeline and replay; the map view (splectral/base-view-map), shared by the demos.",
-      "requires": [
-        "p2p"
-      ],
+      "description": "The Splectral platform: the server, its shell, the contract and model, transports, and the extensions for p2p swarms (watchers, actions, observer), scenarios, the timeline and replay; the map view (splectral/base-view-map), shared by the demos. Code only: published for development.",
       "modules": [
         "pear-full-square/splectral-contract",
         "pear-full-square/splectral-model",
@@ -109,30 +90,26 @@
     "demo-liveness": {
       "repo": "base-demo-liveness",
       "description": "Demo project: A node goes quiet. Its project (project.json) and its Splectral component (splectral/base-demo-liveness).",
-      "requires": [
-        "splectral"
-      ],
       "modules": [
         "splectral/base-demo-liveness"
       ],
-      "root": {
-        "project.json": "haiccing/base-demo-liveness/project.json",
-        "README.md": "haiccing/base-demo-liveness/README.md"
-      }
+      "with": [
+        "splectral"
+      ]
     },
     "demo-other-host": {
       "repo": "base-demo-other-host",
       "description": "Demo project: A node on another host. Its project (project.json) and its Splectral component (splectral/base-demo-other-host).",
-      "requires": [
-        "splectral"
-      ],
       "modules": [
         "splectral/base-demo-other-host"
       ],
-      "root": {
-        "project.json": "haiccing/base-demo-other-host/project.json",
-        "README.md": "haiccing/base-demo-other-host/README.md"
-      }
+      "with": [
+        "splectral"
+      ]
+    },
+    "swarm-three-nodes": {
+      "repo": "base-swarm-three-nodes",
+      "description": "A configured swarm, no application: a master and two nodes on one host, the p2p node as its codebase."
     }
   }
 }

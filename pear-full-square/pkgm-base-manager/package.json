@@ -1,7 +1,7 @@
 {
   "name": "pkgm-base-manager",
   "id": "8d0b2f6e-3c51-4a7e-9e2d-5f1c6a0b7d42",
-  "description": "The package manager, basic: packages as self-contained folders (haiccing/base-package-<name>), written from the development repository, installed into one host folder, tested within the package. Node's built-ins only",
+  "description": "The package manager: a swarm's codebase assembled from a package into its master's package repository; a package's tests, bottom up. Node's built-ins only",
   "type": "module",
   "exports": "./index.js",
   "bin": { "pkgm": "./cli.js" },

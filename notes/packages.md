@@ -392,6 +392,29 @@ called from, and keeps it.
   each package's `contents.json` entry as it was when the swarm was made
   (source, commit, uncommitted, hash).
 
+### Built: step 1 (2026-11-07)
+
+- **The package writer** (`tools/package-writer`, the development
+  environment's): every package in the structure above, self-contained,
+  all tested before any is written. The third-party code is its input (this
+  repository's `node_modules/`, recorded in each package's
+  `modules/third-party.json`): no `third-party` package any more. Bare's
+  runtime: not in the packages yet; stripped, with the swarm's containers
+  (step 5).
+- **The package manager**: `assemble` (a swarm's codebase into a master's
+  repository, `contents.json`), `test` (bottom up). One algorithm for what a
+  set of modules runs on (`lib/closure.js`), shared by both sides.
+- **The first swarm package**: `base-swarm-three-nodes` (`three-nodes`: a
+  master, two nodes, the p2p node as its codebase: 14 of ours, 175
+  third-party, 48 MB).
+- **HAICC on the new layout**: a node's cold boot copies in only the
+  platform's package (`base-package-haicc`, carrying the package manager);
+  its warm boot, the self-test, bottom up. A node's HAICC: `boot`,
+  `shutdown`, `list`, `version`, `fetch`, `test <package>`; the project verbs
+  go (a node installs nothing), the swarm's step brings the rest.
+- **A node's boot, cold and warm** (the human): cold makes the node's
+  folder and copies in the minimum code; then warm takes over.
+
 ### Two sides of the airgap
 
 - **Creating packages is the development environment's**, on the

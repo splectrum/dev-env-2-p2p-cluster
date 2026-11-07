@@ -7,7 +7,7 @@
 #   ./shutdown [--yes]
 set -u
 here=$(cd "$(dirname "$0")" && pwd)
-haiccing=$(cd "$here/../../.." && pwd)
+haiccing=$(cd "$here/../../../.." && pwd)
 work=$(dirname "$haiccing")
 # The root's HAICC does it (it logs itself).
 if [ -x "$work/haicc" ]; then exec "$work/haicc" shutdown --cold "$@"; fi

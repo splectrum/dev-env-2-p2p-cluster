@@ -1,0 +1,3 @@
+#!/bin/sh
+# Every module of the package loads (written by the development tool).
+exec node --test "$(dirname "$0")/modules-load.test.js"
