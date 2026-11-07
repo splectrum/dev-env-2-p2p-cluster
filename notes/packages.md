@@ -1,5 +1,9 @@
 # Packages and cascading click and runs
 
+> **History.** The current design is in `docs/design/` (with `docs/rules.md` and
+> `docs/guides/`). This file keeps the decisions as they were made, by date;
+> where it and `docs/` differ, `docs/` holds.
+
 Agreed with the human, 2026-11-04. Design, not built yet: the direction
 for the next phase.
 

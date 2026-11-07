@@ -227,6 +227,24 @@ Design: `packages.md`. Its own request is written as its scope settles.
   root's: each manager's, then its own, keeping `haiccing/`). Later: the
   state saved before removal (the vaults, the swarm's repositories, the
   deployments), so a teardown can be undone or its state restored.
+- **The documentation as a swarm app** (the human, 2026-11-07): a Splectral
+  component that reads the documentation from the packages in the master's
+  package repository, so the platform's documentation (`docs/`: the design,
+  the rules, the guides; the platform's user guide is for people and agents
+  alike, the rest mostly for agents) is read where the code runs, at the
+  version deployed. Where `docs/` lives and how the packages carry it: to be
+  decided with it.
+- **The development environment as the whole pipeline** (the human,
+  2026-11-07): this repository as the code-development repository for the
+  modules of every organisation, implementing the pipeline's processes end
+  to end, from three angles: cloud (a session on a GitHub checkout, in a
+  sandbox), local (an always-on Linux machine, a swarm node, with agents that
+  take part in the local test automatically while cloud development goes
+  on), and the swarm. Under discussion; built over time. Agreed so far
+  (`docs/design/pipeline.md`): the modules as the source of truth; cloud
+  and local through GitHub; candidates rebuilt and compared; tailored
+  development environments, one per set of requirements, from a template,
+  discarded when done (its open questions there).
 - **The host on Bare** (the human, 2026-11-06: where we need to get to). **Done
   for the platform (2026-11-07)**: `notes/packages.md`, "On Bare"; each later
   package on Bare from the start.

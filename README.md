@@ -18,3 +18,6 @@ Hyperdrive. Its modules are folders on `main`:
 Status: design settled, implementation starting along it (2026-10-31); see
 `notes/next.md` (the handover), `notes/status.md` and `notes/plan.md`.
 Seeded from `splectrum/roadmap-1`.
+
+HAICC's documentation: [docs/](docs/README.md): the design (the decisions, built
+or agreed), the consistency rules, and the guides.
