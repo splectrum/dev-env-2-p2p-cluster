@@ -123,8 +123,7 @@ mixed, said); each swarm made from its configuration (its `.json` files
 copied, its entry in `swarms.json`), then booted; again: from its own copy.
 The master's build assembles the swarm's codebase into
 `<swarm>/master/packages/<package>/` (every build; the human: the
-master's, and the same name for the same kind of folder at every level;
-a swarm logs in its own `log/` too). Strict is an option (the human): by default nodes are added
+master's, and the same name for the same kind of folder at every level). Strict is an option (the human): by default nodes are added
 (`--role`) and torn down by hand; `--strict` refuses that. **For the local
 agent, with the human's OK: the tenth release** (`npm install` first;
 `publish.sh` publishes the three), tested from GitHub: haicc full,

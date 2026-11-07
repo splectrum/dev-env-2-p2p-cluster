@@ -16,7 +16,8 @@ Status marks: **built** (in the code, tested), **agreed** (decided, not built).
   log/                  the log
   swarms.json           the host's swarms
   <swarm>/              a swarm: haicc (its launcher), its config files (from its package:
-                        nodes.json, modules.json, ...), log/, a folder per node
+                        nodes.json, modules.json, ...), a folder per node (a swarm runs the
+                        root's HAICC: it logs in the root's log/)
     <node>/             haicc (its launcher), packages/ (the platform's pair, hard links), log/;
                         the master's packages/ also hold the swarm's codebase
                         (packages/<package>/, assembled)
@@ -34,7 +35,7 @@ every swarm under `swarms/`:
   user/                 the user's own packages (sources, contents.json)
   swarms/
     swarms.json         the host's swarms, fully qualified (where each came from, its hashes)
-    <swarm>/            haicc, its config files (copied from its package), log/, master/ (its
+    <swarm>/            haicc, its config files (copied from its package), master/ (its
                         packages/<package>/: the swarm's codebase), <node>/
     test/<test>/        test runs
 ```

@@ -74,8 +74,9 @@ const level = flags.debug ? 'debug' : flags.verbose ? 'verbose' : 'normal'
 // The command as it was called (the launcher's $0, HAICC_AS), not passed on.
 const calledAs = process.env.HAICC_AS || (process.env.HAICC_SWARM ? `./${process.env.HAICC_SWARM}/haicc` : './haicc')
 process.env.HAICC_AS = ''   // (Bare's environment refuses a delete)
-// Each level logs in its own log/: the root's, a swarm's (<swarm>/log/).
-const log = openLog({ dir: join(work, process.env.HAICC_SWARM || '', 'log'), file: process.env.HAICC_NOLOG !== '1', command: flags.cold ? [process.env.HAICC_SHUTDOWN_AS || './shutdown', ...argv.filter(a => a !== 'shutdown' && a !== '--cold')] : [calledAs, ...argv], level })
+// The root's log/: a swarm runs the root's HAICC, so it logs there too (a
+// node runs its own HAICC, in its own log/).
+const log = openLog({ dir: join(work, 'log'), file: process.env.HAICC_NOLOG !== '1', command: flags.cold ? [process.env.HAICC_SHUTDOWN_AS || './shutdown', ...argv.filter(a => a !== 'shutdown' && a !== '--cold')] : [calledAs, ...argv], level })
 
 const usage = () => { process.stderr.write(readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1).filter((l, i, a) => a.slice(0, i + 1).every(x => x.startsWith('//'))).map(l => l.replace(/^\/\/ ?/, '')).join('\n') + '\n'); process.exit(2) }
 
@@ -151,7 +152,7 @@ function installFile () {
 // The work folder's own folders and files: not a swarm's name; a swarm's
 // own files: not a node's name.
 const OWN = ['packages', 'haiccing', 'bare', 'nodejs', 'log', 'haicc', 'boot', 'shutdown', 'swarms.json', 'swarms', 'user']
-const SWARM_OWN = ['haicc', 'nodes.json', 'log', 'packages']
+const SWARM_OWN = ['haicc', 'nodes.json']
 const ROLES = ['master', 'node']
 const inSwarm = process.env.HAICC_SWARM || null
 // A name made a URI part: lowercase a-z, 0-9, words joined by single '-'.
