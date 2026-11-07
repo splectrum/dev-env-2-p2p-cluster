@@ -27,6 +27,7 @@ Three kinds of document, each with its own job:
 | [design/sources.md](design/sources.md) | where packages come from; contents; air-gapping |
 | [design/bare.md](design/bare.md) | Bare only; the runtime in the setup; hard links; brittle |
 | [design/releases.md](design/releases.md) | the setup; publishing; who tests what |
+| [design/pipeline.md](design/pipeline.md) | the development pipeline: modules as the source of truth, cloud and local, candidates |
 | [rules.md](rules.md) | the consistency rules |
 | [guides/install.md](guides/install.md) | setting up and booting a work folder; testing a release |
 | [guides/swarms.md](guides/swarms.md) | swarms and nodes: the commands, level by level |
