@@ -27,15 +27,21 @@ step 'the sources listed, a manifest kept' "$w/haicc" sources
 expect 'base-package-haicc'
 expect 'base-package-pkgm'
 step 'the install: Bare in bare/, the pair in packages/, ./haicc, the manifest' sh -c "[ -x '$w/bare/bare' ] && [ -x '$w/haicc' ] && [ -f '$w/packages/base-package-haicc/modules/pear-full-square/haicc-base-boot/haicc.js' ] && [ -f '$w/packages/base-package-pkgm/modules/pear-full-square/pkgm-base-manager/index.js' ] && [ -f '$w/haiccing/sources.json' ]"
-step 'a swarm: ./haicc boot hosts' "$w/haicc" boot hosts --no-echo
-step 'its master, cold and warm: ./hosts/haicc boot master' "$w/hosts/haicc" boot master
+from=$(dirname "$run")
+step "a swarm from a package (this test's own: swarms/hosts; mixed): ./haicc boot platform --from=..." "$w/haicc" boot platform "--from=$from"
+expect 'no hash recorded: mixed'
+expect 'The swarm hosts: made from platform/swarms/hosts'
 expect 'base-package-haicc: intact ('
-expect 'Ready: '
 expect 'The node hosts/master: up'
-step "the node's cold boot: the platform's pair, and nothing else" sh -c "[ \"\$(ls '$w/hosts/master/packages' | tr '\\n' ' ')\" = 'base-package-haicc base-package-pkgm ' ]"
+expect 'The node hosts/node-1: up'
+step '  its config copied in, its entry in swarms.json (where from)' sh -c "[ -f '$w/hosts/nodes.json' ] && grep -q '\"package\": \"platform\"' '$w/swarms.json'"
+step '  again: booted from its own copy' "$w/haicc" boot platform "--from=$from" --no-echo
+expect 'booted from its own copy'
+step '  a node not in its config: refused, not added' sh -c "! '$w/hosts/haicc' boot node-9"
+expect 'no node node-9 in the swarm hosts'
+step "the master's cold boot: the platform's pair, and nothing else" sh -c "[ \"\$(ls '$w/hosts/master/packages' | tr '\\n' ' ')\" = 'base-package-haicc base-package-pkgm ' ]"
 step 'the node tests a package' "$w/hosts/master/haicc" test base-package-haicc
 expect 'test base-package-haicc: passed'
-step 'a second node: ./hosts/haicc boot node-1' "$w/hosts/haicc" boot node-1 --no-echo
 f=packages/base-package-haicc/modules/pear-full-square/haicc-reconcile/index.js
 step "a file replaced in node-1's copy (a new file: its original, hard-linked, untouched)" sh -c "rm '$w/hosts/node-1/$f' && echo '// changed' > '$w/hosts/node-1/$f' && cmp -s '$w/hosts/master/$f' '$w/haiccing/base-package-haicc/${f#packages/base-package-haicc/}'"
 step "  node-1's warm boot: not intact, said, not up" sh -c "! '$w/hosts/node-1/haicc' boot"

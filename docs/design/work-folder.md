@@ -15,8 +15,9 @@ Status marks: **built** (in the code, tested), **agreed** (decided, not built).
   packages/             what runs at the root: base-package-haicc (hard links to haiccing/'s)
   log/                  the log
   swarms.json           the host's swarms
-  <swarm>/              a swarm: haicc (its launcher), nodes.json, and a folder per node
-    <node>/             haicc (its launcher), packages/ (the platform's, hard links), log/
+  <swarm>/              a swarm: haicc (its launcher), its config files (from its package:
+                        nodes.json, modules.json, ...), repository/ (its codebase), a folder per node
+    <node>/             haicc (its launcher), packages/ (the platform's pair, hard links), log/
   swarms/test/<test>/   a test's run, while it runs
 ```
 
@@ -31,8 +32,8 @@ every swarm under `swarms/`:
   user/                 the user's own packages (sources, contents.json)
   swarms/
     swarms.json         the host's swarms, fully qualified (where each came from, its hashes)
-    <swarm>/            haicc, its config files (copied from its package), master/ (with
-                        repository/: the swarm's package repository), <node>/
+    <swarm>/            haicc, its config files (copied from its package), repository/
+                        (the swarm's package repository, the master's), <node>/
     test/<test>/        test runs
 ```
 
@@ -54,10 +55,10 @@ folder it is called from, and keeps it.
 | the root | `swarms.json` | each swarm's shutdown | the host's prerequisites; each swarm booted; `haiccing/install` |
 | the work folder, cold | `haiccing/`, `log/`, `bare/` | `./shutdown`: everything else removed, back to the setup | `./boot`: set up from `haiccing/`, then `./haicc boot` |
 
-- **One thing made or removed, from its parent** (built, today):
-  `./haicc boot <swarm>` adds a swarm; `./haicc teardown <swarm>` removes it
-  and its entry; `./<swarm>/haicc boot <node>` adds a node (the first is
-  the master; `--role=`), `teardown <node>` removes it.
+- **One thing made or removed, from its parent** (built): `./haicc boot
+  <repo>` makes a package's swarms (below); `./haicc teardown <swarm>`
+  removes one and its entry. A swarm's nodes are its package's: none added
+  or removed by hand.
 - **A swarm's shutdown is a cold shutdown of its nodes**, keeping the
   swarm's config: its boot builds them again from `nodes.json`. *Why*: a
   node is made from its config and the platform's package; nothing in its
@@ -67,15 +68,29 @@ folder it is called from, and keeps it.
 
 ## Swarms come from packages
 
-**Agreed** (today a swarm is built by hand, above). A swarm is made only
-from a package's configuration: no empty swarms, no building by hand.
+**Built** (2026-11-07). A swarm is made only from a package's
+configuration: no empty swarms, no building by hand.
+`pear-full-square/haicc-base-boot/haicc.js` (`deployPackage`); tested by
+its unit tests, the platform test (a swarm from the test's own
+configuration, `--from`), and `base-swarm-three-nodes`' `deploy` test (a
+sealed package through a fresh root).
 
 - `./haicc boot <repo>[/test/<test>][/<swarm>]`: the repository from
   `haiccing/` by default; `--from=<folder>` names another root (`user`, or
   any folder of packages); `--as=<name>` renames a single swarm. Without a
   swarm named: all of the repository's, named by its folders.
+- The package is checked first: from `haiccing/`, it must be intact (its
+  recorded hash), else it is refused; from `--from`, a folder without a hash
+  is a development package: **mixed**, said and recorded.
+- Making a swarm: its folder, its launcher, the `.json` files of
+  `swarms/<swarm>/` copied in, its codebase assembled into
+  `<swarm>/repository/` (the package manager's `assemble`; none without a
+  `modules.json`), its entry in `swarms.json` (the package, its root, the
+  swarm's folder in it, its hash, sealed or mixed, the repository's hash);
+  then booted.
 - A swarm already there, from the same root and path: booted from its own
-  copy (the package not read again); from another: refused.
+  copy (the package not read again); from another: refused. Its name alone
+  (`./haicc boot <swarm>`) boots it too.
 - Its nodes are its config's: `boot` and `shutdown <node>` only for nodes in
   its `nodes.json`. A swarm changed: its package changed, the swarm made
   again.
