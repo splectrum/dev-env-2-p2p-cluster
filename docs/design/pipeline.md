@@ -36,6 +36,61 @@ syncing; a commit here states exactly which module commits it was built
 and tested with), or plain folders kept in sync by a tool (today's way:
 simpler to edit, but a copy and its module can drift).
 
+## Tailored development environments
+
+**Agreed in direction** (the human, 2026-11-07); the details open. Each
+piece of work gets its own development environment, discarded when done:
+
+1. **requirements**: a clear set of what is to be done, and the modules it
+   touches;
+2. **create**: a new repository from a template;
+3. **copy in** the code needed: the modules the requirements name, at given
+   commits;
+4. **work**: the cloud session implements, committing each change into the
+   module's own repository; tests on the modules themselves; packages
+   written from the modules at their commits; local taking part in the
+   local test through GitHub;
+5. **done**: the requirements met, the results where they last; the
+   repository discarded.
+
+*Why*: an environment only borrows code, changes it, and gives it back; it
+is shaped by its requirements and holds nothing that has to be kept.
+
+**The template** (proposed): what every environment needs and nothing of
+one piece of work: the tools (the package writer, release and publish, the
+candidate and the local test), `CLAUDE.md` and the working rules, the
+workspace setup (Bare, brittle, the dependencies), the requirements' format
+and where the work's records go. Improved as each environment learns.
+
+**Copying in** (proposed): in a disposable repository, git submodules are
+the natural way: the requirements list each module at a commit, the setup
+checks them out as submodules, and the repository records which module
+commits it worked on. (This would settle the open question above.)
+
+**What outlives an environment** (proposed):
+
+| what | where |
+|---|---|
+| code changes | the modules' own repositories, their commits |
+| packages, releases | haiccing's repositories and releases |
+| the platform's documentation (design, rules, guides) | with the platform, carried by its package (the roadmap's documentation app) |
+| the roadmap, requirements, what each environment achieved | a lasting planning repository |
+| the tools, the working rules | the template |
+
+**Open** (the human: for now):
+
+1. Who creates and discards an environment (the implementer through
+   GitHub's tools, the human, the local agent), and whether discarded means
+   deleted or archived.
+2. Where the roadmap and the requirements live: `splectrum/roadmap-1`, or a
+   new planning repository.
+3. Where the platform's documentation lives until the documentation app
+   exists (proposed: in the platform's modules, carried by
+   `base-package-haicc`).
+4. This repository as the source of the template, and retired once its
+   contents have their lasting places: whether that is the next piece of
+   work, with its own requirements.
+
 ## Cloud and local communicate through GitHub
 
 **Agreed** (the human). A cloud session can reach only GitHub; the local
