@@ -9,7 +9,6 @@
 //   sources: [{ kind, ... }],     the platform's `file`, or a kind an extension provides
 //   runs: folder                  where actions and scenario runs are recorded (topics);
 //                                 clients' action topics under <runs>/clients
-//   project: { file, work }       the HAICC project this instance was started for (optional)
 // }
 //
 // Sources yield records; mappers (extensions, matched by what a source
@@ -19,11 +18,10 @@
 // whose needs are met: `world` once any source runs, `node` once per node,
 // `scenario` once per scenario.
 
-import http from 'node:http'
-import { readFileSync, existsSync, statSync } from 'node:fs'
-import { join, resolve, dirname, extname, basename } from 'node:path'
-import { pathToFileURL, fileURLToPath } from 'node:url'
-import { createRequire } from 'node:module'
+import http from 'bare-http1'
+import { readFileSync, existsSync, statSync } from 'bare-fs'
+import { join, resolve, dirname, extname, basename } from 'bare-path'
+import { pathToFileURL, fileURLToPath, URL } from 'bare-url'
 import { checkManifest } from '../splectral-contract/index.js'
 import { createModel } from '../splectral-model/index.js'
 import { serveTransport } from '../splectral-transport/index.js'
@@ -35,12 +33,14 @@ const types = { '.js': 'text/javascript', '.mjs': 'text/javascript', '.html': 't
 
 export async function startServer ({ config }) {
   // Vendor files first: nothing has started if they are missing.
-  const require = createRequire(join(here, '..', 'splectral-shell', 'package.json'))
-  // A package's folder, found on the resolution paths (exports may hide its files).
+  // A package's folder: node_modules/<name> in the shell's folder or one
+  // above it (a workspace's, or a codebase assembled into modules/).
   const pkg = name => {
-    const found = require.resolve.paths(name).map(p => join(p, name)).find(p => existsSync(join(p, 'package.json')))
-    if (!found) throw new Error(`not installed: ${name}`)
-    return found
+    for (let dir = join(here, '..', 'splectral-shell'); ; dir = dirname(dir)) {
+      const at = join(dir, 'node_modules', name)
+      if (existsSync(join(at, 'package.json'))) return at
+      if (dirname(dir) === dir) throw new Error(`not installed: ${name}`)
+    }
   }
   const vendor = {
     'react.js': join(pkg('react'), 'umd', 'react.production.min.js'),
@@ -154,6 +154,8 @@ export async function startServer ({ config }) {
   // Clients through topics; the browser's HTTP adapter is one of them.
   const clients = config.runs ? await followClients({ runs: config.runs, dispatch }) : null
   const transport = serveTransport({ model, act: a => clients ? clients.submit('browser', a) : dispatch(a).then(result => ({ ok: true, result }), err => ({ ok: false, error: err.message })) })
+  // Its connections, kept: closing ends them (a stream stays open otherwise).
+  const sockets = new Set()
   const server = http.createServer((req, res) => {
     if (transport.handle(req, res)) return
     const url = new URL(req.url, 'http://x')
@@ -170,6 +172,7 @@ export async function startServer ({ config }) {
     res.writeHead(404)
     res.end()
   })
+  server.on('connection', socket => { sockets.add(socket); socket.on('close', () => sockets.delete(socket)) })
   await new Promise(resolve => server.listen(config.port ?? 0, config.host ?? '127.0.0.1', resolve))
   const url = `http://${config.host ?? '127.0.0.1'}:${server.address().port}`
   return {
@@ -182,7 +185,7 @@ export async function startServer ({ config }) {
       clients?.stop()
       transport.close()
       const closed = new Promise(resolve => server.close(resolve))
-      server.closeAllConnections()
+      for (const socket of sockets) socket.destroy()
       await closed
     }
   }
