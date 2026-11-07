@@ -93,13 +93,21 @@ validation set, then in place; else nothing changed).
   them at the root, then the swarms' nodes are booted with them. Only these
   two packages; nothing compared, nothing more recorded: what runs is what
   the sources hold. The setup's pair is not kept.
+- **Same names only**: the pair carries no version in its names; the warm
+  boot refreshes `base-package-haicc` and `base-package-pkgm` by those
+  names. What an install then runs may differ (its config can switch to
+  other packages): that sorts itself out above the boot, which stays the
+  same for every such case (the human, 2026-11-07).
 - **Changing to another name** (a version in the name, later): a shortcut
   link from the name in use to the package; nothing more.
 
 ## A node's codebase: the master's package repository
 
-**Agreed** (the package manager's `assemble` is built and tested; wiring
-it into a swarm is step 3). A swarm's codebase is assembled by the package
+**Built** in part (2026-11-07): assembled when the swarm is made, into
+`<swarm>/repository/`: the swarm's folder, not the master's, so that a
+swarm's shutdown (its nodes' folders removed) keeps it and its boot needs
+no package again; it is the master's, mounted from there (containers:
+part 3). A swarm's codebase is assembled by the package
 manager from its package (the swarm's `modules.json` and the package's
 `modules/`) into the master node's **package repository**. Nodes use only
 what is there: an application refers to it and carries no copies; a
