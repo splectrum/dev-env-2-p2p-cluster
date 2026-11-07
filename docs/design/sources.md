@@ -34,7 +34,8 @@ base-package-p2p    git    /home/you/repos/haiccing feature-x   committed, a loc
 
 ## What the sources hold
 
-**Agreed** (the human, 2026-11-07). The sources can be listed: what each
+**Built** (the human, 2026-11-07): `./haicc sources` (`fetch.sh --list`),
+the manifest `haiccing/sources.json`. The sources can be listed: what each
 holds (a `folder`: its package folders; `github`: the organisation's
 repositories, through GitHub's API with `curl`; a `git` source: its
 clones), into a manifest of the full content of the sources. The root's

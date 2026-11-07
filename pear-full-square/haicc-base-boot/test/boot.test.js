@@ -112,6 +112,9 @@ test('the setup: a self-extracting release, extracting haiccing/ (boot, sources,
     mkdirSync(join(dir, 'rt'))
     const rt = runtime(join(dir, 'rt'))
     writeFileSync(join(pkg, 'package.json'), JSON.stringify({ name: 'base-package-haicc', pkgm: { package: 'haicc', hash: 'abcdef1234567890' } }))
+    // The package manager's package beside it: the platform is a pair.
+    mkdirSync(join(dir, 'base-package-pkgm', 'modules'), { recursive: true })
+    writeFileSync(join(dir, 'base-package-pkgm', 'package.json'), JSON.stringify({ name: 'base-package-pkgm', pkgm: { package: 'pkgm', hash: '1234567890abcdef' } }))
     const rel = run('sh', [join(here, 'release.sh'), pkg, join(dir, 'haicc-setup.sh'), rt])
     t.is(rel.status, 0, rel.stdout + rel.stderr)
     t.ok(/Bare v1\.36\.0/.test(rel.stdout), 'the runtime it carries, said')
@@ -139,6 +142,8 @@ test('the setup: a self-extracting release, extracting haiccing/ (boot, sources,
     // runtime checked, HAICC's package copied in whole (hard links).
     const stage1 = run('sh', [join(work, 'boot')], { env: { ...process.env, HAICC_BOOT_LOGGING: '1' } })
     t.is(stage1.status, 0, stage1.stdout + stage1.stderr)
+    t.ok(existsSync(join(work, 'haiccing', 'base-package-pkgm', 'package.json')), 'the setup carries the pair')
+    t.ok(existsSync(join(work, 'packages', 'base-package-pkgm', 'package.json')), 'the cold boot copies the pair in')
     const inPackages = join(work, 'packages', 'base-package-haicc', 'modules', 'pear-full-square', 'haicc-base-boot', 'haicc.js')
     t.ok(existsSync(inPackages), stage1.stdout + stage1.stderr)
     t.is(statSync(inPackages).ino, statSync(join(work, 'haiccing', 'base-package-haicc', 'modules', 'pear-full-square', 'haicc-base-boot', 'haicc.js')).ino, 'a hard link: no space taken twice')

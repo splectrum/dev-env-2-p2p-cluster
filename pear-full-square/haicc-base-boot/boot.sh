@@ -4,11 +4,11 @@
 #   ./boot [--yes] [--verbose|--debug]
 # 1. step 0: Linux x86-64, and Bare's runtime (carried by the setup, at
 #    <work>/bare/) running here; else it stops;
-# 2. HAICC's package, base-package-haicc, copied whole into <work>/packages/
-#    (hard links: no space taken twice; at the first boot only);
+# 2. the platform's pair, base-package-haicc and base-package-pkgm, copied
+#    whole into <work>/packages/ (hard links: no space taken twice);
 #    <work>/haicc written (it runs HAICC on Bare);
-# 3. then ./haicc boot (stage 2: the host's other prerequisites,
-#    haiccing/install).
+# 3. then ./haicc boot (stage 2: the host's other prerequisites; the pair
+#    refreshed from the sources and deployed; haiccing/install).
 # The work folder: haicc, haiccing/, packages/, bare/ (Bare's runtime), log/. What it prints goes to the log as well, in
 # <work>/log/: files of 10 KB, each named by its first command's start
 # (UTC), so they list in time order; a header line (the real start) and a
@@ -49,18 +49,14 @@ if ! sh "$here/step0.sh" check "$runtime"; then
 fi
 PATH=$work/bare:$PATH; export PATH
 
-# 2. HAICC's package, copied whole into packages/ at the first boot (hard links).
-pkg=$work/packages/base-package-haicc
-if [ -f "$pkg/package.json" ]; then
-  there=$(cat "$pkg/modules/pear-full-square/haicc-base-boot/VERSION"); this=$(cat "$here/VERSION")
-  if [ "$there" = "$this" ]; then echo "  HAICC's package: there (copied at the first boot)"
-  else echo "  HAICC's package: boot $there is there, this setup is $this: kept, no updates yet (a new work folder has $this)"; fi
-else
-  echo "  copying HAICC's package into $work/packages..."
-  mkdir -p "$work/packages" || { echo "  could not make $work/packages"; exit 1; }
-  rm -rf "$pkg.new" && cp -al "$haiccing/base-package-haicc" "$pkg.new" && rm -rf "$pkg.new/.git" && mv "$pkg.new" "$pkg" || { echo "  could not copy HAICC's package into $work/packages"; exit 1; }
-  echo "  copied HAICC's package (base-package-haicc, boot $(cat "$here/VERSION")) into $pkg"
-fi
+# 2. The platform's pair, copied whole into packages/ (hard links): HAICC and
+# the package manager, as haiccing/ has them (the setup's bootstrap, or what
+# the root's last boot refreshed). The warm boot deploys them properly.
+for p in base-package-haicc base-package-pkgm; do
+  [ -f "$haiccing/$p/package.json" ] || { echo "  $p: not in $haiccing (the platform is a pair)"; exit 1; }
+  mkdir -p "$work/packages" && rm -rf "$work/packages/$p.new" && cp -al "$haiccing/$p" "$work/packages/$p.new" && rm -rf "$work/packages/$p.new/.git" && rm -rf "$work/packages/$p" && mv "$work/packages/$p.new" "$work/packages/$p" || { echo "  could not copy $p into $work/packages"; exit 1; }
+  echo "  copied $p ($(sed -n 's/.*"hash": *"\([0-9a-f]\{12\}\).*/\1/p' "$work/packages/$p/package.json" | head -1)) into $work/packages"
+done
 cat > "$work/haicc.new" <<EOS
 #!/bin/sh
 # HAICC for this work folder (written by ./boot): ./haicc <command>

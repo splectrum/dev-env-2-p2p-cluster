@@ -58,7 +58,7 @@ scratch.
 
 ## The platform is two packages: HAICC and the package manager
 
-**Agreed** (the human, 2026-11-07; revises "the package manager is part of
+**Built** (the human, 2026-11-07; revises "the package manager is part of
 the platform's package"). HAICC (the levels, the boot, the lifecycle) and
 the package manager (checking, assembling, testing, deploying packages) are
 different concerns: two packages, `base-package-haicc` and
@@ -78,7 +78,11 @@ different concerns: two packages, `base-package-haicc` and
 
 ## The setup's pair is a bootstrap; the root's boot refreshes it
 
-**Agreed** (the human, 2026-11-07).
+**Built** (the human, 2026-11-07). HAICC finds the package manager through
+`lib/pkgm.js` (the package beside it, or, in this repository, the module);
+the package writer writes the pair together (`together`); `fetch.sh
+--refresh`; the package manager's `deploy` (staged beside, intact,
+validation set, then in place; else nothing changed).
 
 - **The setup carries a HAICC and a package manager package sufficient to
   install packages**: a bootstrap. Once the release is stable it does not

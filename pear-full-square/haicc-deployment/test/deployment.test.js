@@ -5,7 +5,9 @@ import { tmpdir } from 'bare-os'
 import { spawnSync } from 'bare-subprocess'
 import { fileURLToPath } from 'bare-url'
 import { openDeployment } from '../index.js'
-import { packageHash } from '../../pkgm-base-manager/index.js'
+import { pkgm } from '../lib/pkgm.js'
+
+const { packageHash } = await pkgm()
 import process from 'bare-process'
 
 // A project of folders: one configuration, one "running" (a stand-in for a

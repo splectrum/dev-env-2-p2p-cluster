@@ -3,7 +3,9 @@
 # (sh and tar only), extracting a work folder: ./boot and ./shutdown (the
 # cold pair, naming this setup), bare/ (Bare's runtime: carried by the setup,
 # not by the package's git; pinned by its sha256, checked once extracted),
-# haiccing/sources, haiccing/base-package-haicc/.
+# haiccing/sources, and the platform's pair as a bootstrap:
+# haiccing/base-package-haicc/ and haiccing/base-package-pkgm/ (beside it, as
+# written); the root's boot refreshes both from the sources.
 #   sh release.sh <base-package-haicc, as written> <out file> [<Bare's runtime>]
 # The runtime: the one named, else the `bare` on the PATH (in a work folder,
 # the one it runs on).
@@ -17,7 +19,10 @@ version=$(cat "$pkg/modules/pear-full-square/haicc-base-boot/VERSION")
 hash=$(sed -n 's/.*"hash": *"\([0-9a-f]\{12\}\).*/\1/p' "$pkg/package.json" | head -1)
 tmp=$(mktemp -d); trap 'rm -rf "$tmp"' EXIT
 mkdir "$tmp/haiccing"
+pkgm=$(dirname "$pkg")/base-package-pkgm
+[ -f "$pkgm/package.json" ] || { echo "release.sh: no base-package-pkgm beside $pkg (the platform is a pair)"; exit 1; }
 cp -a "$pkg" "$tmp/haiccing/$name" && rm -rf "$tmp/haiccing/$name/.git"
+cp -a "$pkgm" "$tmp/haiccing/base-package-pkgm" && rm -rf "$tmp/haiccing/base-package-pkgm/.git"
 mkdir "$tmp/bare" && cp "$runtime" "$tmp/bare/bare" && chmod 755 "$tmp/bare/bare"
 runtime_version=$("$tmp/bare/bare" --version)
 runtime_sum=$(sha256sum "$tmp/bare/bare" | cut -d' ' -f1)
@@ -45,7 +50,7 @@ cat > "$out" <<EOS
 #!/bin/sh
 # haicc-setup: the setup $name ($hash, boot $version, Bare $runtime_version), self-extracting.
 #   sh haicc-setup.sh [<work folder>] [--sources=folder:<path>|github:<org>]...
-# Extracts <work folder>/: boot, shutdown, bare/ (Bare's runtime), haiccing/ (sources, $name); then:
+# Extracts <work folder>/: boot, shutdown, bare/ (Bare's runtime), haiccing/ (sources, $name, base-package-pkgm); then:
 #   <work folder>/boot
 set -eu
 work=.; sources=

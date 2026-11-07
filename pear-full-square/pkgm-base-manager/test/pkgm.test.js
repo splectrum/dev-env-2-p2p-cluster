@@ -2,7 +2,7 @@ import test from 'brittle'
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync, chmodSync, readlinkSync, symlinkSync } from 'bare-fs'
 import { join, dirname } from 'bare-path'
 import { tmpdir } from 'bare-os'
-import { assemble, testPackage, contentsOf, closure, oursIn, packageHash, verify } from '../index.js'
+import { assemble, testPackage, contentsOf, closure, oursIn, packageHash, verify, deploy } from '../index.js'
 
 const put = (f, s, x = false) => { mkdirSync(dirname(f), { recursive: true }); writeFileSync(f, s); if (x) chmodSync(f, 0o755) }
 const json = (f, v) => put(f, JSON.stringify(v, null, 2))
@@ -141,4 +141,28 @@ test('verify: a package intact against the hash it was written with; changed, or
     rmSync(join(dir, 'modules/org/cmod/index.js'))
     t.absent(verify(dir).ok)
   } finally { rmSync(dir, { recursive: true, force: true }) }
+})
+
+test('deploy: staged beside, intact, validated, then in place; a changed or failing package changes nothing', (t) => {
+  const dir = pkg()
+  const into = join(dir, '..', `${dir.split('/').at(-1)}-into`, 'base-x')
+  try {
+    json(join(dir, 'test/validation.json'), { description: 'v', modules: false, tests: ['t1'] })
+    json(join(dir, 'package.json'), { name: 'base-x', pkgm: { package: 'x', hash: packageHash(dir) } })
+    const d = deploy({ from: dir, into })
+    t.ok(d.ok, d.said)
+    t.ok(/^deployed: intact \([0-9a-f]{12}\), its validation passed$/.test(d.said), d.said)
+    t.ok(verify(into).ok, 'in place, intact')
+    t.absent(existsSync(`${into}.deploying`))
+    // A failing validation: said; what was in place stays.
+    put(join(dir, 'test/t1/test'), '#!/bin/sh\nexit 1\n', true)
+    json(join(dir, 'package.json'), { name: 'base-x', pkgm: { package: 'x', hash: packageHash(dir) } })
+    const f = deploy({ from: dir, into })
+    t.absent(f.ok)
+    t.is(f.said, 'its validation failed')
+    t.ok(verify(into).ok, 'the one in place untouched')
+    // Not intact: said, nothing copied over.
+    put(join(dir, 'modules/org/cmod/index.js'), 'export const c = 3\n')
+    t.ok(/changed since it was written/.test(deploy({ from: dir, into }).said))
+  } finally { for (const d of [dir, join(into, '..')]) rmSync(d, { recursive: true, force: true }) }
 })

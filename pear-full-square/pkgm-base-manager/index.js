@@ -10,6 +10,9 @@
 //        its modules' own, its swarms', its named tests (test/<test>/test);
 //        each run stopped and failed after `timeout` (10 minutes)
 //   contentsOf(dir)    a repository's contents.json, or null
+//   deploy({ from, into })   a package deployed properly: staged beside `into`
+//        (hard links), checked intact, its validation set run there; only then
+//        put in place; else nothing changed
 //   packageHash(dir)   a package's identity (what the package writer records)
 //   verify(dir)        the package intact: its hash against its package.json's
 // A package's structure: notes/packages.md, "Packages, platforms, swarms
@@ -80,6 +83,28 @@ export function assemble ({ from, swarm, into, log = () => {} }) {
   const r = { swarm, ours: set.ours.length, third: set.third.length, hash, changed: !was || was.hash !== hash, ...(was && was.hash !== hash ? { was: was.hash } : {}) }
   log({ kind: 'assembled', ...r, hash: hash.slice(0, 12) })
   return r
+}
+
+// ---- deploying a package --------------------------------------------------
+
+export function deploy ({ from, into, log = () => {} }) {
+  from = resolve(from); into = resolve(into)
+  const stage = `${into}.deploying`
+  remove(stage)
+  mkdirSync(dirname(into), { recursive: true })
+  // A copy as hard links (no space taken twice; nothing in it is ever edited in place).
+  const c = spawnSync('cp', ['-al', from, stage], { stdio: ['ignore', 'pipe', 'pipe'] })
+  if (c.status !== 0) { remove(stage); return { ok: false, said: `could not be copied: ${String(c.stderr).trim()}` } }
+  remove(join(stage, '.git'))
+  const v = verify(stage)
+  if (!v.ok) { remove(stage); return { ok: false, said: v.said } }
+  const set = existsSync(join(stage, 'test', 'validation.json')) ? 'validation' : null
+  const t = testPackage(stage, { set, log })
+  if (!t.ok) { remove(stage); return { ok: false, said: 'its validation failed', runs: t.runs } }
+  remove(into)
+  renameSync(stage, into)
+  log({ kind: 'deployed', package: basename(into), hash: v.hash.slice(0, 12) })
+  return { ok: true, hash: v.hash, said: `deployed: ${v.said}, its validation passed`, runs: t.runs }
 }
 
 // ---- tests, within the package, bottom up --------------------------------

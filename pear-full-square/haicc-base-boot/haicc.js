@@ -32,7 +32,10 @@
 //                                exit code; then its teardown (its own, else the platform's)
 //   haicc boot <repo>/test [--set=full]      a set (test/<set>.json): its tests run in place
 //                                (the package manager), then each booted one
-// Both: haicc fetch <repository> (into haiccing/, with what it requires), haicc list.
+// Both: haicc fetch <repository> (into haiccing/), haicc list, haicc sources (what the
+// sources hold, listed, and kept as haiccing/sources.json).
+// The root's boot refreshes the platform's pair (HAICC, the package manager) from the
+// sources and deploys it, every time; nodes get it as they boot.
 // Removing is asked first (--yes agrees). Names are made URI parts, the changes said.
 // --verbose: each check's detail too. What every command prints goes to
 // log/ as well, in order (files of 10 KB named by their start, newest last). Exit 0 when done,
@@ -45,6 +48,7 @@ import { isTTY } from 'bare-tty'
 import { fileURLToPath } from 'bare-url'
 import { openLog } from './lib/log.js'
 import { CHECKS } from './lib/host.js'
+import { pkgm } from './lib/pkgm.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const argv = process.argv.slice(2)
@@ -208,15 +212,16 @@ async function bootNode (swarm, node) {
   if (existsSync(dir) && !existsSync(join(dir, 'packages'))) { console.log(`The node ${swarm}/${node}: ${dir} is there, and not a node's manager`); return 1 }
   console.log(`The node ${swarm}/${node} (${readNodes(swarm).nodes[node]?.role}), its manager (${dir}):`)
   mkdirSync(join(dir, 'packages'), { recursive: true })
-  for (const repo of ['base-package-haicc']) {
+  // The platform's pair, copied in afresh every time (as haiccing/ has it: the
+  // root's boot refreshes it); the node's warm boot deploys it properly.
+  for (const repo of PLATFORM) {
     const at = join(dir, 'packages', repo)
-    if (existsSync(join(at, 'package.json'))) { console.log(`  ${repo}: there`); continue }
     if (!existsSync(join(haiccing, repo, 'package.json'))) {
       const f = spawnSync('sh', [join(here, 'fetch.sh'), haiccing, repo], { env: { ...process.env, PATH: `${dirname(process.execPath)}:${process.env.PATH}` } })
       process.stdout.write(String(f.stdout || ''))
       if (f.status !== 0) { console.log(`  ${repo}: could not be fetched (haiccing/sources)`); return 1 }
     }
-    const c = spawnSync('sh', ['-c', 'rm -rf "$2.new" && cp -al "$1" "$2.new" && rm -rf "$2.new/.git" && mv "$2.new" "$2"', 'copy', join(haiccing, repo), at] )
+    const c = spawnSync('sh', ['-c', 'rm -rf "$2.new" && cp -al "$1" "$2.new" && rm -rf "$2.new/.git" && rm -rf "$2" && mv "$2.new" "$2"', 'copy', join(haiccing, repo), at] )
     if (c.status !== 0) { console.log(`  ${repo}: could not be copied in: ${String(c.stderr || '').trim()}`); return 1 }
     const hash = JSON.parse(readFileSync(join(at, 'package.json'), 'utf8')).pkgm?.hash?.slice(0, 12)
     console.log(`  copied ${repo} (${hash}) into ${join(dir, 'packages')}`)
@@ -327,6 +332,39 @@ exec bare "$work/packages/base-package-haicc/modules/pear-full-square/haicc-base
 // A swarm's own command, through its launcher (it logs in the root's log too).
 const inSwarmRun = (swarm, args) => echoed(join(work, swarm, 'haicc'), args, { HAICC_WORK: work, HAICC_SWARM: swarm, HAICC_NOLOG: '1' })
 
+// The platform's pair: HAICC and the package manager (HAICC uses it from beside it).
+const PLATFORM = ['base-package-haicc', 'base-package-pkgm']
+
+// Every root boot: the pair fetched again from the sources, then deployed at
+// the root by the package manager (staged, intact, validated, put in place);
+// the nodes get it as they boot. Nothing compared, nothing kept.
+async function refreshPlatform () {
+  console.log("The platform's pair, refreshed from the sources (haiccing/sources):")
+  const f = await echoed('sh', [join(here, 'fetch.sh'), haiccing, '--refresh', ...PLATFORM], { PATH: `${dirname(process.execPath)}:${process.env.PATH}` })
+  if (f !== 0) { console.log("  not refreshed: the sources could not give the platform's pair (above)"); return 1 }
+  const { deploy } = await pkgm()
+  for (const repo of ['base-package-pkgm', 'base-package-haicc']) {
+    const r = deploy({ from: join(haiccing, repo), into: join(work, 'packages', repo) })
+    console.log(`  ${r.ok ? 'ok    ' : 'FAILED'} ${repo}: ${r.said}`)
+    if (!r.ok) {
+      for (const x of (r.runs || []).filter(x => !x.ok)) console.log((x.output || '').split('\n').slice(-20).map(l => `         ${l}`).join('\n'))
+      return 1
+    }
+  }
+  return 0
+}
+
+// What the sources hold: listed, and kept as a manifest (haiccing/sources.json).
+async function listSources () {
+  const r = spawnSync('sh', [join(here, 'fetch.sh'), haiccing, '--list'], { stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, PATH: `${dirname(process.execPath)}:${process.env.PATH}` } })
+  process.stderr.write(String(r.stderr || ''))
+  const held = String(r.stdout || '').split('\n').filter(Boolean).map(l => { const [repository, kind, ...where] = l.split(' '); return { repository, kind, where: where.join(' ') } })
+  jsonFile.write(join(haiccing, 'sources.json'), { listed: new Date().toISOString(), repositories: held })
+  console.log(`The sources (haiccing/sources): ${held.length} repositories (haiccing/sources.json)`)
+  for (const h of held) console.log(`  ${h.repository}  (${h.kind} ${h.where})`)
+  return r.status === 0 ? 0 : 1
+}
+
 async function rootBoot (swarm) {
   if (swarm) {
     if (existsSync(join(work, swarm)) && !existsSync(nodesFile(swarm))) { console.log(`haicc boot: ${join(work, swarm)} is there, and not a swarm's folder: choose another name`); return 1 }
@@ -336,6 +374,7 @@ async function rootBoot (swarm) {
     return (await inSwarmRun(swarm, ['boot', ...(flags['no-echo'] ? ['--no-echo'] : [])])) ? 1 : 0
   }
   if (!(await hostPrerequisites())) return 1
+  if (await refreshPlatform()) return 1
   const all = Object.keys(readSwarms().swarms)
   if (all.length) {
     console.log(`The host's swarms (swarms.json): ${all.join(', ')}`)
@@ -439,7 +478,7 @@ async function bootTests (uri) {
   const pkg = packageDir(repo)
   if (!pkg) return 1
   const tally = { passed: 0, failed: 0, skipped: 0 }
-  const { testPackage } = await import('../pkgm-base-manager/index.js')
+  const { testPackage } = await pkgm()
   let booted = []
   if (t) {
     if (!existsSync(join(pkg, 'test', t))) { console.log(`no test ${t} in ${repo} (test/${t})`); return 1 }
@@ -524,6 +563,8 @@ try {
   } else if (verb === 'teardown') {
     if (!n) { console.log(`haicc teardown <${inSwarm ? 'node' : 'swarm'}>: which ${inSwarm ? 'node' : 'swarm'} to remove`); process.exit(2) }
     process.exit(inSwarm ? await swarmTeardown(inSwarm, n) : await rootTeardown(n))
+  } else if (verb === 'sources') {
+    process.exit(await listSources())
   } else if (verb === 'fetch') {
     if (!name) usage()
     // As it happens, through our own stdout (the log sees it too).

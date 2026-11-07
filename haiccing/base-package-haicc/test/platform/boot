@@ -18,15 +18,21 @@ expect () { printf '%s' "$out_" | grep -q "$1" || { echo "   expected: $1"; echo
 
 step 'its setup, built from the package under test and this runtime' sh "$pkg/modules/pear-full-square/haicc-base-boot/release.sh" "$pkg" "$run/haicc-setup.sh" "$runtime"
 step 'set up: a fresh install, sourced from this haiccing/' sh "$run/haicc-setup.sh" "$w" "--sources=folder:$(dirname "$pkg")"
-step './boot (cold, then warm)' "$w/boot" --yes
+step './boot (cold, then warm: the pair refreshed from the sources, deployed)' "$w/boot" --yes
 expect 'Booted'
-step 'the install: Bare in bare/, base-package-haicc in packages/, ./haicc' sh -c "[ -x '$w/bare/bare' ] && [ -x '$w/haicc' ] && [ -f '$w/packages/base-package-haicc/modules/pear-full-square/haicc-base-boot/haicc.js' ]"
+expect "The platform's pair, refreshed from the sources"
+expect 'ok     base-package-pkgm: deployed: intact'
+expect 'ok     base-package-haicc: deployed: intact'
+step 'the sources listed, a manifest kept' "$w/haicc" sources
+expect 'base-package-haicc'
+expect 'base-package-pkgm'
+step 'the install: Bare in bare/, the pair in packages/, ./haicc, the manifest' sh -c "[ -x '$w/bare/bare' ] && [ -x '$w/haicc' ] && [ -f '$w/packages/base-package-haicc/modules/pear-full-square/haicc-base-boot/haicc.js' ] && [ -f '$w/packages/base-package-pkgm/modules/pear-full-square/pkgm-base-manager/index.js' ] && [ -f '$w/haiccing/sources.json' ]"
 step 'a swarm: ./haicc boot hosts' "$w/haicc" boot hosts --no-echo
 step 'its master, cold and warm: ./hosts/haicc boot master' "$w/hosts/haicc" boot master
 expect 'base-package-haicc: intact ('
 expect 'Ready: '
 expect 'The node hosts/master: up'
-step "the node's cold boot: the platform's package only" sh -c "[ \"\$(ls '$w/hosts/master/packages')\" = base-package-haicc ]"
+step "the node's cold boot: the platform's pair, and nothing else" sh -c "[ \"\$(ls '$w/hosts/master/packages' | tr '\\n' ' ')\" = 'base-package-haicc base-package-pkgm ' ]"
 step 'the node tests a package' "$w/hosts/master/haicc" test base-package-haicc
 expect 'test base-package-haicc: passed'
 step 'a second node: ./hosts/haicc boot node-1' "$w/hosts/haicc" boot node-1 --no-echo
@@ -35,9 +41,7 @@ step "a file replaced in node-1's copy (a new file: its original, hard-linked, u
 step "  node-1's warm boot: not intact, said, not up" sh -c "! '$w/hosts/node-1/haicc' boot"
 expect 'FAILED base-package-haicc: changed since it was written'
 expect 'Not ready'
-step "  the swarm's boot stops at node-1" sh -c "! '$w/hosts/haicc' boot --no-echo"
-expect 'The node hosts/node-1: its boot ended with exit 1'
-step "  repaired: node-1 shut down (its folder removed), booted again from scratch" sh -c "'$w/hosts/haicc' shutdown node-1 --yes && '$w/hosts/haicc' boot node-1"
+step "  repaired by the swarm's boot: the pair copied in afresh, intact, up" "$w/hosts/haicc" boot node-1
 expect 'base-package-haicc: intact ('
 expect 'The node hosts/node-1: up'
 step 'the node level: shutdown, boot' sh -c "'$w/hosts/node-1/haicc' shutdown && '$w/hosts/node-1/haicc' boot"
