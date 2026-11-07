@@ -16,7 +16,7 @@
 //                                not there, or from --from): the package checked intact; the
 //                                swarm's folder (its launcher, its config files copied); its
 //                                entry in swarms.json (where from, its hash); then booted (the
-//                                master's build assembles the codebase into its repository/).
+//                                master's build assembles the codebase into its packages/).
 //                                --as names a single swarm otherwise; --strict: its nodes are
 //                                its package's only (none added or torn down by hand).
 //   haicc shutdown [<swarm>]     each swarm's (or the one's) shutdown: its nodes removed,
@@ -29,7 +29,8 @@
 //   haicc boot [<node>] [--role=master|node] [--no-echo]
 //                                each node (or the one: added if new, unless the swarm is
 //                                strict), the master first: the platform's pair copied in
-//                                afresh, its launcher, the master's repository/ assembled from
+//                                afresh, its launcher, the swarm's codebase assembled into the
+//                                master's packages/<package>/ from
 //                                the swarm's package (the package manager), then its own
 //                                boot (<swarm>/<node>/haicc boot), as it happens
 //   haicc shutdown [<node>]      each node's (or the one's) cold shutdown: its container
@@ -73,7 +74,8 @@ const level = flags.debug ? 'debug' : flags.verbose ? 'verbose' : 'normal'
 // The command as it was called (the launcher's $0, HAICC_AS), not passed on.
 const calledAs = process.env.HAICC_AS || (process.env.HAICC_SWARM ? `./${process.env.HAICC_SWARM}/haicc` : './haicc')
 process.env.HAICC_AS = ''   // (Bare's environment refuses a delete)
-const log = openLog({ dir: join(work, 'log'), file: process.env.HAICC_NOLOG !== '1', command: flags.cold ? [process.env.HAICC_SHUTDOWN_AS || './shutdown', ...argv.filter(a => a !== 'shutdown' && a !== '--cold')] : [calledAs, ...argv], level })
+// Each level logs in its own log/: the root's, a swarm's (<swarm>/log/).
+const log = openLog({ dir: join(work, process.env.HAICC_SWARM || '', 'log'), file: process.env.HAICC_NOLOG !== '1', command: flags.cold ? [process.env.HAICC_SHUTDOWN_AS || './shutdown', ...argv.filter(a => a !== 'shutdown' && a !== '--cold')] : [calledAs, ...argv], level })
 
 const usage = () => { process.stderr.write(readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1).filter((l, i, a) => a.slice(0, i + 1).every(x => x.startsWith('//'))).map(l => l.replace(/^\/\/ ?/, '')).join('\n') + '\n'); process.exit(2) }
 
@@ -149,7 +151,7 @@ function installFile () {
 // The work folder's own folders and files: not a swarm's name; a swarm's
 // own files: not a node's name.
 const OWN = ['packages', 'haiccing', 'bare', 'nodejs', 'log', 'haicc', 'boot', 'shutdown', 'swarms.json', 'swarms', 'user']
-const SWARM_OWN = ['haicc', 'nodes.json']
+const SWARM_OWN = ['haicc', 'nodes.json', 'log', 'packages']
 const ROLES = ['master', 'node']
 const inSwarm = process.env.HAICC_SWARM || null
 // A name made a URI part: lowercase a-z, 0-9, words joined by single '-'.
@@ -257,19 +259,20 @@ exec bare "$work/packages/base-package-haicc/modules/pear-full-square/haicc-depl
 
 // The master's package repository: the swarm's codebase, assembled by the
 // package manager from the swarm's package (where swarms.json says it came
-// from) into the master's repository/, at every build of the master. None
+// from) into the master's packages/<package>/ (every level's packages are
+// in its packages/), at every build of the master. None
 // for a swarm without a codebase (no modules.json).
 async function assembleRepository (swarm, dir) {
   const entry = readSwarms().swarms[swarm] || {}
   if (!entry.package || !existsSync(join(work, swarm, 'modules.json'))) return 0
   const pkg = join(entry.root, entry.package)
-  if (!existsSync(join(pkg, 'swarms', entry.swarm)) && !(entry.root === haiccing && packageDir(entry.package))) { console.log(`  its repository: the package ${pkg} is not there (swarms.json): not assembled`); return 1 }
+  if (!existsSync(join(pkg, 'swarms', entry.swarm)) && !(entry.root === haiccing && packageDir(entry.package))) { console.log(`  its codebase: the package ${pkg} is not there (swarms.json): not assembled`); return 1 }
   const { assemble } = await pkgm()
   try {
-    const a = assemble({ from: pkg, swarm: entry.swarm, into: join(dir, 'repository') })
-    console.log(`  its repository: the codebase of ${entry.package}/swarms/${entry.swarm} assembled into ${swarm}/${dir.split('/').pop()}/repository/: ${a.ours} modules of ours, ${a.third} third-party (${a.hash.slice(0, 12)})`)
+    const a = assemble({ from: pkg, swarm: entry.swarm, into: join(dir, 'packages', entry.package) })
+    console.log(`  its packages: the codebase of ${entry.package}/swarms/${entry.swarm} assembled into ${swarm}/${dir.split('/').pop()}/packages/${entry.package}/: ${a.ours} modules of ours, ${a.third} third-party (${a.hash.slice(0, 12)})`)
     return 0
-  } catch (err) { console.log(`  its repository could not be assembled: ${err.message}`); return 1 }
+  } catch (err) { console.log(`  its codebase could not be assembled: ${err.message}`); return 1 }
 }
 
 // A node's cold shutdown: its own shutdown (its container removed), then

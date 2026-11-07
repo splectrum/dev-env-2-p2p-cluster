@@ -104,7 +104,8 @@ validation set, then in place; else nothing changed).
 ## A node's codebase: the master's package repository
 
 **Built** in part (2026-11-07): assembled at every build of the master
-(its cold boot), into `<swarm>/master/repository/`, from the package
+(its cold boot), into the master's `packages/<package>/` (`<swarm>/master/packages/`: every
+level's packages are in its `packages/`), from the package
 `swarms.json` names; a swarm's shutdown removes it with the master's
 folder, its boot assembles it again. Mounting it into the nodes:
 containers, part 3. A swarm's codebase is assembled by the package

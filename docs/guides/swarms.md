@@ -18,7 +18,7 @@ swarm was made `--strict`.
                              # if not in haiccing/, checked intact; each swarm's folder, its
                              # config files copied in, its entry in swarms.json; booted (the
                              # master's build assembles the codebase into
-                             # three-nodes/master/repository/)
+                             # three-nodes/master/packages/base-swarm-three-nodes/)
 ./haicc boot base-swarm-three-nodes/three-nodes --as=lab
                              # one of its swarms, under another name
 ./haicc boot base-swarm-three-nodes --strict

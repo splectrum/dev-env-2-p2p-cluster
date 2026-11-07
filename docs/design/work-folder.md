@@ -16,9 +16,10 @@ Status marks: **built** (in the code, tested), **agreed** (decided, not built).
   log/                  the log
   swarms.json           the host's swarms
   <swarm>/              a swarm: haicc (its launcher), its config files (from its package:
-                        nodes.json, modules.json, ...), a folder per node
+                        nodes.json, modules.json, ...), log/, a folder per node
     <node>/             haicc (its launcher), packages/ (the platform's pair, hard links), log/;
-                        the master: repository/ too (the swarm's codebase)
+                        the master's packages/ also hold the swarm's codebase
+                        (packages/<package>/, assembled)
   swarms/test/<test>/   a test's run, while it runs
 ```
 
@@ -33,8 +34,8 @@ every swarm under `swarms/`:
   user/                 the user's own packages (sources, contents.json)
   swarms/
     swarms.json         the host's swarms, fully qualified (where each came from, its hashes)
-    <swarm>/            haicc, its config files (copied from its package), master/ (with
-                        repository/: the swarm's package repository), <node>/
+    <swarm>/            haicc, its config files (copied from its package), log/, master/ (its
+                        packages/<package>/: the swarm's codebase), <node>/
     test/<test>/        test runs
 ```
 
@@ -88,7 +89,7 @@ sealed package through a fresh root).
   `swarms/<swarm>/` copied in, its entry in `swarms.json` (the package, its
   root, the swarm's folder in it, its hash, sealed or mixed, strict or not);
   then booted. The master's build assembles the codebase into its
-  `repository/` (below), every time it is built.
+  `packages/<package>/` (below), every time it is built.
 - A swarm already there, from the same root and path: booted from its own
   copy (the package not read again); from another: refused. Its name alone
   (`./haicc boot <swarm>`) boots it too.
