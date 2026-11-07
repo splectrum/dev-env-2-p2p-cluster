@@ -1,9 +1,10 @@
 // Local kinds the tool may create, and checks of what the host holds.
 //   folder   { path }               created, marked as this owner's; removed only if ours
 //   port     { port, host, holder } free, or held by the process in the pid file `holder`
-import { existsSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'node:fs'
-import { join } from 'node:path'
-import net from 'node:net'
+import { existsSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'bare-fs'
+import { join } from 'bare-path'
+import tcp from 'bare-tcp'
+import process from 'bare-process'
 
 const MARK = 'haicc-owner'
 
@@ -21,7 +22,9 @@ export const port = {
   async observe (r) {
     const host = r.want.host || '127.0.0.1'
     const free = await new Promise(resolve => {
-      const s = net.createServer().once('error', () => resolve(false)).listen(r.want.port, host, () => s.close(() => resolve(true)))
+      const s = tcp.createServer()
+      s.once('error', () => resolve(false))
+      s.listen(r.want.port, host, () => { s.close(); resolve(true) })
     })
     let holder = null
     if (!free && r.want.holder && existsSync(r.want.holder)) {

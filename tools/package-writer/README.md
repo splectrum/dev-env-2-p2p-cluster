@@ -7,7 +7,7 @@ assembles a swarm's codebase into its master's package repository, and
 tests.
 
 ```sh
-node tools/package-writer/cli.js --out=<folder of package repositories> [--only=haicc,swarm-three-nodes] [--keep]
+tools/bare tools/package-writer/cli.js --out=<folder of package repositories> [--only=haicc,swarm-three-nodes] [--keep]
 ```
 
 - **What**: `packages.json` at the repository's root, one definition a

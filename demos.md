@@ -30,8 +30,8 @@ curl -fL --progress-bar --retry 5 --retry-all-errors --connect-timeout 20 \
 ```
 
 Step 0 checks the machine first and fixes what is missing only with your
-yes (Node.js into the work folder's `nodejs/`; git and Docker Engine
-with `apt`); the repositories come from `haiccing/sources` (GitHub's by
+yes (git and Docker Engine with `apt`; Bare's runtime comes with the
+setup); the repositories come from `haiccing/sources` (GitHub's by
 default). Everything it does is logged in the work folder's `log/`, newest last. The sections
 below are for running the demos from this repository, the code as it is
 here.

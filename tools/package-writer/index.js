@@ -16,19 +16,20 @@
 // staged and tested (the package manager's test, bottom up) before any is
 // written; then each into its repository's folder in `out` (.git kept).
 //   writePackages({ dev, out, only, keep, log })
-import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, lstatSync, symlinkSync, mkdtempSync, chmodSync } from 'node:fs'
-import { join, dirname, resolve, relative } from 'node:path'
-import { tmpdir } from 'node:os'
-import { fileURLToPath } from 'node:url'
+import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, lstatSync, symlinkSync, mkdtempSync, chmodSync } from 'bare-fs'
+import { join, dirname, resolve, relative } from 'bare-path'
+import os, { tmpdir } from 'bare-os'
+import { fileURLToPath } from 'bare-url'
 import { closure } from '../../pear-full-square/pkgm-base-manager/lib/closure.js'
 import { copy, hashTree, remove } from '../../pear-full-square/pkgm-base-manager/lib/tree.js'
 import { testPackage } from '../../pear-full-square/pkgm-base-manager/index.js'
+import process from 'bare-process'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const ORG = 'haiccing'
 const readJson = f => JSON.parse(readFileSync(f, 'utf8'))
 const writeJson = (f, v) => { mkdirSync(dirname(f), { recursive: true }); writeFileSync(f, JSON.stringify(v, null, 2) + '\n') }
-const platform = () => `${process.platform}-${process.arch}`
+const platform = () => `${os.platform()}-${os.arch()}`
 export const repoOf = (name, def) => def.repo || `base-package-${name}`
 const entry = m => typeof m === 'string' ? { path: m, from: m } : m
 
@@ -78,7 +79,8 @@ const skipOurs = (r, base) => base === 'node_modules' || base === '.git' || base
 function stage (dev, defs, name, ours, lock, dir) {
   const def = defs.packages[name]
   const repo = repoOf(name, def)
-  const set = closure({ ours, third: join(dev, 'node_modules'), start: startOf(dev, defs, name) })
+  // brittle too: the package's own tests run on it (test/modules-load, written here).
+  const set = closure({ ours, third: join(dev, 'node_modules'), start: startOf(dev, defs, name), also: ['brittle'] })
   const byPath = new Map([...ours.values()].map(m => [m.path, m]))
   for (const p of set.ours) copy(byPath.get(p).dir, join(dir, 'modules', p), { skip: skipOurs })
   for (const t of set.third) copy(join(dev, 'node_modules', t), join(dir, 'modules', 'node_modules', t), { skip: skipThird })
@@ -104,6 +106,9 @@ function stage (dev, defs, name, ours, lock, dir) {
   // The package's own named test, written here: every module loads.
   copy(join(here, 'modules-load'), join(dir, 'test', 'modules-load'))
   chmodSync(join(dir, 'test', 'modules-load', 'test'), 0o755)
+  // Bare's runtime, when the package carries it: executable (npm keeps no exec bit).
+  const rt = join(dir, 'modules', 'node_modules', `bare-runtime-${platform()}`, 'bin', 'bare')
+  if (existsSync(rt)) chmodSync(rt, 0o755)
   const tops = readdirSync(dir).filter(n => n !== 'package.json' && n !== 'README.md' && n !== '.git').sort()
   const has = n => existsSync(join(dir, n))
   const pkgm = {

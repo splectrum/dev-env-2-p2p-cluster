@@ -1,8 +1,7 @@
-import { test } from 'node:test'
-import assert from 'node:assert/strict'
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync, chmodSync, readlinkSync, symlinkSync } from 'node:fs'
-import { join, dirname } from 'node:path'
-import { tmpdir } from 'node:os'
+import test from 'brittle'
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync, chmodSync, readlinkSync, symlinkSync } from 'bare-fs'
+import { join, dirname } from 'bare-path'
+import { tmpdir } from 'bare-os'
 import { assemble, testPackage, contentsOf, closure, oursIn } from '../index.js'
 
 const put = (f, s, x = false) => { mkdirSync(dirname(f), { recursive: true }); writeFileSync(f, s); if (x) chmodSync(f, 0o755) }
@@ -15,9 +14,10 @@ const json = (f, v) => put(f, JSON.stringify(v, null, 2))
 function pkg () {
   const dir = mkdtempSync(join(tmpdir(), 'pkgm-pkg-'))
   const m = join(dir, 'modules')
-  json(join(m, 'org/amod/package.json'), { name: 'amod', type: 'module', exports: './index.js', scripts: { test: 'node --test test/*.test.js' } })
+  json(join(m, 'org/amod/package.json'), { name: 'amod', type: 'module', exports: './index.js', scripts: { test: 'sh test/a.sh' } })
   put(join(m, 'org/amod/index.js'), "import { b } from 'bmod'\nimport { x } from 'dep-x'\nexport const a = () => b() + x\n")
-  put(join(m, 'org/amod/test/a.test.js'), "import { test } from 'node:test'\nimport assert from 'node:assert/strict'\nimport { a } from 'amod'\ntest('a', () => assert.equal(a(), 42))\n")
+  // Its test: a plain script (any executable), run in its folder.
+  put(join(m, 'org/amod/test/a.sh'), 'cd "$(dirname "$0")/.." && [ -f index.js ] && echo "# tests 1" && echo "# pass 1"\n')
   json(join(m, 'org/bmod/package.json'), { name: 'bmod', type: 'module', exports: './index.js' })
   put(join(m, 'org/bmod/index.js'), "import { c } from '../cmod/index.js'\nexport const b = () => c\n")
   json(join(m, 'org/cmod/package.json'), { name: 'cmod', type: 'module', exports: './index.js' })
@@ -38,80 +38,80 @@ function pkg () {
   return dir
 }
 
-test('closure: ours by name and by relative path, third-party all the way down; nothing else', () => {
+test('closure: ours by name and by relative path, third-party all the way down; nothing else', (t) => {
   const dir = pkg()
   try {
     const r = closure({ ours: oursIn(join(dir, 'modules')), third: join(dir, 'modules', 'node_modules'), start: ['org/amod'] })
-    assert.deepEqual(r.ours, ['org/amod', 'org/bmod', 'org/cmod'])
-    assert.deepEqual(r.third, ['dep-x', 'dep-y'])
-    assert.deepEqual(r.missing, [])
+    t.alike(r.ours, ['org/amod', 'org/bmod', 'org/cmod'])
+    t.alike(r.third, ['dep-x', 'dep-y'])
+    t.alike(r.missing, [])
   } finally { rmSync(dir, { recursive: true, force: true }) }
 })
 
-test("assemble: a swarm's codebase into a repository, its contents said; again: unchanged; a name the package lacks: refused", () => {
+test("assemble: a swarm's codebase into a repository, its contents said; again: unchanged; a name the package lacks: refused", (t) => {
   const dir = pkg()
   const repo = join(dir, '..', `${dir.split('/').at(-1)}-repo`)
   try {
     const r = assemble({ from: dir, swarm: 's1', into: repo })
-    assert.equal(r.changed, true)
-    assert.deepEqual([r.ours, r.third], [3, 2])
-    assert.ok(existsSync(join(repo, 'modules/org/cmod/index.js')))
-    assert.ok(!existsSync(join(repo, 'modules/org/unused')), 'only what the swarm uses')
-    assert.ok(!existsSync(join(repo, 'modules/node_modules/dep-z')))
-    assert.equal(readlinkSync(join(repo, 'modules/node_modules/amod')), '../org/amod')
+    t.is(r.changed, true)
+    t.alike([r.ours, r.third], [3, 2])
+    t.ok(existsSync(join(repo, 'modules/org/cmod/index.js')))
+    t.ok(!existsSync(join(repo, 'modules/org/unused')), 'only what the swarm uses')
+    t.ok(!existsSync(join(repo, 'modules/node_modules/dep-z')))
+    t.is(readlinkSync(join(repo, 'modules/node_modules/amod')), '../org/amod')
     const c = contentsOf(repo)
-    assert.deepEqual([c.package.name, c.package.hash, c.swarm], ['base-x', 'abc123', 's1'])
-    assert.deepEqual(c.modules.third, ['dep-x', 'dep-y'])
-    assert.deepEqual(JSON.parse(readFileSync(join(repo, 'modules/third-party.json'), 'utf8')).modules.map(m => m.name), ['dep-x', 'dep-y'])
-    assert.ok(!existsSync(`${repo}.assembling`))
-    assert.equal(assemble({ from: dir, swarm: 's1', into: repo }).changed, false)
+    t.alike([c.package.name, c.package.hash, c.swarm], ['base-x', 'abc123', 's1'])
+    t.alike(c.modules.third, ['dep-x', 'dep-y'])
+    t.alike(JSON.parse(readFileSync(join(repo, 'modules/third-party.json'), 'utf8')).modules.map(m => m.name), ['dep-x', 'dep-y'])
+    t.ok(!existsSync(`${repo}.assembling`))
+    t.is(assemble({ from: dir, swarm: 's1', into: repo }).changed, false)
     // The repository runs: its module tests, in place.
-    const t = testPackage(repo)
-    assert.equal(t.ok, true, JSON.stringify(t.runs))
+    const tr = testPackage(repo)
+    t.is(tr.ok, true, JSON.stringify(tr.runs))
     json(join(dir, 'swarms/s2/modules.json'), { modules: ['org/nope'] })
-    assert.throws(() => assemble({ from: dir, swarm: 's2', into: repo }), /does not hold: org\/nope/)
-    assert.throws(() => assemble({ from: dir, swarm: 's9', into: repo }), /no swarm s9/)
-    assert.equal(contentsOf(repo).swarm, 's1', 'a refused assembly changes nothing')
+    t.exception(() => assemble({ from: dir, swarm: 's2', into: repo }), /does not hold: org\/nope/)
+    t.exception(() => assemble({ from: dir, swarm: 's9', into: repo }), /no swarm s9/)
+    t.is(contentsOf(repo).swarm, 's1', 'a refused assembly changes nothing')
   } finally { for (const d of [dir, repo]) rmSync(d, { recursive: true, force: true }) }
 })
 
-test('test: bottom up, the modules, the swarms, the named tests; a failure said with its output', () => {
+test('test: bottom up, the modules, the swarms, the named tests; a failure said with its output', (t) => {
   const dir = pkg()
   try {
-    const t = testPackage(dir)
-    assert.equal(t.ok, true, JSON.stringify(t.runs))
-    assert.deepEqual(t.runs.map(r => r.what), ['modules/org/amod', 'swarms/s1/test/config', 'test/t1'])
-    assert.deepEqual(t.runs.map(r => r.pass), [1, 1, 2])
+    const tr = testPackage(dir)
+    t.is(tr.ok, true, JSON.stringify(tr.runs))
+    t.alike(tr.runs.map(r => r.what), ['modules/org/amod', 'swarms/s1/test/config', 'test/t1'])
+    t.alike(tr.runs.map(r => r.pass), [1, 1, 2])
     put(join(dir, 'test/t1/test'), '#!/bin/sh\necho broken\nexit 1\n', true)
     const f = testPackage(dir)
-    assert.equal(f.ok, false)
-    assert.match(f.runs.at(-1).output, /broken/)
+    t.is(f.ok, false)
+    t.ok(/broken/.test(f.runs.at(-1).output))
   } finally { rmSync(dir, { recursive: true, force: true }) }
 })
 
-test('test: a run that does not end is stopped, and fails; the rest still run', () => {
+test('test: a run that does not end is stopped, and fails; the rest still run', (t) => {
   const dir = pkg()
   try {
     put(join(dir, 'swarms/s1/test/config'), '#!/bin/sh\nsleep 30\n', true)
-    const t = testPackage(dir, { timeout: 500 })
-    assert.equal(t.ok, false)
-    const hung = t.runs.find(r => r.what === 'swarms/s1/test/config')
-    assert.equal(hung.ok, false)
-    assert.match(hung.output, /stopped: no end after 0.5 s/)
-    assert.equal(t.runs.find(r => r.what === 'test/t1').ok, true)
+    const tr = testPackage(dir, { timeout: 500 })
+    t.is(tr.ok, false)
+    const hung = tr.runs.find(r => r.what === 'swarms/s1/test/config')
+    t.is(hung.ok, false)
+    t.ok(/stopped: no end after 0.5 s/.test(hung.output))
+    t.is(tr.runs.find(r => r.what === 'test/t1').ok, true)
   } finally { rmSync(dir, { recursive: true, force: true }) }
 })
 
-test('test: a set, its in-place tests and (or not) the modules; a booted test listed, not run', () => {
+test('test: a set, its in-place tests and (or not) the modules; a booted test listed, not run', (t) => {
   const dir = pkg()
   try {
     put(join(dir, 'test/b1/boot'), '#!/bin/sh\nexit 1\n', true)
     json(join(dir, 'test/validation.json'), { description: 'v', modules: false, tests: ['t1'] })
     json(join(dir, 'test/full.json'), { description: 'f', modules: true, tests: ['t1', 'b1'] })
     const v = testPackage(dir, { set: 'validation' })
-    assert.deepEqual([v.ok, v.runs.map(r => r.what), v.booted], [true, ['test/t1'], []])
+    t.alike([v.ok, v.runs.map(r => r.what), v.booted], [true, ['test/t1'], []])
     const f = testPackage(dir, { set: 'full' })
-    assert.deepEqual([f.ok, f.runs.map(r => r.what), f.booted], [true, ['modules/org/amod', 'test/t1'], ['b1']])
-    assert.throws(() => testPackage(dir, { set: 'nope' }), /no test set nope/)
+    t.alike([f.ok, f.runs.map(r => r.what), f.booted], [true, ['modules/org/amod', 'test/t1'], ['b1']])
+    t.exception(() => testPackage(dir, { set: 'nope' }), /no test set nope/)
   } finally { rmSync(dir, { recursive: true, force: true }) }
 })

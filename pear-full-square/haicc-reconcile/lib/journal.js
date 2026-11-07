@@ -3,8 +3,8 @@
 // plain files (into topics later, by a separate process, not by HAICC).
 //   const j = journal(file)
 //   j.append(value)    j.read() → [{ value }]
-import { appendFileSync, readFileSync, existsSync, mkdirSync } from 'node:fs'
-import { dirname } from 'node:path'
+import { appendFileSync, readFileSync, existsSync, mkdirSync } from 'bare-fs'
+import { dirname } from 'bare-path'
 
 export function journal (file) {
   return {

@@ -8,13 +8,14 @@
 //     ours    Map name -> { path, dir }: our modules (path: <org>/<module>)
 //     third   the folder of third-party code (node_modules)
 //     start   paths of our modules
+//     also    third-party names to carry too (what a package's own tests use: brittle)
 //   -> { ours: [path...], third: [name...], missing: [{ from, name }...] }
 // Read: every .js/.mjs/.cjs file of a module (its tests included: a module
 // is tested within its package), and its package.json's dependencies of
 // every kind. A name neither ours nor in `third` is a built-in or missing:
 // it is reported, not guessed.
-import { readFileSync, readdirSync, existsSync, lstatSync } from 'node:fs'
-import { join, dirname, resolve, relative, sep } from 'node:path'
+import { readFileSync, readdirSync, existsSync, lstatSync } from 'bare-fs'
+import { join, dirname, resolve, relative, sep } from 'bare-path'
 
 const SPEC = /(?:\bfrom\s*|\bimport\s*\(\s*|\bimport\s+|\brequire\s*\(\s*)(['"])([^'"\n]+)\1/g
 const KINDS = ['dependencies', 'optionalDependencies', 'peerDependencies', 'devDependencies']
@@ -37,7 +38,7 @@ function sources (dir) {
   return out
 }
 
-export function closure ({ ours, third, start }) {
+export function closure ({ ours, third, start, also = [] }) {
   const byPath = new Map([...ours.values()].map(m => [m.path, m]))
   const dirs = [...ours.values()].map(m => [resolve(m.dir) + sep, m.path])
   const seen = new Set()
@@ -46,6 +47,7 @@ export function closure ({ ours, third, start }) {
   const queue = [...start]
   const addThird = name => { if (!thirdSeen.has(name)) { thirdSeen.add(name); thirdQueue.push(name) } }
   const thirdQueue = []
+  for (const n of also) if (existsSync(join(third, n))) addThird(n); else missing.push({ from: '(also)', name: n })
   while (queue.length) {
     const path = queue.shift()
     if (seen.has(path)) continue

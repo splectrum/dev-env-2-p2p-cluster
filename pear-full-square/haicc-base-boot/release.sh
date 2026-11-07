@@ -8,7 +8,7 @@ pkg=$(cd "$1" && pwd)
 out=$2
 name=$(basename "$pkg")
 version=$(cat "$pkg/modules/pear-full-square/haicc-base-boot/VERSION")
-hash=$(node -p "require('$pkg/package.json').pkgm.hash.slice(0, 12)")
+hash=$(sed -n 's/.*"hash": *"\([0-9a-f]\{12\}\).*/\1/p' "$pkg/package.json" | head -1)
 tmp=$(mktemp -d); trap 'rm -rf "$tmp"' EXIT
 mkdir "$tmp/haiccing"
 cp -a "$pkg" "$tmp/haiccing/$name" && rm -rf "$tmp/haiccing/$name/.git"

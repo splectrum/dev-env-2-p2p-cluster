@@ -12,11 +12,12 @@
 //   contentsOf(dir)    a repository's contents.json, or null
 // A package's structure: notes/packages.md, "Packages, platforms, swarms
 // and tests".
-import { readFileSync, writeFileSync, existsSync, mkdirSync, renameSync, readdirSync, statSync, symlinkSync } from 'node:fs'
-import { join, dirname, resolve, relative, basename } from 'node:path'
-import { spawnSync } from 'node:child_process'
+import { readFileSync, writeFileSync, existsSync, mkdirSync, renameSync, readdirSync, statSync, symlinkSync } from 'bare-fs'
+import { join, dirname, resolve, relative, basename } from 'bare-path'
+import { spawnSync } from 'bare-subprocess'
 import { walk, copy, hashTree, remove } from './lib/tree.js'
 import { closure, oursIn } from './lib/closure.js'
+import process from 'bare-process'
 
 const readJson = f => JSON.parse(readFileSync(f, 'utf8'))
 const writeJson = (f, v) => { mkdirSync(dirname(f), { recursive: true }); writeFileSync(f + '.tmp', JSON.stringify(v, null, 2) + '\n'); renameSync(f + '.tmp', f) }
@@ -89,15 +90,20 @@ export function testPackage (dir, { log = () => {}, env: extra = {}, timeout = 1
   const runs = []
   const run = (what, cmd, args, cwd) => {
     const t0 = Date.now()
-    // Its own run, even under a test runner (NODE_TEST_CONTEXT would make
-    // it report to ours instead).
-    const env = { ...process.env, PKGM_ROOT: dir, ...extra }
-    delete env.NODE_TEST_CONTEXT
-    // A run that does not end is stopped, and fails: it never holds the rest.
-    const r = spawnSync(cmd, args, { cwd, encoding: 'utf8', env, maxBuffer: 64 * 1024 * 1024, timeout, killSignal: 'SIGKILL' })
-    const out = (r.stdout || '') + (r.stderr || '') + (r.error?.code === 'ETIMEDOUT' ? `\nstopped: no end after ${timeout / 1000} s` : '')
-    const count = k => Number((out.match(new RegExp(`^(?:#|ℹ) ${k} (\\d+)`, 'm')) || [])[1] || 0)
-    const result = { what, ok: r.status === 0, tests: count('tests'), pass: count('pass'), fail: count('fail'), skipped: count('skipped'), ms: Date.now() - t0, ...(r.status === 0 ? {} : { output: out.split('\n').slice(-40).join('\n') }) }
+    // Bare on its PATH (the runtime running this), the package's root said.
+    const env = { ...process.env, PKGM_ROOT: dir, ...extra, PATH: `${dirname(process.execPath)}:${process.env.PATH || ''}` }
+    // A run that does not end is stopped, and fails: it never holds the rest
+    // (coreutils' timeout: Bare's spawnSync has no time limit of its own).
+    const r = spawnSync('timeout', ['--signal=KILL', String(timeout / 1000), cmd, ...args], { cwd, env, stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 64 * 1024 * 1024 })
+    const stopped = r.status === 124 || r.status === 137 || r.signal === 'SIGKILL'
+    const out = String(r.stdout || '') + String(r.stderr || '') + (stopped ? `\nstopped: no end after ${timeout / 1000} s` : '')
+    // Counted from its output: brittle's summary (# tests = 3/4 pass), or plain (# tests 4, # pass 3).
+    const b = out.match(/^# tests = (\d+)\/(\d+) pass/m)
+    const count = k => Number((out.match(new RegExp(`^# ${k} (\\d+)`, 'm')) || [])[1] || 0)
+    const tests = b ? Number(b[2]) : count('tests')
+    const pass = b ? Number(b[1]) : count('pass')
+    const ok = r.status === 0 && !stopped
+    const result = { what, ok, tests, pass, fail: b ? tests - pass : count('fail'), skipped: count('skipped'), ms: Date.now() - t0, ...(ok ? {} : { output: out.split('\n').slice(-40).join('\n') }) }
     log({ kind: 'tested', ...result, output: undefined })
     runs.push(result)
   }

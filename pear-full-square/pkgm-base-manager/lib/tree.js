@@ -1,7 +1,7 @@
 // Folders as units: copied, hashed, compared. Node's built-ins only.
-import { readdirSync, lstatSync, readFileSync, mkdirSync, copyFileSync, symlinkSync, readlinkSync, chmodSync, rmSync, existsSync } from 'node:fs'
-import { join, dirname } from 'node:path'
-import { createHash } from 'node:crypto'
+import { readdirSync, lstatSync, readFileSync, mkdirSync, copyFileSync, symlinkSync, readlinkSync, chmodSync, rmSync, existsSync } from 'bare-fs'
+import { join, dirname } from 'bare-path'
+import { createHash } from 'bare-crypto'
 
 // Every file under a folder (relative paths, sorted), with its kind.
 export function walk (root, { skip = () => false } = {}) {

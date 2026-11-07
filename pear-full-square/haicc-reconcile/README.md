@@ -30,7 +30,7 @@ node cli.js check|plan|apply|remove <declaration.json> [--strict]
   `mycelium-topic`).
 
 **Generic providers.** Checked only, with hints: `os`, `docker` (Engine,
-rootful, not Desktop), `nodejs` (`atLeast`), `bare` (the runtime images are
+rootful, not Desktop), `bare` (the runtime images are
 built with), `subnet` (free, or held by a named network), `udp` (a
 container reaches the host on a network), `port` (free, or held by the
 process in a pid file). Created: `folder` (marked as its owner's).

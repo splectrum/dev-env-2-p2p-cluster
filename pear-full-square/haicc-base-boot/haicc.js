@@ -1,7 +1,8 @@
-#!/usr/bin/env node
+#!/usr/bin/env bare
 // haicc at the root of a work folder (./haicc): the part of HAICC the host
 // needs, run from packages/base-package-haicc (copied in by ./boot,
-// stage 1). Node.js built-ins only. The work folder: HAICC_WORK.
+// stage 1), on Bare (its runtime in bare/, from the platform's package). The
+// work folder: HAICC_WORK.
 // Each `haicc boot` or `haicc shutdown` works on the configuration of the folder
 // it is called from, and keeps it; removing a child is `teardown <child>`.
 // At the root (./haicc), on swarms.json, the host's swarms:
@@ -15,7 +16,7 @@
 //   haicc teardown <swarm>       the swarm removed: its nodes, its folder, its entry
 //   haicc shutdown --cold        (./shutdown) everything removed back to the setup: the
 //                                swarms, swarms.json, packages/, ./haicc; kept: haiccing/,
-//                                log/, nodejs/ (external downloads are retained)
+//                                log/, bare/ (the runtime; external downloads are retained)
 // In a swarm (<swarm>/haicc), on its nodes.json, its nodes and roles:
 //   haicc boot [<node>] [--role=master|node] [--no-echo]
 //                                each node (or the one: added if new, the first the
@@ -36,12 +37,11 @@
 // --verbose: each check's detail too. What every command prints goes to
 // log/ as well, in order (files of 10 KB named by their start, newest last). Exit 0 when done,
 // 1 when not (the output says what is missing), 2 on a bad call.
-import process from 'node:process'
-import { existsSync, readFileSync, openSync, closeSync, createReadStream, createWriteStream, mkdirSync, writeFileSync, chmodSync, renameSync, rmSync, rmdirSync } from 'node:fs'
-import { join, dirname, resolve } from 'node:path'
-import { spawn, spawnSync } from 'node:child_process'
-import { createInterface } from 'node:readline'
-import { fileURLToPath } from 'node:url'
+import process from 'bare-process'
+import { existsSync, readFileSync, openSync, closeSync, mkdirSync, writeFileSync, chmodSync, renameSync, rmSync, rmdirSync, writeSync, readSync } from 'bare-fs'
+import { join, dirname, resolve } from 'bare-path'
+import { spawn, spawnSync } from 'bare-subprocess'
+import { fileURLToPath } from 'bare-url'
 import { openLog } from './lib/log.js'
 import { CHECKS } from './lib/host.js'
 
@@ -58,16 +58,20 @@ const level = flags.debug ? 'debug' : flags.verbose ? 'verbose' : 'normal'
 // the root, HAICC_NOLOG, says them only: the root logs what it echoes).
 const log = openLog({ dir: join(work, 'log'), file: process.env.HAICC_NOLOG !== '1', command: flags.cold ? ['./shutdown', ...argv.filter(a => a !== 'shutdown' && a !== '--cold')] : [process.env.HAICC_SWARM ? `./${process.env.HAICC_SWARM}/haicc` : './haicc', ...argv], level })
 
-const usage = () => { process.stderr.write(readFileSync(new URL(import.meta.url), 'utf8').split('\n').slice(1, 39).map(l => l.replace(/^\/\/ ?/, '')).join('\n') + '\n'); process.exit(2) }
+const usage = () => { process.stderr.write(readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 39).map(l => l.replace(/^\/\/ ?/, '')).join('\n') + '\n'); process.exit(2) }
 
 // A yes, asked of the person (or given with --yes; none without a terminal).
 async function ask (what) {
   if (flags.yes) { console.log(`  yes (--yes): ${what}`); return true }
   let fd
   try { fd = openSync('/dev/tty', 'r+') } catch { console.log(`  not done, no terminal to ask (--yes to agree): ${what}`); return false }
-  const rl = createInterface({ input: createReadStream(null, { fd, autoClose: false }), output: createWriteStream(null, { fd, autoClose: false }) })
-  const answer = await new Promise(resolve => { rl.once('close', () => resolve('')); rl.question(`  ${what}? [y/N] `, resolve) })   // no answer (Ctrl-D): a no
-  rl.close(); closeSync(fd)
+  // The question on the terminal, the answer read from it to the end of its
+  // line (no answer, Ctrl-D: a no).
+  writeSync(fd, `  ${what}? [y/N] `)
+  let answer = ''
+  const b = Buffer.alloc(1)
+  try { while (readSync(fd, b, 0, 1) === 1 && b[0] !== 10) answer += String.fromCharCode(b[0]) } catch {}
+  closeSync(fd)
   const yes = /^y(es)?$/i.test(answer.trim())
   console.log(`  ${what}? ${yes ? 'yes' : 'no'}`)
   return yes
@@ -123,7 +127,7 @@ function installFile () {
 
 // The work folder's own folders and files: not a swarm's name; a swarm's
 // own files: not a node's name.
-const OWN = ['packages', 'haiccing', 'nodejs', 'log', 'haicc', 'boot', 'shutdown', 'swarms.json', 'swarms', 'user']
+const OWN = ['packages', 'haiccing', 'bare', 'nodejs', 'log', 'haicc', 'boot', 'shutdown', 'swarms.json', 'swarms', 'user']
 const SWARM_OWN = ['haicc', 'nodes.json']
 const ROLES = ['master', 'node']
 const inSwarm = process.env.HAICC_SWARM || null
@@ -200,12 +204,12 @@ async function bootNode (swarm, node) {
     const at = join(dir, 'packages', repo)
     if (existsSync(join(at, 'package.json'))) { console.log(`  ${repo}: there`); continue }
     if (!existsSync(join(haiccing, repo, 'package.json'))) {
-      const f = spawnSync('sh', [join(here, 'fetch.sh'), haiccing, repo], { encoding: 'utf8', env: { ...process.env, PATH: `${dirname(process.execPath)}:${process.env.PATH}` } })
-      process.stdout.write(f.stdout || '')
+      const f = spawnSync('sh', [join(here, 'fetch.sh'), haiccing, repo], { env: { ...process.env, PATH: `${dirname(process.execPath)}:${process.env.PATH}` } })
+      process.stdout.write(String(f.stdout || ''))
       if (f.status !== 0) { console.log(`  ${repo}: could not be fetched (haiccing/sources)`); return 1 }
     }
-    const c = spawnSync('sh', ['-c', 'rm -rf "$2.new" && cp -a "$1" "$2.new" && rm -rf "$2.new/.git" && mv "$2.new" "$2"', 'copy', join(haiccing, repo), at], { encoding: 'utf8' })
-    if (c.status !== 0) { console.log(`  ${repo}: could not be copied in: ${(c.stderr || '').trim()}`); return 1 }
+    const c = spawnSync('sh', ['-c', 'rm -rf "$2.new" && cp -al "$1" "$2.new" && rm -rf "$2.new/.git" && mv "$2.new" "$2"', 'copy', join(haiccing, repo), at] )
+    if (c.status !== 0) { console.log(`  ${repo}: could not be copied in: ${String(c.stderr || '').trim()}`); return 1 }
     const hash = JSON.parse(readFileSync(join(at, 'package.json'), 'utf8')).pkgm?.hash?.slice(0, 12)
     console.log(`  copied ${repo} (${hash}) into ${join(dir, 'packages')}`)
   }
@@ -215,8 +219,8 @@ async function bootNode (swarm, node) {
 # the node's own HAICC (installed in its packages/).
 work=$(cd "$(dirname "$0")" && pwd)
 HAICC_WORK=$work; export HAICC_WORK
-[ -x "$work/../../nodejs/bin/node" ] && PATH=$work/../../nodejs/bin:$PATH
-exec node "$work/packages/base-package-haicc/modules/pear-full-square/haicc-deployment/haicc.js" "$@"
+PATH=$work/../../bare:$PATH; export PATH
+exec bare "$work/packages/base-package-haicc/modules/pear-full-square/haicc-deployment/haicc.js" "$@"
 `)
     chmodSync(join(dir, 'haicc.new'), 0o755)
     renameSync(join(dir, 'haicc.new'), join(dir, 'haicc'))
@@ -304,8 +308,8 @@ function addSwarm (swarm) {
 # the root's HAICC in this swarm.
 work=$(cd "$(dirname "$0")/.." && pwd)
 HAICC_WORK=$work; HAICC_SWARM=${swarm}; export HAICC_WORK HAICC_SWARM
-[ -x "$work/nodejs/bin/node" ] && PATH=$work/nodejs/bin:$PATH
-exec node "$work/packages/base-package-haicc/modules/pear-full-square/haicc-base-boot/haicc.js" "$@"
+PATH=$work/bare:$PATH; export PATH
+exec bare "$work/packages/base-package-haicc/modules/pear-full-square/haicc-base-boot/haicc.js" "$@"
 `)
   chmodSync(join(work, swarm, 'haicc'), 0o755)
   jsonFile.write(nodesFile(swarm), { swarm, nodes: {} })
@@ -370,8 +374,8 @@ function packageDir (repo) {
   const root = flags.from ? resolve(work, String(flags.from)) : haiccing
   const dir = join(root, repo)
   if (!existsSync(join(dir, 'package.json')) && !flags.from) {
-    const f = spawnSync('sh', [join(here, 'fetch.sh'), haiccing, repo], { encoding: 'utf8', env: { ...process.env, PATH: `${dirname(process.execPath)}:${process.env.PATH}` } })
-    process.stdout.write(f.stdout || '')
+    const f = spawnSync('sh', [join(here, 'fetch.sh'), haiccing, repo], { env: { ...process.env, PATH: `${dirname(process.execPath)}:${process.env.PATH}` } })
+    process.stdout.write(String(f.stdout || ''))
   }
   if (!existsSync(join(dir, 'package.json'))) { console.log(`no package ${repo} in ${root}`); return null }
   return dir
@@ -403,8 +407,8 @@ async function bootTest (repo, pkg, t) {
   const run = join(work, 'swarms', 'test', t)
   rmSync(run, { recursive: true, force: true })
   mkdirSync(dirname(run), { recursive: true })
-  const c = spawnSync('cp', ['-a', src, run], { encoding: 'utf8' })
-  if (c.status !== 0) { console.log(`  FAILED ${uri}: its folder could not be copied: ${c.stderr.trim()}`); return 'failed' }
+  const c = spawnSync('cp', ['-a', src, run] )
+  if (c.status !== 0) { console.log(`  FAILED ${uri}: its folder could not be copied: ${String(c.stderr).trim()}`); return 'failed' }
   console.log(`The test ${uri} (its run: swarms/test/${t}/), its cold boot:`)
   const env = { HAICC_WORK: work, HAICC_PACKAGE: pkg, HAICC_RUN: run, HAICC_PLATFORM: platformPackage, HAICC_NOLOG: '1', HAICC_SWARM: '' }
   const t0 = Date.now()
@@ -433,8 +437,8 @@ async function bootTests (uri) {
     if (!existsSync(join(pkg, 'test', t))) { console.log(`no test ${t} in ${repo} (test/${t})`); return 1 }
     if (existsSync(join(pkg, 'test', t, 'boot'))) booted = [t]
     else {
-      const r = spawnSync('sh', [join(pkg, 'test', t, 'test')], { cwd: join(pkg, 'test', t), encoding: 'utf8' })
-      process.stdout.write((r.stdout || '') + (r.stderr || ''))
+      const r = spawnSync('sh', [join(pkg, 'test', t, 'test')], { cwd: join(pkg, 'test', t) })
+      process.stdout.write(String(r.stdout || '') + String(r.stderr || ''))
       const ok = r.status === 0
       console.log(`  ${ok ? 'ok    ' : 'FAILED'} ${uri}`); tally[ok ? 'passed' : 'failed']++
     }
@@ -457,7 +461,7 @@ async function bootTests (uri) {
 // back to the setup.
 async function coldShutdown () {
   const all = Object.keys(readSwarms().swarms).reverse()
-  if (!(await confirm(`The work folder, cold: every swarm (${all.join(', ') || 'none'}), swarms.json, packages/ and ./haicc removed; kept: haiccing/, log/, nodejs/ (./boot sets it up again)`))) return 1
+  if (!(await confirm(`The work folder, cold: every swarm (${all.join(', ') || 'none'}), swarms.json, packages/ and ./haicc removed; kept: haiccing/, log/, bare/ (./boot sets it up again)`))) return 1
   for (const sw of all) {
     if (existsSync(join(work, sw, 'haicc'))) {
       console.log(`The swarm ${sw} (${sw}/haicc shutdown):`)
@@ -470,7 +474,7 @@ async function coldShutdown () {
   // Last: what runs this command (it is loaded: removing its files is safe).
   rmSync(join(work, 'packages'), { recursive: true, force: true }); console.log('  removed packages/')
   rmSync(join(work, 'haicc'), { force: true }); console.log('  removed ./haicc')
-  console.log(`The work folder: shut down, cold (kept: haiccing/, log/${existsSync(join(work, 'nodejs')) ? ', nodejs/' : ''}); ./boot sets it up again`)
+  console.log(`The work folder: shut down, cold (kept: haiccing/, log/${existsSync(join(work, 'bare')) ? ', bare/' : ''}); ./boot sets it up again`)
   return 0
 }
 

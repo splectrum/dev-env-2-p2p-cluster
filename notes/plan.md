@@ -227,7 +227,9 @@ Design: `packages.md`. Its own request is written as its scope settles.
   root's: each manager's, then its own, keeping `haiccing/`). Later: the
   state saved before removal (the vaults, the swarm's repositories, the
   deployments), so a teardown can be undone or its state restored.
-- **The host on Bare** (the human, 2026-11-06: where we need to get to).
+- **The host on Bare** (the human, 2026-11-06: where we need to get to). **Done
+  for the platform (2026-11-07)**: `notes/packages.md`, "On Bare"; each later
+  package on Bare from the start.
   Today the host side runs on Node.js (the root's HAICC, the package
   manager, the managers, Splectral's server); Bare only in the nodes. One
   runtime everywhere: Bare at the root instead of Node.js (one binary; the

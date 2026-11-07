@@ -4,7 +4,7 @@ The package manager. It works only from packages made (making them is the
 development environment's, the other side of the airgap: the package
 writer, `tools/package-writer` in the development repository): a swarm's
 codebase assembled from its package into the master's package repository,
-and a package's tests, bottom up. Node's built-ins only: no npm, no git.
+and a package's tests, bottom up. On Bare (Bare's own modules): no npm, no git.
 
 ```sh
 pkgm assemble <package folder> <swarm> --into=<repository>   # the swarm's codebase into its master's repository

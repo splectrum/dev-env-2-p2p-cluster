@@ -5,8 +5,8 @@
 // said as it ends: ok or FAILED, its counts, how long; a failure with the
 // end of its output.
 //   const { ok, repos, runs } = selfTest(packagesFolder, say)
-import { existsSync, readFileSync, readdirSync } from 'node:fs'
-import { join } from 'node:path'
+import { existsSync, readFileSync, readdirSync } from 'bare-fs'
+import { join } from 'bare-path'
 import { testPackage } from '../../pkgm-base-manager/index.js'
 
 const readJson = f => JSON.parse(readFileSync(f, 'utf8'))
