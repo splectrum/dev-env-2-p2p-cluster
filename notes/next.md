@@ -56,7 +56,15 @@ package manager work:
    **Done (2026-11-06):** a path for a name is refused (exit 2, nothing
    made), naming the command to use: `hosts/haicc boot master`; a test added.
 
-**For the local agent, now (2026-11-07, the human's word): the sixth
+**Published: the sixth release (2026-11-07), the human's word.**
+`setup-25c91afc4801`, boot 0.6.0, latest; `base-package-haicc` `8ac17a0`. From
+GitHub: 7 passed and 2 passed, as expected. One finding for the implementer, a
+test run's log in the source and the release:
+`steps/phase-3/2-package-structure/1-haicc/local-run.md`. The human's manual test
+is next. Not pushed: the products (`pear-full-square`), Codeberg's mirror of
+`base-package-haicc`.
+
+**Done (above): for the local agent (2026-11-07, the human's word): the sixth
 release, created and tested before anything else.** From `main` at or after
 `38ed4f9`, with this repository installed (`npm install` at its root):
 
