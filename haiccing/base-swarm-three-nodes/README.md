@@ -15,7 +15,7 @@ tests.
 - `test/`: `validation` (the package as it is: its modules load, its sets
   agree, its swarm's configuration holds), `full` (and the modules' own
   tests, and `deploy`: the package deployed through a fresh root, its swarm
-  made, its codebase assembled, its nodes up).
+  made, its nodes up, the master's repository assembled).
 
 Written by the package writer from the development repository
 ([splectrum/dev-env-2-p2p-cluster](https://github.com/splectrum/dev-env-2-p2p-cluster)): not edited here.

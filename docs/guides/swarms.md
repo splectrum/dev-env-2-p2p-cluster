@@ -5,8 +5,9 @@ own `haicc`; a `boot` or `shutdown` works on the config of the folder it is
 called from. Removing asks first (`--yes` agrees). Names are URI parts:
 `Hosts` becomes `hosts`, and it says so.
 
-A swarm is made from a package's configuration, never by hand: its nodes
-are its package's (`nodes.json`, copied from it).
+A swarm is made from a package's configuration (`nodes.json` and the rest,
+copied from it). Nodes can then be added and removed by hand, unless the
+swarm was made `--strict`.
 
 ## The root (the work folder)
 
@@ -15,10 +16,13 @@ are its package's (`nodes.json`, copied from it).
 ./haicc boot base-swarm-three-nodes
                              # a package's swarms (here: three-nodes): the package fetched
                              # if not in haiccing/, checked intact; each swarm's folder, its
-                             # config files copied in, its codebase assembled into
-                             # three-nodes/repository/, its entry in swarms.json; booted
+                             # config files copied in, its entry in swarms.json; booted (the
+                             # master's build assembles the codebase into
+                             # three-nodes/master/repository/)
 ./haicc boot base-swarm-three-nodes/three-nodes --as=lab
                              # one of its swarms, under another name
+./haicc boot base-swarm-three-nodes --strict
+                             # its nodes its package's only: none added or removed by hand
 ./haicc boot my-swarms --from=user
                              # a package from another folder (a development package: without
                              # a hash it is mixed, and said)
@@ -33,8 +37,10 @@ are its package's (`nodes.json`, copied from it).
 
 ```bash
 ./three-nodes/haicc boot           # each node in nodes.json: built, booted, the master first
-./three-nodes/haicc boot node-1    # one of them (a node not in nodes.json: refused)
+./three-nodes/haicc boot node-1    # one of them
+./three-nodes/haicc boot node-3    # a node added by hand (--role=master|node; not in a strict swarm)
 ./three-nodes/haicc shutdown [node-1]   # each node's (or one's) cold shutdown: its folder removed
+./three-nodes/haicc teardown node-3     # a node removed, and its entry (not in a strict swarm)
 ```
 
 A node's boot shows as it happens, each line marked `  | ` (`--no-echo`: its

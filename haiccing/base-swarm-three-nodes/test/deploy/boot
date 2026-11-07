@@ -21,15 +21,18 @@ expect 'Booted'
 step 'the package deployed: ./haicc boot <package> (its swarms)' "$w/haicc" boot "$(basename "$pkg")" "--from=$(dirname "$pkg")"
 expect ': intact ('
 expect 'The swarm three-nodes: made from'
-expect 'its codebase assembled into three-nodes/repository/'
 expect '(sealed)'
+expect 'assembled into three-nodes/master/repository/'
 expect 'The node three-nodes/master: up'
 expect 'The node three-nodes/node-1: up'
 expect 'The node three-nodes/node-2: up'
-step "  its config copied in; its repository: the codebase, what it was made from" sh -c "[ -f '$w/three-nodes/nodes.json' ] && [ -f '$w/three-nodes/modules.json' ] && [ -f '$w/three-nodes/repository/modules/pear-full-square/p2p-node/package.json' ] && grep -q '\"swarm\": \"three-nodes\"' '$w/three-nodes/repository/contents.json'"
+step "  its config copied in; the master's repository: the codebase, what it was made from" sh -c "[ -f '$w/three-nodes/nodes.json' ] && [ -f '$w/three-nodes/modules.json' ] && [ -f '$w/three-nodes/master/repository/modules/pear-full-square/p2p-node/package.json' ] && grep -q '\"swarm\": \"three-nodes\"' '$w/three-nodes/master/repository/contents.json' && [ ! -e '$w/three-nodes/node-1/repository' ]"
 step '  again: booted from its own copy' "$w/haicc" boot "$(basename "$pkg")" "--from=$(dirname "$pkg")" --no-echo
 expect 'booted from its own copy'
 step '  by its name: ./haicc boot three-nodes' "$w/haicc" boot three-nodes --no-echo
-step '  under another name too: --as=other' "$w/haicc" boot "$(basename "$pkg")/three-nodes" "--from=$(dirname "$pkg")" --as=other --no-echo
+step '  under another name too, strict: --as=other --strict' "$w/haicc" boot "$(basename "$pkg")/three-nodes" "--from=$(dirname "$pkg")" --as=other --strict --no-echo
+step '    strict: a node not in its package refused' sh -c "! '$w/other/haicc' boot node-9"
+expect 'the swarm other is strict'
+step '  the swarm shut down and booted: the repository assembled again' sh -c "'$w/three-nodes/haicc' shutdown --yes && [ ! -e '$w/three-nodes/master' ] && '$w/three-nodes/haicc' boot --no-echo && [ -f '$w/three-nodes/master/repository/contents.json' ]"
 step 'teardown: both swarms' sh -c "'$w/haicc' teardown three-nodes --yes && '$w/haicc' teardown other --yes && [ ! -e '$w/three-nodes' ] && [ ! -e '$w/other' ]"
 echo "the deployment: all $n steps passed"
