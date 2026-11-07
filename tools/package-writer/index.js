@@ -76,7 +76,7 @@ const skipThird = (r, base) => base === 'test' || base === '.bin' || (r.split('/
 // Not a module's: its dependencies, git, records, and a log/ a run there left.
 const skipOurs = (r, base) => base === 'node_modules' || base === '.git' || base === 'record' || r === 'log'
 
-function stage (dev, defs, name, ours, lock, dir) {
+function stage (dev, defs, name, ours, lock, dir, out) {
   const def = defs.packages[name]
   const repo = repoOf(name, def)
   // brittle too: the package's own tests run on it (test/modules-load, written here).
@@ -109,6 +109,9 @@ function stage (dev, defs, name, ours, lock, dir) {
   // Bare's runtime, when the package carries it: executable (npm keeps no exec bit).
   const rt = join(dir, 'modules', 'node_modules', `bare-runtime-${platform()}`, 'bin', 'bare')
   if (existsSync(rt)) chmodSync(rt, 0o755)
+  // Its LICENSE, part of the package (tested and hashed with it, as it
+  // ships): the repository's own, else this repository's.
+  for (const f of [join(out, repo, 'LICENSE'), join(dev, 'LICENSE')]) if (existsSync(f)) { copy(f, join(dir, 'LICENSE')); break }
   const has = n => existsSync(join(dir, n))
   const pkgm = {
     package: name,
@@ -145,7 +148,7 @@ export function writePackages ({ dev, out, only = null, keep = false, log = () =
   try {
     const staged = []
     for (const name of names) {
-      const s = stage(dev, defs, name, ours, lock, join(scratch, repoOf(name, defs.packages[name])))
+      const s = stage(dev, defs, name, ours, lock, join(scratch, repoOf(name, defs.packages[name])), out)
       log({ kind: 'staged', package: name, ours: s.pkgm.modules.ours.length, third: s.pkgm.modules.third, unresolved: s.missing.length })
       staged.push(s)
     }
@@ -155,7 +158,7 @@ export function writePackages ({ dev, out, only = null, keep = false, log = () =
     for (const s of staged) {
       const to = join(out, s.repo)
       mkdirSync(to, { recursive: true })
-      for (const n of readdirSync(to)) if (n !== '.git' && n !== 'LICENSE') remove(join(to, n))
+      for (const n of readdirSync(to)) if (n !== '.git') remove(join(to, n))
       for (const n of readdirSync(s.dir)) copy(join(s.dir, n), join(to, n))
       written.push({ package: s.name, dir: to, hash: s.pkgm.hash })
       log({ kind: 'written', package: s.name, dir: to, hash: s.pkgm.hash.slice(0, 12) })

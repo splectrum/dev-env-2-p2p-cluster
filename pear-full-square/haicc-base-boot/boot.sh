@@ -26,11 +26,12 @@ if [ -z "${HAICC_BOOT_LOGGING:-}" ]; then
   log=$(ls "$logdir" | grep -E '^[0-9]{8}T[0-9]{6}Z\.log$' | sort | tail -1)
   if [ -z "$log" ] || [ "$(wc -c < "$logdir/$log")" -ge 10240 ]; then log=$(date -u +%Y%m%dT%H%M%SZ).log; fi
   log=$logdir/$log
-  t0=$(date +%s)
+  # How long: from the machine's uptime, a clock that never steps back.
+  t0=$(cut -d' ' -f1 /proc/uptime)
   echo "== $(date -u +%Y-%m-%dT%H:%M:%SZ) ${HAICC_AS:-./boot} $*  (in $(pwd))" | tee -a "$log"
   { sh "$0" "$@" 2>&1; echo $? > "$logdir/boot.exit"; } | tee -a "$log"
   code=$(cat "$logdir/boot.exit" 2>/dev/null || echo 1); rm -f "$logdir/boot.exit"
-  echo "== exit $code, $(( $(date +%s) - t0 )) s" | tee -a "$log"
+  echo "== exit $code, $(awk -v a="$t0" -v b="$(cut -d' ' -f1 /proc/uptime)" 'BEGIN { printf "%.1f", b - a }') s" | tee -a "$log"
   [ "$code" = 0 ] || exit "$code"
   # 3. Stage 2: HAICC itself (it logs itself).
   exec "$work/haicc" boot "$@"

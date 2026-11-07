@@ -14,6 +14,7 @@
 //        run by another that echoes and logs it)
 import { appendFileSync, mkdirSync, statSync, readdirSync, writeSync } from 'bare-fs'
 import { join } from 'bare-path'
+import hrtime from 'bare-hrtime'
 import process from 'bare-process'
 
 export const LIMIT = 10 * 1024
@@ -28,7 +29,10 @@ export function logFile (dir, start = new Date()) {
 }
 
 export function openLog ({ dir, command, level = 'normal', file: logged = true }) {
+  // The start: its wall-clock time for the header; how long, from a clock that
+  // never steps back (a wall clock can: WSL2's did, once).
   const t0 = Date.now()
+  const m0 = hrtime.bigint()
   let file = null
   if (logged) { mkdirSync(dir, { recursive: true }); file = logFile(dir, new Date(t0)) }
   const write = text => { if (file) try { appendFileSync(file, text) } catch {} }
@@ -48,7 +52,7 @@ export function openLog ({ dir, command, level = 'normal', file: logged = true }
   console.error = (...args) => put(2, args.map(say).join(' ') + '\n')
   // Said on stdout too, as the log has it: where a command starts, and ends.
   put(1, `== ${new Date(t0).toISOString()} ${command.join(' ')}  (in ${process.cwd()}${level === 'normal' ? '' : `, ${level}`})\n`)
-  process.on('exit', code => put(1, `== exit ${code}, ${((Date.now() - t0) / 1000).toFixed(1)} s\n`))
+  process.on('exit', code => put(1, `== exit ${code}, ${(Number(hrtime.bigint() - m0) / 1e9).toFixed(1)} s\n`))
   return {
     // To the log only (what the terminal already shows: a question answered there).
     note: text => write(text),

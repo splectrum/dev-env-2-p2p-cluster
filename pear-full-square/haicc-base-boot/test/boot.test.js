@@ -134,7 +134,7 @@ test('the setup: a self-extracting release, extracting haiccing/ (boot, sources,
     const logs = readdirSync(join(work, 'log'))
     t.is(logs.length, 1)
     t.ok(/^\d{8}T\d{6}Z\.log$/.test(logs[0]))
-    t.ok(/^== \d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ sh \S*haicc-setup\.sh .*\nhaicc-setup: base-package-haicc abcdef123456 .*\n(.*\n)*== exit 0, \d+ s\n$/.test(readFileSync(join(work, 'log', logs[0]), 'utf8')))
+    t.ok(/^== \d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ sh \S*haicc-setup\.sh .*\nhaicc-setup: base-package-haicc abcdef123456 .*\n(.*\n)*== exit 0, \d+(\.\d)? s\n$/.test(readFileSync(join(work, 'log', logs[0]), 'utf8')))
     // The first boot's stage 1, on a folder with no packages/ yet: the
     // runtime checked, HAICC's package copied in whole (hard links).
     const stage1 = run('sh', [join(work, 'boot')], { env: { ...process.env, HAICC_BOOT_LOGGING: '1' } })
