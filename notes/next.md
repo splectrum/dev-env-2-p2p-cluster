@@ -93,6 +93,13 @@ manual test from the local file: passed. Record:
 `steps/phase-3/2-package-structure/3-bare/local-run.md`. Not pushed: the products,
 Codeberg's mirror of `base-package-haicc`.
 
+**The ninth release: the candidate failed, fixed, tested locally, not published
+(2026-11-07).** Every real release's node refused itself: `LICENSE` in the copy,
+not in the hash. Fixed in `packageHash`. `setup-434506b82414`: 7 passed, the
+platform's 23 steps; the tamper checks as asked. Waiting for the human's explicit
+word to publish. Record and findings:
+`steps/phase-3/2-package-structure/4-node-validated/local-run.md`.
+
 **Step 2 built (2026-11-07): a node's boot, validated by the node itself.**
 `notes/packages.md`, "Step 2". From a fresh release, Node.js off the PATH:
 7 passed, the platform test 23 steps. **For the local agent, with the
