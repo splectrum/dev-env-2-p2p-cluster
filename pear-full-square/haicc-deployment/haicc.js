@@ -34,7 +34,10 @@ const packages = join(work, 'packages')
 // The root's haiccing/: a node is two down from it (<work>/<swarm>/<node>).
 const haiccing = [join(work, 'haiccing'), join(work, '..', 'haiccing'), join(work, '..', '..', 'haiccing')].find(d => existsSync(d)) || join(work, 'haiccing')
 
-const log = openLog({ dir: join(work, 'log'), command: [`./${basename(dirname(work))}/${basename(work)}/haicc`, ...argv], level: flags.debug ? 'debug' : flags.verbose ? 'verbose' : 'normal' })
+// The command as it was called (the launcher's $0, HAICC_AS), not passed on.
+const calledAs = process.env.HAICC_AS || `./${basename(dirname(work))}/${basename(work)}/haicc`
+process.env.HAICC_AS = ''   // (Bare's environment refuses a delete)
+const log = openLog({ dir: join(work, 'log'), command: [calledAs, ...argv], level: flags.debug ? 'debug' : flags.verbose ? 'verbose' : 'normal' })
 
 const usage = () => { process.stderr.write(readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 12).map(l => l.replace(/^\/\/ ?/, '')).join('\n') + '\n'); process.exit(2) }
 const fetchScript = join(packages, 'base-package-haicc', 'modules', 'pear-full-square', 'haicc-base-boot', 'fetch.sh')

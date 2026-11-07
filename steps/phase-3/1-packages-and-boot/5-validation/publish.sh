@@ -37,7 +37,7 @@ for r in $repos; do
   echo "$r: $(git log --oneline -1)$([ $push = 1 ] && echo ', pushed')"
 done
 cd "$folder"
-sh "$dev/pear-full-square/haicc-base-boot/release.sh" "$folder/base-package-haicc" "$folder/haicc-setup.sh"
+sh "$dev/pear-full-square/haicc-base-boot/release.sh" "$folder/base-package-haicc" "$folder/haicc-setup.sh" "$dev/node_modules/bare-runtime-linux-x64/bin/bare"
 tag=setup-$(sed -n 's/.*"hash": *"\([0-9a-f]\{12\}\).*/\1/p' "$folder/base-package-haicc/package.json" | head -1)
 if [ $push = 1 ] && command -v gh >/dev/null 2>&1; then
   if gh release view "$tag" -R haiccing/base-package-haicc >/dev/null 2>&1; then echo "release $tag: there already"

@@ -4,21 +4,23 @@
 # with its own ./haicc. Stops at the first step that fails (exit 1), saying which.
 set -u
 pkg=$HAICC_PACKAGE; run=$HAICC_RUN
+# Bare's runtime for its setup: the one this install runs on.
+runtime=$HAICC_WORK/bare/bare
 # The install is its own: its launchers set its HAICC_WORK; it logs itself.
-unset HAICC_WORK HAICC_NOLOG HAICC_SWARM
+unset HAICC_WORK HAICC_NOLOG HAICC_SWARM HAICC_AS
 w=$run/install
 n=0
 # A step: what it is, the command it runs (the install's path shortened to
 # install/, this run's to run/), then ok, or FAILED with the end of its output.
-short () { printf '%s ' "$@" | sed "s#$w#install#g; s#$run#run#g; s#$pkg#package#g; s# \$##"; }
+short () { printf '%s ' "$@" | sed "s#$w#install#g; s#$run#run#g; s#$pkg#package#g; s#$runtime#this-runtime#g; s# \$##"; }
 step () { n=$((n + 1)); what=$1; shift; printf '%2d %s\n     $ %s ... ' "$n" "$what" "$(short "$@")"; if out_=$("$@" 2>&1); then echo ok; else echo FAILED; echo "$out_" | tail -30 | sed 's/^/     /'; exit 1; fi; }
 expect () { printf '%s' "$out_" | grep -q "$1" || { echo "   expected: $1"; echo "$out_" | tail -20 | sed 's/^/     /'; exit 1; }; }
 
-step 'its setup, built from the package under test' sh "$pkg/modules/pear-full-square/haicc-base-boot/release.sh" "$pkg" "$run/haicc-setup.sh"
+step 'its setup, built from the package under test and this runtime' sh "$pkg/modules/pear-full-square/haicc-base-boot/release.sh" "$pkg" "$run/haicc-setup.sh" "$runtime"
 step 'set up: a fresh install, sourced from this haiccing/' sh "$run/haicc-setup.sh" "$w" "--sources=folder:$(dirname "$pkg")"
 step './boot (cold, then warm)' "$w/boot" --yes
 expect 'Booted'
-step 'the install: base-package-haicc in packages/, ./haicc' sh -c "[ -x '$w/haicc' ] && [ -f '$w/packages/base-package-haicc/modules/pear-full-square/haicc-base-boot/haicc.js' ]"
+step 'the install: Bare in bare/, base-package-haicc in packages/, ./haicc' sh -c "[ -x '$w/bare/bare' ] && [ -x '$w/haicc' ] && [ -f '$w/packages/base-package-haicc/modules/pear-full-square/haicc-base-boot/haicc.js' ]"
 step 'a swarm: ./haicc boot hosts' "$w/haicc" boot hosts --no-echo
 step 'its master, cold and warm: ./hosts/haicc boot master' "$w/hosts/haicc" boot master
 expect 'Ready: '
@@ -35,7 +37,7 @@ step '  both up again' sh -c "[ -x '$w/hosts/master/haicc' ] && [ -x '$w/hosts/n
 step 'the root level: shutdown, boot' sh -c "'$w/haicc' shutdown --yes && '$w/haicc' boot --no-echo"
 step 'teardown: the swarm and its entry' "$w/haicc" teardown hosts --yes
 step 'the cold shutdown: ./shutdown' "$w/shutdown" --yes
-step '  kept: haiccing/, log/; gone: packages/, ./haicc' sh -c "[ -d '$w/haiccing' ] && [ -d '$w/log' ] && [ ! -e '$w/packages' ] && [ ! -e '$w/haicc' ]"
+step '  kept: haiccing/, log/, bare/; gone: packages/, ./haicc' sh -c "[ -d '$w/haiccing' ] && [ -d '$w/log' ] && [ -x '$w/bare/bare' ] && [ ! -e '$w/packages' ] && [ ! -e '$w/haicc' ]"
 step './boot again: set up from haiccing/' "$w/boot" --yes
 expect 'Booted'
 echo "the platform: all $n steps passed"

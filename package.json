@@ -55,6 +55,7 @@
     "bare-crypto": "1.15.4",
     "bare-tcp": "2.6.1",
     "bare-dgram": "1.1.1",
-    "brittle": "4.5.0"
+    "brittle": "4.5.0",
+    "bare-tty": "5.2.2"
   }
 }

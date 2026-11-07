@@ -81,6 +81,29 @@ base-package-haicc/test` (expect 7 passed; the setup is now 36 MB), and
 `steps/phase-3/2-package-structure/3-bare/local-run.md`. Then the package
 manager as the second package, on Bare from the start.
 
+**The local agent's findings on the seventh release, done (2026-11-07)**:
+1. the runtime in the setup, not in git (the human's call): `release.sh
+<package> <out> [<runtime>]`, pinned by its sha256, extracted to `bare/`,
+checked; from the eighth release the package's tree no longer has it (the
+seventh's 34.6 MB stay in the history: no force-push); the package 27 MB
+(`bare-tls` 12 MB, brought by brittle's dependencies: to trim later); 2. the
+published command removes an old `haicc-setup.sh` first (`curl -C -` would
+append to it); within one run, curl's `--retry` restarts from zero (checked:
+it does not resume), so the readme, the profile and `packages.json` say how to
+resume on a poor connection: `curl -fL -C - -o haicc-setup.sh <url>` again
+until it ends without an error (checked: it resumes); 3. `package-lock.json`
+as npm writes it, committed; 4. a yes on a terminal: the record line to the
+log only (the terminal shows the question and the answer); to a pipe, said;
+5. each command echoed as called (the launchers and the stubs pass `$0`,
+`HAICC_AS`). From a fresh setup, called by path from another folder, Node.js
+off the PATH: 7 passed, 39 s. **For the local agent, with the human's OK: the
+eighth release** (`npm install`, then `publish.sh`, which now passes this
+repository's runtime to `release.sh`; the profile too: the live one still
+says the boot checks Node.js), tested from GitHub (7 passed, 2 passed), and on
+a real terminal a yes asked and answered (`./haicc teardown <swarm>` without
+--yes: one line with the question and the answer). Record in
+`steps/phase-3/2-package-structure/3-bare/local-run.md`.
+
 **Published: the seventh release (2026-11-07), the human's word.**
 `setup-bb5ab8f7a96d`, boot 0.6.0, latest; `base-package-haicc` `cb60f4b`, the
 runtime in git as built. From GitHub: 7 passed and 2 passed; the human's manual
