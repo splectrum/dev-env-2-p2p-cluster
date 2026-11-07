@@ -1,9 +1,8 @@
 # The local agent's run: the ninth release (2026-11-07)
 
-`setup-434506b82414`, boot 0.6.0, Bare v1.36.0, from `77db647`: built with
-`publish.sh --no-push`, **not published**. `base-package-haicc` `aba7360` is in
-the local clone only; the latest link still serves the eighth release. Publishing
-waits for the human's explicit word.
+`setup-434506b82414`, boot 0.6.0, Bare v1.36.0, latest, from `77db647`:
+published with the human's word, `base-package-haicc` `aba7360` and the release.
+Built and tested first with `publish.sh --no-push`.
 
 ## The candidate as handed over failed: fixed here
 
@@ -35,7 +34,20 @@ identity; a test added to `verify` (fails without the fix, 5 of 6; 6 of 6 with i
   intact, up.
 - A file added: refused, exit 1. No hidden files.
 
-Not run: from GitHub (nothing published).
+## After publishing, from GitHub
+
+The latest link, the default sources, a new folder: the file served is the file
+built; every command exit 0. `Passed: 7 passed, 0 failed, 0 skipped` (the
+platform's 23 steps, node-1's tampered boot among them: not intact, said, not up),
+`Passed: 2 passed, 0 failed, 0 skipped`; a swarm and a master: `intact
+(434506b82414)`, `Ready: 3 test runs passed`. No hidden files. Download about 3
+minutes.
+
+Then, the human's word: the products (`haicc-base-boot` `3ac2826`,
+`haicc-deployment` `ab8b695`, `pkgm-base-manager` `22b3ed8`, from `8ab4ef8`), and
+Codeberg synced: all 44 repositories of `haiccing` and `pear-full-square` the same
+on both. `base-package-haicc`'s 35 MB fetch from GitHub fails on this connection
+every time, so the sync's clone was seeded from the publish clone.
 
 **The human's manual test (2026-11-07)**: the local build in `~/haicc-r9`, from
 the local file: "great, all passed". The output was not handed back.
