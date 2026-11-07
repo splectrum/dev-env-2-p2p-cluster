@@ -2,12 +2,13 @@
 // haicc: a node's HAICC (<swarm>/<node>/haicc <command>), from the
 // platform's package (packages/base-package-haicc), copied in by its
 // swarm's cold boot.
-//   haicc boot                        the node's warm boot: the self-test of what was copied
-//                                     in (each package's tests, bottom up, in place); 0 when all pass
+//   haicc boot                        the node's warm boot: what was copied in validated by
+//                                     the node itself: each package intact (its hash), then
+//                                     its validation set, in place; up only when all pass
 //   haicc shutdown                    the node's shutdown: its container removed (with the
 //                                     swarm's step); its folder kept, for its boot
 // Removing a node is its swarm's: <swarm>/haicc shutdown <node>.
-//   haicc test <package>              a package here: its tests, bottom up
+//   haicc test <package> [--set=<set>]   a package here: intact (its hash), then its tests, bottom up
 //   haicc fetch <repository>          a repository into the root's haiccing/
 //   haicc list | version
 // The node's folder ($HAICC_WORK): packages/ (whole repositories, each with
@@ -24,7 +25,7 @@ import { spawnSync } from 'bare-subprocess'
 import { fileURLToPath } from 'bare-url'
 import { openLog } from './lib/log.js'
 import { selfTest } from './lib/selftest.js'
-import { testPackage } from '../pkgm-base-manager/index.js'
+import { testPackage, verify } from '../pkgm-base-manager/index.js'
 
 const argv = process.argv.slice(2)
 const flags = Object.fromEntries(argv.filter(a => a.startsWith('--')).map(a => { const [k, v] = a.slice(2).split('='); return [k, v ?? true] }))
@@ -65,9 +66,10 @@ try {
     console.log('Shut down')
     process.exit(0)
   } else if (verb === 'boot') {
-    // The node's boot: what was copied in, tested in place; then its
+    // The node's warm boot: what was copied in, validated by the node
+    // itself (each package intact, then its validation set); then its
     // container started (with the swarm's step: none yet).
-    console.log(`The node ${basename(dirname(work))}/${basename(work)}: the self-test of its packages (${packages})`)
+    console.log(`The node ${basename(dirname(work))}/${basename(work)}: its warm boot, validating what was copied in (${packages})`)
     const t = selfTest(packages)
     const failed = t.runs.filter(r => !r.ok)
     if (!t.repos.length) console.log('  no packages here: nothing to test')
@@ -89,7 +91,10 @@ try {
     if (!name) usage()
     const dir = join(packages, name)
     if (!existsSync(join(dir, 'package.json'))) { console.log(`haicc test: no package ${name} here (${packages})`); process.exit(1) }
-    const ok = printTest(name, testPackage(dir))
+    // Intact first (its hash against the one it was written with), then its tests (--set=<set>).
+    const v = verify(dir)
+    console.log(`  ${v.ok ? 'ok    ' : 'FAILED'} ${name}: ${v.said}`)
+    const ok = v.ok && printTest(name, testPackage(dir, { set: flags.set ? String(flags.set) : null }))
     console.log(ok ? `test ${name}: passed` : `test ${name}: FAILED`)
     process.exit(ok ? 0 : 1)
   } else usage()

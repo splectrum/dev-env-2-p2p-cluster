@@ -22,7 +22,7 @@ import os, { tmpdir } from 'bare-os'
 import { fileURLToPath } from 'bare-url'
 import { closure } from '../../pear-full-square/pkgm-base-manager/lib/closure.js'
 import { copy, hashTree, remove } from '../../pear-full-square/pkgm-base-manager/lib/tree.js'
-import { testPackage } from '../../pear-full-square/pkgm-base-manager/index.js'
+import { testPackage, packageHash } from '../../pear-full-square/pkgm-base-manager/index.js'
 import process from 'bare-process'
 
 const here = dirname(fileURLToPath(import.meta.url))
@@ -109,7 +109,6 @@ function stage (dev, defs, name, ours, lock, dir) {
   // Bare's runtime, when the package carries it: executable (npm keeps no exec bit).
   const rt = join(dir, 'modules', 'node_modules', `bare-runtime-${platform()}`, 'bin', 'bare')
   if (existsSync(rt)) chmodSync(rt, 0o755)
-  const tops = readdirSync(dir).filter(n => n !== 'package.json' && n !== 'README.md' && n !== '.git').sort()
   const has = n => existsSync(join(dir, n))
   const pkgm = {
     package: name,
@@ -121,7 +120,7 @@ function stage (dev, defs, name, ours, lock, dir) {
     ...(set.missing.length ? { unresolved: set.missing.map(m => `${m.from}: ${m.name}`) } : {})
   }
   if (!has('README.md')) writeFileSync(join(dir, 'README.md'), readme(repo, def, pkgm))
-  pkgm.hash = hashTree(dir, [...tops, 'README.md'])
+  pkgm.hash = packageHash(dir)
   writeJson(join(dir, 'package.json'), { name: repo, description: def.description, private: true, license: def.license || 'MIT', pkgm })
   return { name, repo, dir, pkgm, missing: set.missing }
 }

@@ -1,10 +1,11 @@
 import test from 'brittle'
-import { chmodSync, mkdtempSync, mkdirSync, writeFileSync, existsSync } from 'bare-fs'
+import { chmodSync, rmSync, mkdtempSync, mkdirSync, writeFileSync, existsSync } from 'bare-fs'
 import { join, dirname } from 'bare-path'
 import { tmpdir } from 'bare-os'
 import { spawnSync } from 'bare-subprocess'
 import { fileURLToPath } from 'bare-url'
 import { openDeployment } from '../index.js'
+import { packageHash } from '../../pkgm-base-manager/index.js'
 import process from 'bare-process'
 
 // A project of folders: one configuration, one "running" (a stand-in for a
@@ -52,20 +53,31 @@ test('a node finds its packages and the root\'s haiccing/', (t) => {
   const node = join(dir, 'hosts', 'master')
   const put = (f, text) => { mkdirSync(dirname(join(node, f)), { recursive: true }); writeFileSync(join(node, f), text) }
   mkdirSync(join(dir, 'haiccing'))
-  put('packages/base-package-haicc/package.json', JSON.stringify({ pkgm: { hash: 'bbbbbbbbbbbbbbbb' } }))
   put('packages/base-package-haicc/modules/pear-full-square/haicc-base-boot/fetch.sh', 'echo "fetching into $1"\n')
   put('packages/base-package-haicc/test/one/test', '#!/bin/sh\necho "# tests 1"\necho "# pass 1"\n')
   chmodSync(join(node, 'packages/base-package-haicc/test/one/test'), 0o755)
+  // Written: its hash recorded, as the package writer does.
+  const hash = packageHash(join(node, 'packages/base-package-haicc'))
+  put('packages/base-package-haicc/package.json', JSON.stringify({ pkgm: { hash } }))
   const haicc = (...args) => { const r = spawnSync(process.execPath, [fileURLToPath(new URL('../haicc.js', import.meta.url)), ...args], { env: { ...process.env, HAICC_WORK: node } }); return { status: r.status, stdout: String(r.stdout), stderr: String(r.stderr) } }
   const list = haicc('list')
   t.is(list.status, 0, list.stderr)
-  t.ok(/base-package-haicc {2}bbbbbbbbbbbb/.test(list.stdout))
+  t.ok(new RegExp(`base-package-haicc {2}${hash.slice(0, 12)}`).test(list.stdout))
   t.ok(haicc('fetch', 'base-package-x').stdout.includes(`fetching into ${join(dir, 'haiccing')}`))
   const tested = haicc('test', 'base-package-haicc')
   t.is(tested.status, 0, tested.stdout)
   t.ok(/ok {5}base-package-haicc: test\/one \(1\/1\)/.test(tested.stdout))
   const boot = haicc('boot')
   t.is(boot.status, 0, boot.stdout)
-  t.ok(/Ready: 1 test runs passed \(base-package-haicc\)/.test(boot.stdout))
+  t.ok(/ok {5}base-package-haicc: intact \([0-9a-f]{12}\)/.test(boot.stdout), boot.stdout)
+  t.ok(/Ready: 2 test runs passed \(base-package-haicc\)/.test(boot.stdout), boot.stdout)
+  // A file replaced in its copy: not intact, said; its tests not run; not up.
+  rmSync(join(node, 'packages/base-package-haicc/test/one/test'))
+  put('packages/base-package-haicc/test/one/test', '#!/bin/sh\necho changed\n')
+  const changed = haicc('boot')
+  t.is(changed.status, 1, changed.stdout)
+  t.ok(/FAILED base-package-haicc: changed since it was written/.test(changed.stdout), changed.stdout)
+  t.ok(/Not ready: 1 of 1 test runs failed/.test(changed.stdout), changed.stdout)
+  t.is(haicc('test', 'base-package-haicc').status, 1)
   t.is(haicc('test', 'nope').status, 1)
 })
