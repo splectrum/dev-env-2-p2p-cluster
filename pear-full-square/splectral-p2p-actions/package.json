@@ -1,7 +1,7 @@
 {
   "name": "splectral-p2p-actions",
   "id": "ce3e555e-3b41-44e6-92e0-13a2ff261ce7",
-  "description": "Splectral's p2p adapter out: abstract actions carried out through managers, observers and peers",
+  "description": "Splectral's p2p adapter out: abstract actions carried out through a node's HAICC, Docker and a peer of the swarm",
   "type": "module",
   "license": "MIT",
   "dependencies": {
@@ -14,5 +14,8 @@
     "p2p-rns": "*",
     "p2p-mrepo": "*",
     "p2p-node": "*"
+  },
+  "scripts": {
+    "test": "bare ../../node_modules/brittle/cmd.js test/*.test.js"
   }
 }

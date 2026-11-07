@@ -9,9 +9,9 @@
 //   const c = await followClients({ runs, dispatch })
 //   await c.submit(client, action)   for clients in this process (the HTTP adapter)
 //   c.stop()
-import { existsSync, readdirSync, mkdirSync } from 'node:fs'
-import { join } from 'node:path'
-import { randomUUID } from 'node:crypto'
+import { existsSync, readdirSync, mkdirSync } from 'bare-fs'
+import { join } from 'bare-path'
+import crypto from 'bare-crypto'
 import { openTopic, committedOffsets, folderStorage } from '../../mycelium-topic/index.js'
 
 export const correlationOf = record => (record.headers || []).find(h => h.key === 'correlation')?.value ?? null
@@ -44,7 +44,7 @@ export async function followClients ({ runs, dispatch, every = 250 }) {
 
   async function scan () {
     if (stopped) return
-    for (const client of existsSync(root) ? readdirSync(root) : []) {
+    for (const client of existsSync(root) ? readdirSync(root).sort() : []) {
       if (!followed.has(client) && existsSync(join(root, client, 'actions'))) await follow(client)
     }
   }
@@ -55,7 +55,7 @@ export async function followClients ({ runs, dispatch, every = 250 }) {
     async submit (client, action) {
       let topic = producers.get(client)
       if (!topic) { topic = await openTopic({ storage: folderStorage(join(root, client, 'actions')) }); producers.set(client, topic) }
-      const correlation = `${client}:${randomUUID()}`
+      const correlation = `${client}:${crypto.randomUUID()}`
       const answer = new Promise((resolve, reject) => waiters.set(correlation, { resolve, reject }))
       await topic.produce({ value: action, headers: [{ key: 'correlation', value: correlation }] })
       if (!followed.has(client)) await scan()

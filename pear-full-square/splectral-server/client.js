@@ -3,14 +3,15 @@
 // its result read from the server's actions topic by correlation id. The
 // server need not be up when the action is produced.
 //   const out = await askServer({ runs, action, with, timeout })   { ok, result | error }
-import { join } from 'node:path'
-import { randomUUID } from 'node:crypto'
+import { join } from 'bare-path'
+import process from 'bare-process'
+import crypto from 'bare-crypto'
 import { openTopic, folderStorage } from '../mycelium-topic/index.js'
 import { correlationOf } from './lib/clients.js'
 
 export async function askServer ({ runs, action, with: args = {}, timeout = 600000, every = 250 }) {
   const client = `cli-${process.pid}-${Date.now()}`
-  const correlation = `${client}:${randomUUID()}`
+  const correlation = `${client}:${crypto.randomUUID()}`
   const mine = await openTopic({ storage: folderStorage(join(runs, 'clients', client, 'actions')) })
   const results = await openTopic({ storage: folderStorage(join(runs, 'actions')) })
   const from = results.endOffset()

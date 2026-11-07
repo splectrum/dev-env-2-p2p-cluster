@@ -20,7 +20,9 @@ export function serveTransport ({ model, act }) {
         res.writeHead(200, { 'content-type': 'text/event-stream', 'cache-control': 'no-cache', connection: 'keep-alive' })
         res.write(`data: ${JSON.stringify({ type: 'snapshot', snapshot: model.snapshot() })}\n\n`)
         clients.add(res)
-        req.on('close', () => clients.delete(res))
+        // The response's close, not the request's: a request with no body
+        // has ended (and, on Bare, closed) before its stream does.
+        res.on('close', () => clients.delete(res))
         return true
       }
       if (req.method === 'POST' && req.url === '/act') {

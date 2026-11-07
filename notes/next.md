@@ -116,6 +116,16 @@ untested here). From a fresh release, Node.js off the PATH: haicc's full set
 through the root (its swarm made from its configuration, its codebase
 assembled into the master's repository).
 
+**Parts 4 and 5a built (2026-11-07): Splectral on Bare; the liveness demo.**
+`docs/design/platform.md`, "A swarm's Splectral". The generic Splectral
+modules on Bare (the server on `bare-http1`); the p2p side on the new
+structure (watchers: the containers' logs; actions: the node's HAICC,
+Docker, a peer from the host); a swarm's Splectral server started and
+stopped by its boot and shutdown. `base-demo-liveness`: the swarm `hosts`,
+Splectral at http://127.0.0.1:4400; its test `liveness` (a fresh install,
+the scenario played through the server, 8 steps) passes. Next: part 5b,
+`base-demo-other-host` (a design to discuss first: what a second host is).
+
 **No release until the phase's last part (the human, 2026-11-07)**: parts
 4 and 5 are done first; then one release, the tenth, and the local agent's
 check of everything at once (the lines "for the local agent" below are

@@ -4,9 +4,6 @@
   "description": "The Splectral browser shell: a menu built from the available topics, routing, hosting applications and pages",
   "type": "module",
   "browser": "./app.js",
-  "scripts": {
-    "test": "node --test test/*.test.js"
-  },
   "license": "MIT",
   "dependencies": {
     "react": "18.3.1",
