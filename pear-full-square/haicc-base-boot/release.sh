@@ -2,13 +2,16 @@
 # The setup: a release of base-package-haicc as one self-extracting file
 # (sh and tar only), extracting a work folder: ./boot and ./shutdown (the
 # cold pair, naming this setup), bare/ (Bare's runtime: carried by the setup,
-# not by the package's git; pinned by its sha256, checked once extracted),
+# not by the package's git; pinned by its sha256, checked once extracted:
+# bare, the full one, for the root; bare-stripped, without its debug
+# information, for the nodes' containers),
 # haiccing/sources, and the platform's pair as a bootstrap:
 # haiccing/base-package-haicc/ and haiccing/base-package-pkgm/ (beside it, as
 # written); the root's boot refreshes both from the sources.
 #   sh release.sh <base-package-haicc, as written> <out file> [<Bare's runtime>]
 # The runtime: the one named, else the `bare` on the PATH (in a work folder,
-# the one it runs on).
+# the one it runs on); its stripped one beside it (bare-stripped), else made
+# here (strip).
 set -eu
 pkg=$(cd "$1" && pwd)
 out=$2
@@ -26,6 +29,11 @@ cp -a "$pkgm" "$tmp/haiccing/base-package-pkgm" && rm -rf "$tmp/haiccing/base-pa
 mkdir "$tmp/bare" && cp "$runtime" "$tmp/bare/bare" && chmod 755 "$tmp/bare/bare"
 runtime_version=$("$tmp/bare/bare" --version)
 runtime_sum=$(sha256sum "$tmp/bare/bare" | cut -d' ' -f1)
+if [ -f "$(dirname "$runtime")/bare-stripped" ]; then cp "$(dirname "$runtime")/bare-stripped" "$tmp/bare/bare-stripped"
+elif command -v strip >/dev/null 2>&1; then strip -o "$tmp/bare/bare-stripped" "$tmp/bare/bare"
+else echo "release.sh: no stripped runtime beside $runtime, and no strip here to make one"; exit 1; fi
+chmod 755 "$tmp/bare/bare-stripped"
+stripped_sum=$(sha256sum "$tmp/bare/bare-stripped" | cut -d' ' -f1)
 # The work folder's cold pair, at its top: ./boot (set up from haiccing/,
 # then ./haicc boot) and ./shutdown (everything removed back to haiccing/).
 cat > "$tmp/boot" <<EOS
@@ -86,7 +94,7 @@ fi
 line=\$(awk '/^__PAYLOAD__\$/ { print NR + 1; exit }' "\$0")
 tail -n +"\$line" "\$0" | tar -xzf - -C "\$work"
 # Bare's runtime, as this setup pinned it.
-[ "\$(sha256sum "\$work/bare/bare" | cut -d' ' -f1)" = "$runtime_sum" ] || { say "Bare's runtime in \$work/bare is not the one this setup carries (sha256): the setup file is damaged; download it again"; end 1; }
+[ "\$(sha256sum "\$work/bare/bare" | cut -d' ' -f1)" = "$runtime_sum" ] && [ "\$(sha256sum "\$work/bare/bare-stripped" | cut -d' ' -f1)" = "$stripped_sum" ] || { say "Bare's runtime in \$work/bare is not the one this setup carries (sha256): the setup file is damaged; download it again"; end 1; }
 if [ -n "\$sources" ]; then { echo "# Where this work folder's repositories come from, in order."; printf '%s' "\$sources"; } > "\$work/haiccing/sources"; fi
 say "set up: \$work/haiccing ($name $hash); sources: \$(grep -v '^#' "\$work/haiccing/sources" | tr '\\n' ';' | sed 's/;\$//')"
 say "next: \$work/boot"

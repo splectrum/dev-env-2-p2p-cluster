@@ -51,6 +51,8 @@ The node is up only when both pass; otherwise it says which, and the
 swarm's boot stops there. On demand: `./<swarm>/<node>/haicc test
 <package> [--set=<set>]`, intact first.
 
+Then, the swarm having a codebase, **the node runs it** (below).
+
 *Why*: a node runs only code it can show is what was written and tested.
 Tested by the platform test: a file replaced in a node's copy, the node
 not up, the swarm's boot stopped, repaired by a shutdown and a boot from
@@ -75,6 +77,43 @@ different concerns: two packages, `base-package-haicc` and
   (intact, validation tests). Once both are deployed, the level is ready:
   the master, to deploy other packages. The root follows the same pattern
   with less to do.
+
+## A node runs the swarm's codebase, in a container
+
+**Built** (part 3, 2026-11-07). One container per node, started by the
+node's own warm boot (after its validation), stopped by its shutdown, from
+its config alone:
+
+- **Its config**, `<node>/node.json`, written by its swarm's cold boot: its
+  name, role and **key** (made at its first build, kept while its folder,
+  its manager, is: in readable text for now, the human: a more secure way
+  once it all runs); for a swarm with a codebase, its container, network,
+  address, its code (the master's `packages/<package>/`) and, for a node
+  that is not the master, the master's key and DHT (from the master's
+  config, written there when it started).
+- **The image**: a plain Debian base and Bare's **stripped** runtime (the
+  setup's `bare/bare-stripped`), built locally, tagged by the runtime's
+  hash; no code in it.
+- **The code**: the master's `packages/<package>/`, mounted read-only at
+  `/app` in every node's container on its host (other hosts: replicated,
+  with the other-host demo).
+- **Hardened**: read-only root, every capability dropped, no new
+  privileges, an unprivileged user, memory capped with no swap, no core
+  dumps, the store on a tmpfs.
+- **The swarm's network**: one Docker network per swarm, made with its
+  first node, removed with its shutdown; containers and networks labelled
+  with the install (`haicc.install`, its path) and the swarm.
+- **Up** when the node says `node-started` (its log: the container's
+  output, `docker logs`); the master's key and DHT recorded in its config
+  (`live`) for the others. A node's cold boot stops it first, if it runs.
+- **The managers**: the old node and swarm managers' starting, stopping and
+  ordering are now the node's and the swarm's HAICC; their observer and
+  topics come back with Splectral (parts 4, 5).
+
+Tested: `haicc-deployment`'s unit tests (the container's arguments); the
+deploy test of `base-swarm-three-nodes` (three containers, the nodes
+registered with the master, a node's shutdown and boot keeping its key,
+the swarm's shutdown leaving nothing in Docker).
 
 ## The setup's pair is a bootstrap; the root's boot refreshes it
 
@@ -108,7 +147,7 @@ validation set, then in place; else nothing changed).
 level's packages are in its `packages/`), from the package
 `swarms.json` names; a swarm's shutdown removes it with the master's
 folder, its boot assembles it again. Mounting it into the nodes:
-containers, part 3. A swarm's codebase is assembled by the package
+containers: built, above. A swarm's codebase is assembled by the package
 manager from its package (the swarm's `modules.json` and the package's
 `modules/`) into the master node's **package repository**. Nodes use only
 what is there: an application refers to it and carries no copies; a

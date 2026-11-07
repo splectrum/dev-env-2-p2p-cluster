@@ -49,17 +49,24 @@ last line only).
 ## A node
 
 A node's boot is in two parts. Its cold boot (by the swarm): its folder,
-the platform's package copied in, its launcher. Its warm boot (its own
-HAICC) validates what it was given:
+the platform's pair copied in, its config (`node.json`: its key, kept while
+its folder is), its launcher; the master's also gets the swarm's codebase
+in its `packages/`. Its warm boot (its own HAICC) validates what it was
+given, then starts its container, running the swarm's node from the
+master's `packages/` (read-only):
 
 ```
-  | base-package-haicc:
-  |   ok     base-package-haicc: intact (e388c7830a25)
-  |   ok     base-package-haicc/test/modules-load (4/4, 0.4 s)
-  |   ok     base-package-haicc/test/sets (11/11, 0.2 s)
-  | Ready: 3 test runs passed (base-package-haicc)
+  |   ok     base-package-haicc: intact (0163b1b5643b)
+  |   ...
+  | Ready: 6 test runs passed (base-package-haicc, base-package-pkgm)
+  |   its image: haicc-node:de24f4f1b7fb (Bare's bare-stripped; the code mounted, not in it)
+  |   its container haicc-43311a2c-three-nodes-master (master, 172.18.0.10 on haicc-43311a2c-three-nodes): ...
+  |   ok     the node running: /three-nodes/master, its key 393a439519f0, the swarm's DHT at 172.18.0.10:49737 (11.7 s)
+  | Running
 The node three-nodes/master: up
 ```
+
+Its log: `docker logs <container>` (JSON lines: every module's events).
 
 Not intact (a file changed in its copy) or a test failing: the node says
 which and is not up; the swarm's boot stops there. Shut it down and boot it
@@ -67,7 +74,7 @@ again to build it from scratch.
 
 ```bash
 ./three-nodes/master/haicc boot              # its warm boot again
-./three-nodes/master/haicc shutdown          # its container removed (none yet), its folder kept
+./three-nodes/master/haicc shutdown          # its container stopped and removed, its folder (its key) kept
 ./three-nodes/master/haicc test base-package-haicc [--set=validation]   # intact, then its tests
 ./three-nodes/master/haicc list              # its packages, their hashes
 ```

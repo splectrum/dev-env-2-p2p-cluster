@@ -71,8 +71,10 @@ test('a node joins: under its name, from the boot repository; requests to it and
   const master = await startNode({ role: 'master', swarm: 'test', name: 'master', storage: dir(), primaryKey: crypto.randomBytes(32), host, dhtPort: 49854, code })
   const joinOpts = { role: 'join', swarm: 'test', name: 'node-1', host, bootstrap: [{ host, port: 49854 }], master: master.key, packages: master.packages }
   const primaryKey = crypto.randomBytes(32)
-  const n1 = await startNode({ ...joinOpts, storage: dir(), primaryKey })
+  // Not told its packages: the master's, as p2p-rns names them.
+  const n1 = await startNode({ ...joinOpts, packages: null, storage: dir(), primaryKey })
   t.is(n1.uri, '/test/node-1')
+  t.is(n1.packages.key, master.packages.key, 'its packages: the master\'s, from p2p-rns')
   t.is(n1.repos.node.origin.id, master.repos.boot.id, 'cloned from the boot repository')
 
   const p = await peer(49854)
