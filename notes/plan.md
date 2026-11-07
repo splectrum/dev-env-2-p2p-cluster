@@ -216,8 +216,37 @@ Design: `packages.md`. Its own request is written as its scope settles.
   (`pending/phase-3/step-1-packages-and-boot/request.md`); the `haiccing`
   repositories published by the local agent (`handover-packages.md`).
   Record: `steps/phase-3/1-packages-and-boot/`.
+- **Step 2, the demos again** (the phase's last) — built
+  (`pending/phase-3/step-2-the-demos-again/request.md`): swarms made from
+  packages and deployed through the root, nodes running the codebase in
+  containers, Splectral on Bare, both demos. Closes with the tenth release,
+  the local agent's check and the phase's report.
 - Then, as agreed: the p2p version (one code repository per swarm),
   pinning once the system works, Android (a Termux probe).
+
+## Proposed next phase: applications on mycelium repositories
+
+Proposed by the human (2026-11-07), to be designed step by step, each
+decision made with the human; nothing decided yet. The context applications
+run in: mycelium repositories, and execution in the node's container.
+
+- **A repository's visible state is composed**: its own layers, and
+  read-only mounts of data structures from other repositories (links, not
+  copies).
+- **Sync changes visible state**: a mounted source's change, replicated,
+  changes the visible state of the repositories mounting it.
+- **Visible state changes trigger internal processing requests**: the
+  repository's node writes a request into its own `pending/default` as a
+  consequence of the change (nothing is sent between nodes), executed by
+  the existing flow in the node's container, on fixed states, as a unit
+  (rerunnable); its result the repository's own state, which others may
+  mount in turn.
+- **Self-contained**, as everything else.
+- Open, to design: where a mount is declared and what it names; whether it
+  follows the source or a pinned commit; the trigger rules; what executes
+  a request (the swarm's codebase, by capability); the data's form at the
+  start (files in layers, then records); the first application, shown in
+  Splectral.
 
 ## Further down the roadmap
 
