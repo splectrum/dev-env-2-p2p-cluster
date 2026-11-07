@@ -56,11 +56,41 @@ Tested by the platform test: a file replaced in a node's copy, the node
 not up, the swarm's boot stopped, repaired by a shutdown and a boot from
 scratch.
 
-## The package manager is part of the platform
+## The platform is two packages: HAICC and the package manager
 
-**Built.** `base-package-haicc` carries HAICC and the package manager; a
-node gets that one package. *Why*: a separate package-manager package would
-add nothing a node does not already have (the human, 2026-11-07).
+**Agreed** (the human, 2026-11-07; revises "the package manager is part of
+the platform's package"). HAICC (the levels, the boot, the lifecycle) and
+the package manager (checking, assembling, testing, deploying packages) are
+different concerns: two packages, `base-package-haicc` and
+`base-package-pkgm`, each written, tested and published on its own.
+
+- **Every level has both**: the cold boot copies both in. HAICC uses the
+  package manager from beside it (the level's `packages/base-package-pkgm/`):
+  the one exception to "a package carries what it runs on", narrow and
+  explicit: the platform is a pair; any other package stays
+  self-contained.
+- **The boot, at every level**: the cold boot copies both packages in
+  directly (hard links; no package code needed for that); then the warm
+  boot (the level's HAICC) has the package manager deploy both properly
+  (intact, validation tests). Once both are deployed, the level is ready:
+  the master, to deploy other packages. The root follows the same pattern
+  with less to do.
+
+## The setup's pair is a bootstrap; the root's boot refreshes it
+
+**Agreed** (the human, 2026-11-07).
+
+- **The setup carries a HAICC and a package manager package sufficient to
+  install packages**: a bootstrap. Once the release is stable it does not
+  change: it is only needed to boot up.
+- **Every root boot refreshes both from the sources and redeploys**: the
+  root's warm boot (after the host's prerequisites) fetches both packages
+  from the sources (`haiccing/sources`) and has the package manager deploy
+  them at the root, then the swarms' nodes are booted with them. Only these
+  two packages; nothing compared, nothing more recorded: what runs is what
+  the sources hold. The setup's pair is not kept.
+- **Changing to another name** (a version in the name, later): a shortcut
+  link from the name in use to the package; nothing more.
 
 ## A node's codebase: the master's package repository
 

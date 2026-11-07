@@ -4,9 +4,13 @@ Status marks: **built** (in the code, tested), **agreed** (decided, not built).
 
 ## The setup
 
-**Built.** A release is one self-extracting file, `haicc-setup.sh` (`sh`
-and `tar` only), made by `release.sh <package> <out> [<runtime>]` from the
-platform's package as written and Bare's runtime. It extracts a work
+**Built** (one package; **agreed**: two). A release is one self-extracting
+file, `haicc-setup.sh` (`sh` and `tar` only), made by `release.sh` from the
+platform's packages as written and Bare's runtime. Agreed (the human,
+2026-11-07): it carries the platform's pair, HAICC and the package manager,
+as a bootstrap: sufficient to install packages; the root's boot refreshes
+both from the sources. Once stable, a release does not change: a new one only
+when the bootstrap itself must (Bare's runtime, say). It extracts a work
 folder: `boot` and `shutdown` (the stubs naming this setup), `bare/` (the
 runtime, checked against its sha256), `haiccing/sources`,
 `haiccing/base-package-haicc/`. Run again on the same folder: said, nothing
