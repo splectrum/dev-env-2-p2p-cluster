@@ -27,6 +27,7 @@ server=$w/hosts/master/packages/$(basename "$pkg")/modules/pear-full-square/sple
 step '  its page answers: the shell, the menu with the scenario, the browser libraries' sh -c "curl -sf http://127.0.0.1:4400/ | grep -q '<html' && curl -sf http://127.0.0.1:4400/menu | grep -q '\"param\":\"liveness\"' && curl -sf -o /dev/null http://127.0.0.1:4400/vendor/react.js"
 step '  the scenario played: node-1 frozen, absent, back, a request answered, node-1 leaving' "$w/bare/bare" "$server" act "--config=$w/hosts/splectral/config.json" --action=run-scenario '--with={"id":"liveness"}'
 expect '"ok":true'
+expect '"steps":8'
 step '  the world as the page shows it: node-1 left, the master running' sh -c "curl -sf -m 3 http://127.0.0.1:4400/stream | head -c 200000 | head -1 | grep -q '\"/hosts/master\"'"
 step 'teardown: the swarm, its server, nothing left in Docker' sh -c "'$w/haicc' teardown hosts --yes && [ ! -e '$w/hosts' ] && ! curl -sf -m 2 http://127.0.0.1:4400/ >/dev/null && [ -z \"\$(docker ps -aq --filter 'label=haicc.install=$w')\" ] && [ -z \"\$(docker network ls -q --filter 'label=haicc.install=$w')\" ]"
 echo "the demo: all $n steps passed"

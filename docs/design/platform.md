@@ -115,6 +115,41 @@ deploy test of `base-swarm-three-nodes` (three containers, the nodes
 registered with the master, a node's shutdown and boot keeping its key,
 the swarm's shutdown leaving nothing in Docker).
 
+## A swarm's Splectral: its server, on the host
+
+**Built** (part 4, 2026-11-07). A swarm whose package names Splectral
+components (`swarms/<swarm>/splectral.json`: `components`, the host's name
+in scenarios, `port`) gets a Splectral server:
+
+- **On the host**, not in a container: it reads the containers' logs and
+  acts on them. Started by the swarm's boot (after its nodes), in the
+  background (a session of its own), stopped by the swarm's shutdown; its
+  URL said. Its folder: `<swarm>/splectral/` (`config.json`, `server.pid`,
+  `server.log`, `runs/`: its actions and scenario runs).
+- **From the master's `packages/`**: the components are modules of the
+  swarm's codebase (its `modules.json`), so the server and its extensions
+  are what the package carries.
+- **What it watches** (`splectral-p2p-watchers`, the source
+  `haicc-swarm`): each node's container log (`docker logs -f`: the node's
+  JSON lines), found through the nodes' `node.json`; a node started again
+  (a new container) followed again.
+- **What it does** (`splectral-p2p-actions`): `start-node` and
+  `stop-node` through the node's own HAICC (`<swarm>/<node>/haicc boot`,
+  `shutdown`); `pause-node` and `resume-node` through Docker (pause,
+  unpause); `send-request` as a peer of the swarm from the host (its
+  gateway on the swarm's network; the master's key and DHT from its
+  config). Waiting: `state` and `write` (they need the node's observer,
+  which a detached container does not reach), the invitations (with the
+  other-host demo).
+- **Splectral on Bare**: the server on `bare-http1` (Server-Sent Events
+  down, actions up), the generic modules on Bare's own, their tests on
+  brittle; the browser's libraries (React, htm) found in the codebase's
+  `node_modules`.
+
+Tested: the modules' own tests; `base-demo-liveness`'s `liveness` (a fresh
+install, the demo deployed, its page answering, its scenario played
+through the server, torn down).
+
 ## The setup's pair is a bootstrap; the root's boot refreshes it
 
 **Built** (the human, 2026-11-07). HAICC finds the package manager through

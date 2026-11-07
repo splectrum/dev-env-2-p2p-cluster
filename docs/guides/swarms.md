@@ -68,6 +68,18 @@ The node three-nodes/master: up
 
 Its log: `docker logs <container>` (JSON lines: every module's events).
 
+## A swarm with Splectral
+
+A swarm whose package names Splectral components gets a Splectral server on
+the host, started with the swarm's boot and stopped with its shutdown:
+
+```bash
+./haicc boot base-demo-liveness      # ... its Splectral: http://127.0.0.1:4400
+```
+
+Open the page; a scenario's page has Run. Its output:
+`hosts/splectral/server.log`; its runs: `hosts/splectral/runs/`.
+
 Not intact (a file changed in its copy) or a test failing: the node says
 which and is not up; the swarm's boot stops there. Shut it down and boot it
 again to build it from scratch.
