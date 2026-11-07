@@ -25,7 +25,9 @@ import { spawnSync } from 'bare-subprocess'
 import { fileURLToPath } from 'bare-url'
 import { openLog } from './lib/log.js'
 import { selfTest } from './lib/selftest.js'
-import { testPackage, verify } from '../pkgm-base-manager/index.js'
+import { pkgm } from './lib/pkgm.js'
+
+const { testPackage, verify } = await pkgm()
 
 const argv = process.argv.slice(2)
 const flags = Object.fromEntries(argv.filter(a => a.startsWith('--')).map(a => { const [k, v] = a.slice(2).split('='); return [k, v ?? true] }))

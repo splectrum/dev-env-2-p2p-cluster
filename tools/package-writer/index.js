@@ -160,7 +160,10 @@ export function writePackages ({ dev, out, only = null, keep = false, log = () =
   const defs = readJson(join(dev, 'packages.json'))
   const ours = oursOf(dev, defs)
   const lock = readJson(join(dev, 'package-lock.json'))
+  // A package is written with those it must sit beside (`together`: the
+  // platform's pair): its tests run on them.
   const names = only ? [].concat(only) : Object.keys(defs.packages)
+  for (let i = 0; i < names.length; i++) for (const t of defs.packages[names[i]].together || []) if (!names.includes(t)) names.push(t)
   const scratch = mkdtempSync(join(tmpdir(), 'packages-write-'))
   try {
     const staged = []

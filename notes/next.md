@@ -101,6 +101,21 @@ platform's 23 steps; the tamper checks as asked; the human's manual test from th
 local file: passed. Next: step 3, with the human's go. Record and findings:
 `steps/phase-3/2-package-structure/4-node-validated/local-run.md`.
 
+**Built (2026-11-07), the first half of part 2: the platform as two
+packages, refreshed at every root boot.** `base-package-pkgm` the package
+manager's own package (26 MB, brittle included); `base-package-haicc` without
+it (HAICC finds it beside it); the setup carries the pair (45 MB); the
+root's boot fetches both again from the sources and deploys them (the
+package manager's `deploy`: staged, intact, validated, in place); a node's
+cold boot copies the pair afresh, its warm boot deploys it (so a swarm's
+boot repairs a changed node); `./haicc sources` and `haiccing/sources.json`
+(GitHub's listing through its API: not reachable from this sandbox,
+untested here). From a fresh release, Node.js off the PATH: haicc's full set
+6 passed (the platform's 23 steps), the swarm package's validation 3.
+`publish.sh` publishes the three. The second half next: a package deployed
+through the root (its swarm made from its configuration, its codebase
+assembled into the master's repository).
+
 **Agreed (2026-11-07), the start of part 2: the platform as two packages,
 refreshed from the sources at every root boot.** `docs/design/platform.md`:
 `base-package-pkgm` the package manager's own package again (a concern of

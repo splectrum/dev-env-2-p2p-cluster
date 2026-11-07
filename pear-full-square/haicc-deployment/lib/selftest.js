@@ -8,7 +8,9 @@
 //   const { ok, repos, runs } = selfTest(packagesFolder, say)
 import { existsSync, readFileSync, readdirSync } from 'bare-fs'
 import { join } from 'bare-path'
-import { testPackage, verify } from '../../pkgm-base-manager/index.js'
+import { pkgm } from './pkgm.js'
+
+const { testPackage, verify } = await pkgm()
 
 const readJson = f => JSON.parse(readFileSync(f, 'utf8'))
 

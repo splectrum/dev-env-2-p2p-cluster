@@ -4,7 +4,7 @@ Status marks: **built** (in the code, tested), **agreed** (decided, not built).
 
 ## The setup
 
-**Built** (one package; **agreed**: two). A release is one self-extracting
+**Built**. A release is one self-extracting
 file, `haicc-setup.sh` (`sh` and `tar` only), made by `release.sh` from the
 platform's packages as written and Bare's runtime. Agreed (the human,
 2026-11-07): it carries the platform's pair, HAICC and the package manager,
