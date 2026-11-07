@@ -6,18 +6,19 @@ git, which the boot checks and fixes with your yes.
 
 ## 1. Download the setup
 
-One file, about 36 MB: it carries everything HAICC runs on.
+One file, about 39 MB: it carries everything HAICC runs on.
 
 ```bash
-rm -f haicc-setup.sh && curl -fL --progress-bar --retry 5 --retry-all-errors --connect-timeout 20 \
+rm -f haicc-setup.sh && curl -fL --progress-bar --retry 5 --retry-all-errors --connect-timeout 20 --speed-time 30 --speed-limit 1000 \
      -o haicc-setup.sh https://github.com/haiccing/base-package-haicc/releases/latest/download/haicc-setup.sh
 ```
 
-On a poor connection, if the download stops, continue it where it stopped,
+On a poor connection, if the download stops (or stalls: under 1 KB/s for 30 s
+ends it), continue it where it stopped,
 as often as needed, until it ends without an error:
 
 ```bash
-curl -fL -C - -o haicc-setup.sh https://github.com/haiccing/base-package-haicc/releases/latest/download/haicc-setup.sh
+curl -fL -C - --speed-time 30 --speed-limit 1000 -o haicc-setup.sh https://github.com/haiccing/base-package-haicc/releases/latest/download/haicc-setup.sh
 ```
 
 ## 2. Set up a work folder

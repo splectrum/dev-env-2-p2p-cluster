@@ -50,7 +50,7 @@ export function ensureImage (runtimeDir) {
     chmodSync(join(dir, 'bare'), 0o755)
     writeFileSync(join(dir, 'Dockerfile'), '# A node: a plain base and Bare\'s runtime; its code is mounted.\nFROM debian:bookworm-slim\nCOPY bare /usr/local/bin/bare\nENTRYPOINT ["bare"]\n')
     const b = docker('build', '-q', '-t', tag, dir)
-    return b.ok ? { ok: true, tag, built: true, runtime } : { ok: false, tag, said: b.err.split('\n').slice(-3).join(' ') }
+    return b.ok ? { ok: true, tag, built: true, runtime } : { ok: false, tag, said: b.err.split('\n').filter(Boolean).join(' | ') }
   } finally { rmSync(dir, { recursive: true, force: true }) }
 }
 
@@ -62,7 +62,7 @@ export const nodeEvents = container => docker('logs', container).out.split('\n')
 export async function startContainer (config, nodeDir, image, { timeoutMs = 180000 } = {}) {
   docker('rm', '-f', config.container)
   const r = docker(...containerArgs(config, nodeDir, image))
-  if (!r.ok) return { ok: false, said: `not started: ${r.err.split('\n').slice(-2).join(' ')}` }
+  if (!r.ok) return { ok: false, said: `not started: ${r.err.split('\n').filter(l => l && !/docker run --help/.test(l)).join(' | ')}` }
   const t0 = Date.now()
   while (Date.now() - t0 < timeoutMs) {
     const events = nodeEvents(config.container)
