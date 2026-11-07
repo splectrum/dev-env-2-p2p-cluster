@@ -66,6 +66,26 @@ finding fixed (a run's log in the source: removed, ignored, and the package
 writer no longer carries a module's `log/`). Next, with the human's go:
 `base-package-haicc` on Bare.
 
+**Next here, first: the human's feedback on the sixth release (2026-11-07):
+the commands are not on stdout.** "What I notice is that the commands are not
+echoed into the stdout. That would be useful. Now I have to guess where the
+commands are." The human's run chained setup, `./boot` and the test: their output
+runs together, with nothing saying which command is running. Each command's
+header goes to the log only.
+1. **Each command says itself on stdout as it starts**: the command as run and
+   its folder, as the log's header has it. Three places write that header:
+   `lib/log.js` (both copies: `haicc-base-boot`, `haicc-deployment`), `boot.sh`,
+   and the setup in `release.sh`.
+2. **Nested commands too**: `<swarm>/haicc boot <node>`, a node's own boot.
+   The `  | ` echo carries them; `--no-echo` keeps its outcome line.
+3. **The tests' steps show what they run**: `test/platform/boot`'s `step` prints
+   its description and keeps the output back, so a step's command can only be
+   read in the source. Print the command with it (the work folder's path
+   shortened, so a line stays readable).
+
+The close line (exit code, duration) on stdout too is the implementer's to
+propose. The local agent checks it on the next release.
+
 **Published: the sixth release (2026-11-07), the human's word.**
 `setup-25c91afc4801`, boot 0.6.0, latest; `base-package-haicc` `8ac17a0`. From
 GitHub: 7 passed and 2 passed, as expected. One finding for the implementer, a

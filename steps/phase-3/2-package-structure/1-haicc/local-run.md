@@ -46,3 +46,6 @@ The published commands, the one command in `~/haicc-r6`, on the human's machine
 with the prerequisites there: setup, `./boot` and the host's checks ok, `Passed:
 7 passed, 0 failed, 0 skipped`, the platform's 19 steps in 13.9 s. The
 `--set=validation` run was not in the output handed back.
+
+The human's feedback on it: the commands are not echoed on stdout, so one has to
+guess where each starts. For the implementer: `notes/next.md`.
