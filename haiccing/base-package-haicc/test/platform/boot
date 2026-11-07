@@ -37,8 +37,8 @@ expect 'The node hosts/node-1: up'
 step '  its config copied in, its entry in swarms.json (where from)' sh -c "[ -f '$w/hosts/nodes.json' ] && grep -q '\"package\": \"platform\"' '$w/swarms.json'"
 step '  again: booted from its own copy' "$w/haicc" boot platform "--from=$from" --no-echo
 expect 'booted from its own copy'
-step '  a node not in its config: refused, not added' sh -c "! '$w/hosts/haicc' boot node-9"
-expect 'no node node-9 in the swarm hosts'
+step '  a node added by hand (the swarm not strict), then torn down' sh -c "'$w/hosts/haicc' boot node-9 --no-echo && grep -q node-9 '$w/hosts/nodes.json' && '$w/hosts/haicc' teardown node-9 --yes && ! grep -q node-9 '$w/hosts/nodes.json'"
+expect 'node-9 added to nodes.json'
 step "the master's cold boot: the platform's pair, and nothing else" sh -c "[ \"\$(ls '$w/hosts/master/packages' | tr '\\n' ' ')\" = 'base-package-haicc base-package-pkgm ' ]"
 step 'the node tests a package' "$w/hosts/master/haicc" test base-package-haicc
 expect 'test base-package-haicc: passed'

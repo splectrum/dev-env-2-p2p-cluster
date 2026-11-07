@@ -16,8 +16,9 @@ Status marks: **built** (in the code, tested), **agreed** (decided, not built).
   log/                  the log
   swarms.json           the host's swarms
   <swarm>/              a swarm: haicc (its launcher), its config files (from its package:
-                        nodes.json, modules.json, ...), repository/ (its codebase), a folder per node
-    <node>/             haicc (its launcher), packages/ (the platform's pair, hard links), log/
+                        nodes.json, modules.json, ...), a folder per node
+    <node>/             haicc (its launcher), packages/ (the platform's pair, hard links), log/;
+                        the master: repository/ too (the swarm's codebase)
   swarms/test/<test>/   a test's run, while it runs
 ```
 
@@ -32,8 +33,8 @@ every swarm under `swarms/`:
   user/                 the user's own packages (sources, contents.json)
   swarms/
     swarms.json         the host's swarms, fully qualified (where each came from, its hashes)
-    <swarm>/            haicc, its config files (copied from its package), repository/
-                        (the swarm's package repository, the master's), <node>/
+    <swarm>/            haicc, its config files (copied from its package), master/ (with
+                        repository/: the swarm's package repository), <node>/
     test/<test>/        test runs
 ```
 
@@ -57,8 +58,9 @@ folder it is called from, and keeps it.
 
 - **One thing made or removed, from its parent** (built): `./haicc boot
   <repo>` makes a package's swarms (below); `./haicc teardown <swarm>`
-  removes one and its entry. A swarm's nodes are its package's: none added
-  or removed by hand.
+  removes one and its entry. In a swarm, `boot <node>` adds a node
+  (`--role=`), `teardown <node>` removes one, unless the swarm is strict
+  (below).
 - **A swarm's shutdown is a cold shutdown of its nodes**, keeping the
   swarm's config: its boot builds them again from `nodes.json`. *Why*: a
   node is made from its config and the platform's package; nothing in its
@@ -83,17 +85,18 @@ sealed package through a fresh root).
   recorded hash), else it is refused; from `--from`, a folder without a hash
   is a development package: **mixed**, said and recorded.
 - Making a swarm: its folder, its launcher, the `.json` files of
-  `swarms/<swarm>/` copied in, its codebase assembled into
-  `<swarm>/repository/` (the package manager's `assemble`; none without a
-  `modules.json`), its entry in `swarms.json` (the package, its root, the
-  swarm's folder in it, its hash, sealed or mixed, the repository's hash);
-  then booted.
+  `swarms/<swarm>/` copied in, its entry in `swarms.json` (the package, its
+  root, the swarm's folder in it, its hash, sealed or mixed, strict or not);
+  then booted. The master's build assembles the codebase into its
+  `repository/` (below), every time it is built.
 - A swarm already there, from the same root and path: booted from its own
   copy (the package not read again); from another: refused. Its name alone
   (`./haicc boot <swarm>`) boots it too.
-- Its nodes are its config's: `boot` and `shutdown <node>` only for nodes in
-  its `nodes.json`. A swarm changed: its package changed, the swarm made
-  again.
+- **Strict is an option, not the default** (the human, 2026-11-07):
+  `--strict` when it is made: its nodes are its package's only, none added
+  or torn down by hand (a swarm changed: its package changed, the swarm made
+  again). Without it, nodes are added and removed by hand, in its
+  `nodes.json`.
 
 ## Names
 

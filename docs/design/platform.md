@@ -103,11 +103,11 @@ validation set, then in place; else nothing changed).
 
 ## A node's codebase: the master's package repository
 
-**Built** in part (2026-11-07): assembled when the swarm is made, into
-`<swarm>/repository/`: the swarm's folder, not the master's, so that a
-swarm's shutdown (its nodes' folders removed) keeps it and its boot needs
-no package again; it is the master's, mounted from there (containers:
-part 3). A swarm's codebase is assembled by the package
+**Built** in part (2026-11-07): assembled at every build of the master
+(its cold boot), into `<swarm>/master/repository/`, from the package
+`swarms.json` names; a swarm's shutdown removes it with the master's
+folder, its boot assembles it again. Mounting it into the nodes:
+containers, part 3. A swarm's codebase is assembled by the package
 manager from its package (the swarm's `modules.json` and the package's
 `modules/`) into the master node's **package repository**. Nodes use only
 what is there: an application refers to it and carries no copies; a

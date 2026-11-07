@@ -10,27 +10,31 @@
 //                                and fixed with a yes; each swarm in swarms.json booted;
 //                                then haiccing/install, if there, or the next commands
 //   haicc boot <swarm>           a swarm here (swarms.json): booted, from its own copy
-//   haicc boot <repo>[/<swarm>] [--from=<folder>] [--as=<name>]
+//   haicc boot <repo>[/<swarm>] [--from=<folder>] [--as=<name>] [--strict]
 //                                a package's swarms (or the one), made from its configuration
 //                                (swarms/<swarm>/ in the package, from haiccing/, fetched if
 //                                not there, or from --from): the package checked intact; the
 //                                swarm's folder (its launcher, its config files copied); its
-//                                codebase assembled into <swarm>/repository/ (the package
-//                                manager); its entry in swarms.json (where from, its hash);
-//                                then booted. --as names a single swarm otherwise.
+//                                entry in swarms.json (where from, its hash); then booted (the
+//                                master's build assembles the codebase into its repository/).
+//                                --as names a single swarm otherwise; --strict: its nodes are
+//                                its package's only (none added or torn down by hand).
 //   haicc shutdown [<swarm>]     each swarm's (or the one's) shutdown: its nodes removed,
 //                                its folder and nodes.json kept
 //   haicc teardown <swarm>       the swarm removed: its nodes, its folder, its entry
 //   haicc shutdown --cold        (./shutdown) everything removed back to the setup: the
 //                                swarms, swarms.json, packages/, ./haicc; kept: haiccing/,
 //                                log/, bare/ (the runtime; external downloads are retained)
-// In a swarm (<swarm>/haicc), on its nodes.json (its package's: no nodes added by hand):
-//   haicc boot [<node>] [--no-echo]
-//                                each node (or the one), the master first: the platform's
-//                                pair copied in afresh, its launcher, then its own boot
-//                                (<swarm>/<node>/haicc boot), as it happens
+// In a swarm (<swarm>/haicc), on its nodes.json (copied from its package):
+//   haicc boot [<node>] [--role=master|node] [--no-echo]
+//                                each node (or the one: added if new, unless the swarm is
+//                                strict), the master first: the platform's pair copied in
+//                                afresh, its launcher, the master's repository/ assembled from
+//                                the swarm's package (the package manager), then its own
+//                                boot (<swarm>/<node>/haicc boot), as it happens
 //   haicc shutdown [<node>]      each node's (or the one's) cold shutdown: its container
 //                                removed, its folder removed; nodes.json kept
+//   haicc teardown <node>        the node removed, and its entry (not in a strict swarm)
 // A functionality of a package, by its URI (from haiccing/, or --from=<folder>):
 //   haicc boot <repo>/test/<test> [--keep]   a test: its folder copied into swarms/test/<test>/,
 //                                its cold boot (its boot script) run there, its result its
@@ -145,7 +149,8 @@ function installFile () {
 // The work folder's own folders and files: not a swarm's name; a swarm's
 // own files: not a node's name.
 const OWN = ['packages', 'haiccing', 'bare', 'nodejs', 'log', 'haicc', 'boot', 'shutdown', 'swarms.json', 'swarms', 'user']
-const SWARM_OWN = ['haicc', 'nodes.json', 'repository']
+const SWARM_OWN = ['haicc', 'nodes.json']
+const ROLES = ['master', 'node']
 const inSwarm = process.env.HAICC_SWARM || null
 // A name made a URI part: lowercase a-z, 0-9, words joined by single '-'.
 export const cleanName = raw => raw.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
@@ -230,6 +235,7 @@ async function bootNode (swarm, node) {
     const hash = JSON.parse(readFileSync(join(at, 'package.json'), 'utf8')).pkgm?.hash?.slice(0, 12)
     console.log(`  copied ${repo} (${hash}) into ${join(dir, 'packages')}`)
   }
+  if (readNodes(swarm).nodes[node]?.role === 'master' && await assembleRepository(swarm, dir)) return 1
   if (!existsSync(join(dir, 'haicc'))) {
     writeFileSync(join(dir, 'haicc.new'), `#!/bin/sh
 # HAICC for the node ${swarm}/${node} (written by its swarm's HAICC): ${swarm}/${node}/haicc <command>,
@@ -249,6 +255,23 @@ exec bare "$work/packages/base-package-haicc/modules/pear-full-square/haicc-depl
   return code === 0 ? 0 : 1
 }
 
+// The master's package repository: the swarm's codebase, assembled by the
+// package manager from the swarm's package (where swarms.json says it came
+// from) into the master's repository/, at every build of the master. None
+// for a swarm without a codebase (no modules.json).
+async function assembleRepository (swarm, dir) {
+  const entry = readSwarms().swarms[swarm] || {}
+  if (!entry.package || !existsSync(join(work, swarm, 'modules.json'))) return 0
+  const pkg = join(entry.root, entry.package)
+  if (!existsSync(join(pkg, 'swarms', entry.swarm)) && !(entry.root === haiccing && packageDir(entry.package))) { console.log(`  its repository: the package ${pkg} is not there (swarms.json): not assembled`); return 1 }
+  const { assemble } = await pkgm()
+  try {
+    const a = assemble({ from: pkg, swarm: entry.swarm, into: join(dir, 'repository') })
+    console.log(`  its repository: the codebase of ${entry.package}/swarms/${entry.swarm} assembled into ${swarm}/${dir.split('/').pop()}/repository/: ${a.ours} modules of ours, ${a.third} third-party (${a.hash.slice(0, 12)})`)
+    return 0
+  } catch (err) { console.log(`  its repository could not be assembled: ${err.message}`); return 1 }
+}
+
 // A node's cold shutdown: its own shutdown (its container removed), then
 // its folder removed.
 async function removeNode (swarm, node) {
@@ -264,14 +287,25 @@ async function removeNode (swarm, node) {
   return 0
 }
 
-// A swarm's nodes are its package's (nodes.json, copied from it): none added
-// by hand. A swarm changed: its package changed, the swarm made again.
-const notInConfig = (swarm, s, node) => console.log(`haicc: no node ${node} in the swarm ${swarm} (nodes.json: ${Object.keys(s.nodes).join(', ') || 'none'}); its nodes are its package's: change the package, make the swarm again`)
+// A strict swarm (--strict when made): its nodes are its package's only
+// (nodes.json, copied from it), none added or torn down by hand.
+const strict = swarm => Boolean(readSwarms().swarms[swarm]?.strict)
+const refusedStrict = (swarm, s, node) => console.log(`haicc: the swarm ${swarm} is strict: its nodes are its package's (nodes.json: ${Object.keys(s.nodes).join(', ') || 'none'})${node ? `, ${node} is not one` : ''}; change the package, make the swarm again`)
 
 async function swarmBoot (swarm, node) {
   const s = readNodes(swarm)
   if (node) {
-    if (!s.nodes[node]) { notInConfig(swarm, s, node); return 1 }
+    if (!s.nodes[node]) {
+      if (strict(swarm)) { refusedStrict(swarm, s, node); return 1 }
+      if (!hostReady()) return 1
+      const master = Object.keys(s.nodes).find(n => s.nodes[n].role === 'master')
+      const role = flags.role || (master ? 'node' : 'master')
+      if (!ROLES.includes(role)) { console.log(`haicc boot: --role=${role}: a role is one of ${ROLES.join(', ')}`); return 2 }
+      if (role === 'master' && master) { console.log(`haicc boot: the swarm ${swarm} has its master already (${master})`); return 1 }
+      s.nodes[node] = { role }
+      jsonFile.write(nodesFile(swarm), s)
+      console.log(`The swarm ${swarm}: ${node} added to nodes.json, its role ${role}`)
+    }
     if (!hostReady()) return 1
     return bootNode(swarm, node)
   }
@@ -286,7 +320,7 @@ async function swarmBoot (swarm, node) {
 async function swarmShutdown (swarm, node, { asked = false } = {}) {
   const s = readNodes(swarm)
   if (node) {
-    if (!s.nodes[node]) { notInConfig(swarm, s, node); return 1 }
+    if (!s.nodes[node]) { console.log(`haicc shutdown: no node ${node} in the swarm ${swarm}`); return 1 }
     if (!asked && !(await confirm(`The node ${swarm}/${node}: its cold shutdown, its container and its folder removed (kept in nodes.json)`))) return 1
     return removeNode(swarm, node)
   }
@@ -294,6 +328,18 @@ async function swarmShutdown (swarm, node, { asked = false } = {}) {
   if (!asked && !(await confirm(`The swarm ${swarm}: its nodes' cold shutdown, the master last (${order.join(', ') || 'none'}): their folders removed; kept: nodes.json`))) return 1
   console.log(`The swarm ${swarm}: its nodes shut down, the master last (${order.join(', ') || 'none'})`)
   for (const n of order) if (await removeNode(swarm, n)) return 1
+  return 0
+}
+
+async function swarmTeardown (swarm, node) {
+  const s = readNodes(swarm)
+  if (strict(swarm)) { refusedStrict(swarm, s); return 1 }
+  if (!s.nodes[node]) { console.log(`haicc teardown: no node ${node} in the swarm ${swarm}`); return 1 }
+  if (!(await confirm(`The node ${swarm}/${node} removed: its container, its folder, its entry in nodes.json`))) return 1
+  if (await removeNode(swarm, node)) return 1
+  delete s.nodes[node]
+  jsonFile.write(nodesFile(swarm), s)
+  console.log(`The swarm ${swarm}: ${node} removed from nodes.json`)
   return 0
 }
 
@@ -314,8 +360,9 @@ exec bare "$work/packages/base-package-haicc/modules/pear-full-square/haicc-base
 
 // A package's swarms (or the one), made from its configuration: the package
 // checked (sealed: intact, else refused; without a hash, from --from: mixed,
-// and said); each swarm's folder (its launcher, its config files copied, its
-// codebase assembled into repository/), its entry in swarms.json; then booted.
+// and said); each swarm's folder (its launcher, its config files copied), its
+// entry in swarms.json; then booted (the master's build assembles its
+// repository from the package).
 // A swarm already here from the same package and path: booted from its own
 // copy; from another: refused.
 async function deployPackage (uri) {
@@ -352,22 +399,10 @@ async function deployPackage (uri) {
       for (const f of files) writeFileSync(join(dir, f), readFileSync(join(src, f)))
       jsonFile.write(nodesFile(swarm), { swarm, ...JSON.parse(readFileSync(join(src, 'nodes.json'), 'utf8')) })
       console.log(`The swarm ${swarm}: made from ${repo}/swarms/${w}: its launcher ${swarm}/haicc, ${files.join(', ')}`)
-      let repository = null
-      if (existsSync(join(src, 'modules.json'))) {
-        try {
-          const a = assemble({ from: pkg, swarm: w, into: join(dir, 'repository') })
-          repository = a.hash
-          console.log(`  its codebase assembled into ${swarm}/repository/: ${a.ours} modules of ours, ${a.third} third-party (${a.hash.slice(0, 12)})`)
-        } catch (err) {
-          console.log(`  its codebase could not be assembled: ${err.message}`)
-          rmSync(dir, { recursive: true, force: true })
-          return 1
-        }
-      } else console.log('  no codebase (no modules.json)')
       const all = readSwarms()
-      all.swarms[swarm] = { ...from, hash: sealed ? v.hash : null, sealed, repository, made: new Date().toISOString() }
+      all.swarms[swarm] = { ...from, hash: sealed ? v.hash : null, sealed, strict: Boolean(flags.strict), made: new Date().toISOString() }
       jsonFile.write(swarmsFile, all)
-      console.log(`The host: ${swarm} added to swarms.json (${sealed ? 'sealed' : 'mixed'})`)
+      console.log(`The host: ${swarm} added to swarms.json (${sealed ? 'sealed' : 'mixed'}${flags.strict ? ', strict' : ''})`)
     }
     console.log(`The swarm ${swarm} (${swarm}/haicc boot):`)
     if (await inSwarmRun(swarm, ['boot', ...(flags['no-echo'] ? ['--no-echo'] : [])])) return 1
@@ -609,9 +644,8 @@ try {
     if (flags.cold && !inSwarm && !n) process.exit(await coldShutdown())
     process.exit(inSwarm ? await swarmShutdown(inSwarm, n, { asked: Boolean(flags.yes) }) : await rootShutdown(n))
   } else if (verb === 'teardown') {
-    if (inSwarm) { console.log(`haicc teardown: a swarm's nodes are its package's (nodes.json): ${inSwarm}/haicc shutdown <node> removes one's folder; the swarm: ./haicc teardown ${inSwarm}`); process.exit(2) }
-    if (!n) { console.log('haicc teardown <swarm>: which swarm to remove'); process.exit(2) }
-    process.exit(await rootTeardown(n))
+    if (!n) { console.log(`haicc teardown <${inSwarm ? 'node' : 'swarm'}>: which ${inSwarm ? 'node' : 'swarm'} to remove`); process.exit(2) }
+    process.exit(inSwarm ? await swarmTeardown(inSwarm, n) : await rootTeardown(n))
   } else if (verb === 'sources') {
     process.exit(await listSources())
   } else if (verb === 'fetch') {

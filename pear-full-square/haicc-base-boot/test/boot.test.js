@@ -172,23 +172,26 @@ test('the setup: a self-extracting release, extracting haiccing/ (boot, sources,
   } finally { rmSync(dir, { recursive: true, force: true }) }
 })
 
-test('a path for a name is refused where it names a swarm\'s node; a swarm\'s nodes are its package\'s', (t) => {
+test('a path for a name is refused where it names a swarm\'s node; a strict swarm\'s nodes are its package\'s', (t) => {
   const work = mkdtempSync(join(tmpdir(), 'names-'))
   const haicc = (args, swarm = '') => run(process.execPath, [join(here, 'haicc.js'), ...args], { env: { ...process.env, HAICC_WORK: work, HAICC_SWARM: swarm } })
   try {
     mkdirSync(join(work, 'hosts'))
-    writeFileSync(join(work, 'swarms.json'), JSON.stringify({ swarms: { hosts: { package: 'base-x', swarm: 'hosts' } } }))
+    writeFileSync(join(work, 'swarms.json'), JSON.stringify({ swarms: { hosts: { package: 'base-x', swarm: 'hosts', strict: true } } }))
     writeFileSync(join(work, 'hosts', 'nodes.json'), JSON.stringify({ swarm: 'hosts', nodes: { master: { role: 'master' } } }))
     const r = haicc(['boot', 'hosts/master'])
     t.is(r.status, 2)
     t.ok(/'hosts\/master': one swarm's name here; a node is its swarm's: hosts\/haicc boot master/.test(r.stdout))
     t.ok(!existsSync(join(work, 'hosts-master')), 'nothing made')
     const s = haicc(['teardown', 'master'], 'hosts')
-    t.is(s.status, 2, 'no teardown of a node: its swarm\'s config is its package\'s')
-    t.ok(/its package's/.test(s.stdout))
+    t.is(s.status, 1, 'strict: no node torn down by hand')
+    t.ok(/the swarm hosts is strict/.test(s.stdout))
     const b = haicc(['boot', 'node-9'], 'hosts')
     t.is(b.status, 1)
-    t.ok(/no node node-9 in the swarm hosts \(nodes.json: master\)/.test(b.stdout), 'a node not in nodes.json: refused, not added')
+    t.ok(/strict: its nodes are its package's \(nodes.json: master\), node-9 is not one/.test(b.stdout), 'strict: a node not in nodes.json refused')
+    const p = haicc(['teardown', 'a/b'], 'hosts')
+    t.is(p.status, 2)
+    t.ok(/one node's name here \(hosts\/haicc teardown <node>\)/.test(p.stdout))
   } finally { rmSync(work, { recursive: true, force: true }) }
 })
 
