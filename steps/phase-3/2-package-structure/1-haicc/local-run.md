@@ -40,6 +40,9 @@ Not run: a boot without Node.js, a failed download stopping the one command.
    it did not hold the release. To do: remove it, and stop a run in a module's
    folder writing `log/` there, or ignore `log/` in the source and the writer.
 
-## The human's manual test
+## The human's manual test (2026-11-07)
 
-To come.
+The published commands, the one command in `~/haicc-r6`, on the human's machine
+with the prerequisites there: setup, `./boot` and the host's checks ok, `Passed:
+7 passed, 0 failed, 0 skipped`, the platform's 19 steps in 13.9 s. The
+`--set=validation` run was not in the output handed back.
