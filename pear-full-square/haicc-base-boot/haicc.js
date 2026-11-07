@@ -54,7 +54,9 @@ const haiccing = join(work, 'haiccing')
 // A swarm's command run by the root (the root echoes and logs every line of
 // it: HAICC_NOLOG) does not log itself; typed, it does.
 const level = flags.debug ? 'debug' : flags.verbose ? 'verbose' : 'normal'
-const log = process.env.HAICC_NOLOG === '1' ? { level, verbose: level !== 'normal', debug: level === 'debug' } : openLog({ dir: join(work, 'log'), command: flags.cold ? ['./shutdown', ...argv.filter(a => a !== 'shutdown' && a !== '--cold')] : [process.env.HAICC_SWARM ? `${process.env.HAICC_SWARM}/haicc` : 'haicc', ...argv], level })
+// Said and logged: the command's header and close line (a command run by
+// the root, HAICC_NOLOG, says them only: the root logs what it echoes).
+const log = openLog({ dir: join(work, 'log'), file: process.env.HAICC_NOLOG !== '1', command: flags.cold ? ['./shutdown', ...argv.filter(a => a !== 'shutdown' && a !== '--cold')] : [process.env.HAICC_SWARM ? `./${process.env.HAICC_SWARM}/haicc` : './haicc', ...argv], level })
 
 const usage = () => { process.stderr.write(readFileSync(new URL(import.meta.url), 'utf8').split('\n').slice(1, 39).map(l => l.replace(/^\/\/ ?/, '')).join('\n') + '\n'); process.exit(2) }
 

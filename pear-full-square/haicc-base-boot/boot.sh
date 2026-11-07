@@ -26,10 +26,10 @@ if [ -z "${HAICC_BOOT_LOGGING:-}" ]; then
   if [ -z "$log" ] || [ "$(wc -c < "$logdir/$log")" -ge 10240 ]; then log=$(date -u +%Y%m%dT%H%M%SZ).log; fi
   log=$logdir/$log
   t0=$(date +%s)
-  echo "== $(date -u +%Y-%m-%dT%H:%M:%SZ) ./boot $*  (in $(pwd))" >> "$log"
+  echo "== $(date -u +%Y-%m-%dT%H:%M:%SZ) ./boot $*  (in $(pwd))" | tee -a "$log"
   { sh "$0" "$@" 2>&1; echo $? > "$logdir/boot.exit"; } | tee -a "$log"
   code=$(cat "$logdir/boot.exit" 2>/dev/null || echo 1); rm -f "$logdir/boot.exit"
-  echo "== exit $code, $(( $(date +%s) - t0 )) s" >> "$log"
+  echo "== exit $code, $(( $(date +%s) - t0 )) s" | tee -a "$log"
   [ "$code" = 0 ] || exit "$code"
   # 3. Stage 2: HAICC itself (it logs itself).
   exec "$work/haicc" boot "$@"

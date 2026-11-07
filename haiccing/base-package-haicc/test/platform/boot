@@ -8,7 +8,10 @@ pkg=$HAICC_PACKAGE; run=$HAICC_RUN
 unset HAICC_WORK HAICC_NOLOG HAICC_SWARM
 w=$run/install
 n=0
-step () { n=$((n + 1)); what=$1; shift; printf '%2d %s ... ' "$n" "$what"; if out_=$("$@" 2>&1); then echo ok; else echo FAILED; echo "$out_" | tail -30 | sed 's/^/     /'; exit 1; fi; }
+# A step: what it is, the command it runs (the install's path shortened to
+# install/, this run's to run/), then ok, or FAILED with the end of its output.
+short () { printf '%s ' "$@" | sed "s#$w#install#g; s#$run#run#g; s#$pkg#package#g; s# \$##"; }
+step () { n=$((n + 1)); what=$1; shift; printf '%2d %s\n     $ %s ... ' "$n" "$what" "$(short "$@")"; if out_=$("$@" 2>&1); then echo ok; else echo FAILED; echo "$out_" | tail -30 | sed 's/^/     /'; exit 1; fi; }
 expect () { printf '%s' "$out_" | grep -q "$1" || { echo "   expected: $1"; echo "$out_" | tail -20 | sed 's/^/     /'; exit 1; }; }
 
 step 'its setup, built from the package under test' sh "$pkg/modules/pear-full-square/haicc-base-boot/release.sh" "$pkg" "$run/haicc-setup.sh"

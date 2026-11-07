@@ -86,6 +86,16 @@ header goes to the log only.
 The close line (exit code, duration) on stdout too is the implementer's to
 propose. The local agent checks it on the next release.
 
+**Done (2026-11-07)**: every command's header (`== <start> <command>  (in
+<folder>)`) and close line (`== exit <code>, <time>`) on stdout as in the
+log: `lib/log.js` (both copies; a command run by the root, `HAICC_NOLOG`,
+says them without logging), `boot.sh`, the setup, `shutdown.sh`; a node's
+HAICC names itself by its path (`./hosts/master/haicc`), the root's
+`./haicc`, a swarm's `./hosts/haicc`. The platform test's steps: each its
+command under it (`$ install/haicc boot hosts --no-echo ... ok`; the
+install's path shortened to `install/`). The close line on stdout too: the
+implementer's proposal, done; the human to say if it is too much.
+
 **Published: the sixth release (2026-11-07), the human's word.**
 `setup-25c91afc4801`, boot 0.6.0, latest; `base-package-haicc` `8ac17a0`. From
 GitHub: 7 passed and 2 passed, as expected. One finding for the implementer, a

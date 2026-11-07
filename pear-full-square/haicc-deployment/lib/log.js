@@ -5,11 +5,14 @@
 // newest is the current one. A command starts a new file, named by its own
 // start, when the current one is over 10 KB (whole commands a file). Each
 // command: a header line (its real start, the command, its folder, its
-// level) and a close line (its exit code, how long it took). The setup and
+// level) and a close line (its exit code, how long it took), on stdout too:
+// where each command starts and ends. The setup and
 // the boot's stage 1 (in shell) write the same way. The managers' copy
 // (haicc-base-boot has the root's).
 //   const log = openLog({ dir, command, level })   its stdout and stderr, teed from now
-import { appendFileSync, mkdirSync, statSync, readdirSync } from 'node:fs'
+//   openLog({ command, file: false })   the header and close line on stdout only (a command
+//        run by another that echoes and logs it)
+import { appendFileSync, mkdirSync, statSync, readdirSync, writeSync } from 'node:fs'
 import { join } from 'node:path'
 
 export const LIMIT = 10 * 1024
@@ -23,17 +26,25 @@ export function logFile (dir, start = new Date()) {
   return join(dir, start.toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z') + '.log')
 }
 
-export function openLog ({ dir, command, level = 'normal' }) {
-  mkdirSync(dir, { recursive: true })
+export function openLog ({ dir, command, level = 'normal', file: logged = true }) {
   const t0 = Date.now()
-  const file = logFile(dir, new Date(t0))
-  const write = text => { try { appendFileSync(file, text) } catch {} }
-  write(`== ${new Date(t0).toISOString()} ${command.join(' ')}  (in ${process.cwd()}${level === 'normal' ? '' : `, ${level}`})\n`)
-  for (const stream of [process.stdout, process.stderr]) {
+  let file = null
+  if (logged) { mkdirSync(dir, { recursive: true }); file = logFile(dir, new Date(t0)) }
+  const write = text => { if (file) try { appendFileSync(file, text) } catch {} }
+  // Said on stdout too, as the log has it: where a command starts, and ends
+  // (at exit, written at once: nothing after it to wait for).
+  const header = `== ${new Date(t0).toISOString()} ${command.join(' ')}  (in ${process.cwd()}${level === 'normal' ? '' : `, ${level}`})\n`
+  write(header)
+  try { writeSync(1, header) } catch {}
+  if (file) for (const stream of [process.stdout, process.stderr]) {
     const original = stream.write.bind(stream)
     stream.write = (chunk, ...rest) => { write(String(chunk)); return original(chunk, ...rest) }
   }
-  process.on('exit', code => write(`== exit ${code}, ${((Date.now() - t0) / 1000).toFixed(1)} s\n`))
+  process.on('exit', code => {
+    const close = `== exit ${code}, ${((Date.now() - t0) / 1000).toFixed(1)} s\n`
+    write(close)
+    try { writeSync(1, close) } catch {}
+  })
   return {
     level,
     verbose: LEVELS.indexOf(level) >= 1,
