@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bare
 // haicc-reconcile from the command line. One JSON line out.
 //   node cli.js check|plan|apply|remove <declaration.json> [--strict]
 // check: each requirement met, missing or different (fixable or not, with a
@@ -8,6 +8,7 @@
 import { createEngine } from './index.js'
 import { readDeclaration } from './lib/declaration.js'
 import { journal } from './lib/journal.js'
+import process from 'bare-process'
 
 const [verb, file, ...rest] = process.argv.slice(2)
 if (!['check', 'plan', 'apply', 'remove'].includes(verb) || !file) {

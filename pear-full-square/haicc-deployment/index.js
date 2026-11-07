@@ -21,12 +21,13 @@
 // the deployment's lifecycle journal (deployment/lifecycle.jsonl); the
 // desired state is their fold. What the engine checks and does goes to its
 // reconcile journal (deployment/reconcile.jsonl).
-import { readFileSync, mkdirSync, existsSync } from 'node:fs'
-import { dirname, resolve, join } from 'node:path'
-import { pathToFileURL } from 'node:url'
+import { readFileSync, mkdirSync, existsSync } from 'bare-fs'
+import { dirname, resolve, join } from 'bare-path'
+import { pathToFileURL } from 'bare-url'
 import { createEngine, providers as builtin } from '../haicc-reconcile/index.js'
 import { journal } from '../haicc-reconcile/lib/journal.js'
 import { validateName } from '../haicc-reconcile/lib/names.js'
+import process from 'bare-process'
 
 const VERBS = { deploy: { deployed: true, running: false }, start: { deployed: true, running: true }, stop: { running: false }, teardown: { deployed: false, running: false } }
 

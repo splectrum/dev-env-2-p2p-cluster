@@ -66,6 +66,21 @@ finding fixed (a run's log in the source: removed, ignored, and the package
 writer no longer carries a module's `log/`). Next, with the human's go:
 `base-package-haicc` on Bare.
 
+**The platform on Bare (2026-11-07)**: `base-package-haicc` runs on Bare
+only (the runtime carried, placed at `bare/`; Bare's modules; `brittle`);
+no Node.js on the host. `notes/packages.md`, "On Bare". From a fresh
+release, Node.js off the PATH: 7 passed. **For the local agent, with the
+human's OK: the seventh release**, as the sixth (`npm install` first: the
+Bare modules and `brittle` are new dependencies; the package writer runs on
+`tools/bare`): publish (`publish.sh`), then from GitHub in a new folder
+`sh haicc-setup.sh <folder> && <folder>/boot && <folder>/haicc boot
+base-package-haicc/test` (expect 7 passed; the setup is now 36 MB), and
+`--set=validation` (2 passed); on a terminal: a yes asked and answered
+(`./haicc boot` with git missing, or `./haicc teardown <swarm>` without
+--yes), since reading the terminal moved to Bare. Record in
+`steps/phase-3/2-package-structure/3-bare/local-run.md`. Then the package
+manager as the second package, on Bare from the start.
+
 **Next here, first: the human's feedback on the sixth release (2026-11-07):
 the commands are not on stdout.** "What I notice is that the commands are not
 echoed into the stdout. That would be useful. Now I have to guess where the

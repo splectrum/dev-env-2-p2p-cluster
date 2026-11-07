@@ -6,7 +6,7 @@
   "exports": "./index.js",
   "bin": { "haicc-deployment": "./cli.js" },
   "scripts": {
-    "test": "node --test test/*.test.js"
+    "test": "bare ../../node_modules/brittle/cmd.js test/*.test.js"
   },
   "license": "MIT"
 }

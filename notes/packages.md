@@ -466,6 +466,23 @@ narrowed back to haicc, the human's call.)
   the validation set. On a freshly set up release: `./haicc boot
   base-package-haicc/test`, 7 passed, 26 s. The first script
   (`steps/.../1-haicc/run.sh`) is gone: the package carries its tests.
+- **On Bare** (2026-11-07; the human: Bare only, `brittle` for tests, no
+  Node.js equivalence; the runtime carried by the platform's package; hard
+  links for copies within a work folder): HAICC, reconcile, deployment and
+  the package manager on Bare's own modules (`bare-fs`, `bare-subprocess`,
+  `bare-tcp`, `bare-dgram`, ...), their tests on `brittle`; the package
+  writer on Bare too (`tools/bare`, this repository's runtime). The package
+  carries the full runtime (`bare-runtime-linux-x64`, 97 MB; the package
+  119 MB, the setup 36 MB): step 0 checks it runs here, the boot places it
+  at `bare/` (a hard link), the launchers run `bare`; no Node.js, no
+  download. Packages carry `brittle` (their own tests run on it); a named
+  test, outside `modules/`, imports by its path in the package. Found on
+  the way (the probe's record): Bare's `spawnSync` has no time limit
+  (coreutils' `timeout`) and hangs on `input`; `console.log` bypasses
+  `process.stdout` (the log now takes every line through one synchronous
+  writer: in order, nothing lost to an exit); `brittle` takes relative
+  paths. The full set from a fresh release, Node.js off the PATH: 7
+  passed, 41 s.
 - **A node's boot, cold and warm** (the human): cold makes the node's
   folder and copies in the minimum code; then warm takes over.
 - **Next: the package manager, the second package**: its named tests run

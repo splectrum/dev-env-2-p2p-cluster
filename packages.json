@@ -2,7 +2,7 @@
   "description": "haiccing's packages, as the package writer (tools/package-writer) writes them: each self-contained (no requires), in the package structure (notes/packages.md). Rebuilt one package a step: haicc first; the package manager next. modules: ours it starts from (and its swarms' modules.json); with: other definitions' modules, written in with it (the writer's convenience); the hand-written parts from haiccing/<repo>/.",
   "packages": {
     "haicc": {
-      "description": "HAICC, the platform: its boot (haicc-base-boot), declaring and reconciling (haicc-reconcile), the lifecycle (haicc-deployment) and the package manager (pkgm-base-manager). The entry: everything starts here.",
+      "description": "HAICC, the platform: its boot (haicc-base-boot), declaring and reconciling (haicc-reconcile), the lifecycle (haicc-deployment) and the package manager (pkgm-base-manager). The entry: everything starts here. On Bare: it carries Bare's runtime.",
       "modules": [
         "pear-full-square/haicc-reconcile",
         "pear-full-square/haicc-deployment",
@@ -22,9 +22,9 @@
         "  && cd ~/haicc-work && ./haicc list",
         "```",
         "",
-        "The boot runs in two stages. Stage 1, `./boot`, in plain shell: Linux x86-64 and Node.js (Node.js fixed with your yes, into `nodejs/`); HAICC's package copied whole into `packages/base-package-haicc/`; `./haicc` written. Stage 2, `./haicc boot`: the host's other prerequisites (git 2.25 or later; Docker Engine installed, running, rootful, native, and you in the `docker` group), each fixed only with your yes (`--yes` agrees beforehand); then `haiccing/install` if there (one `./haicc` command a line), or the next commands.",
+        "The boot runs in two stages. Stage 1, `./boot`, in plain shell: Linux x86-64, and Bare's runtime (carried by this package: nothing to download) placed in `bare/`; HAICC's package copied whole into `packages/base-package-haicc/`; `./haicc` written (HAICC runs on Bare). Stage 2, `./haicc boot`: the host's other prerequisites (git 2.25 or later; Docker Engine installed, running, rootful, native, and you in the `docker` group), each fixed only with your yes (`--yes` agrees beforehand); then `haiccing/install` if there (one `./haicc` command a line), or the next commands.",
         "",
-        "Everything it does is logged in the work folder's `log/` (`~/haicc-work/log/`): files named by their start, newest last. Everything is in plain sight: `boot`, `shutdown`, `haicc`, `haiccing/`, `packages/`, `nodejs/`, `log/`; no hidden folders. `./shutdown` takes it all back to the setup (keeping `haiccing/`, `log/`, `nodejs/`); `./boot` again sets it up.",
+        "Everything it does is logged in the work folder's `log/` (`~/haicc-work/log/`): files named by their start, newest last. Everything is in plain sight: `boot`, `shutdown`, `haicc`, `haiccing/`, `packages/`, `bare/`, `log/`; no hidden folders. `./shutdown` takes it all back to the setup (keeping `haiccing/`, `log/`, `bare/`); `./boot` again sets it up.",
         "",
         "The rest of HAICC (`haicc-reconcile`, `haicc-deployment`) runs in the nodes: `./haicc boot <swarm>` makes a swarm (in `swarms.json`), `<swarm>/haicc boot <node>` a node in it (in `<swarm>/nodes.json`; the first is the master), with its own HAICC and package manager. `haicc boot` and `haicc shutdown` work on the config of the folder they are called from.",
         "",

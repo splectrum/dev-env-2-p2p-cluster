@@ -3,9 +3,9 @@
 //     "strict": false, "record": "<journal file>" }
 // "{here}" in any string is the file's folder; providers are modules
 // exporting { providers } (paths relative to the file).
-import { readFileSync } from 'node:fs'
-import { dirname, resolve } from 'node:path'
-import { pathToFileURL } from 'node:url'
+import { readFileSync } from 'bare-fs'
+import { dirname, resolve } from 'bare-path'
+import { pathToFileURL } from 'bare-url'
 import { providers as builtin } from '../index.js'
 import { validateName } from './names.js'
 

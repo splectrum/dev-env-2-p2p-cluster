@@ -8,16 +8,16 @@
 //   docker-group     {}                    the user in the docker group (holds from the next login)
 //   os       { platform: 'linux', arch: 'x64' }
 //   docker   { native: true }              Docker Engine, rootful, not Docker Desktop
-//   nodejs   { atLeast: 22 }               Node.js, its major version
 //   bare     { runtime: '1.36.0' }         Bare's runtime: the binary images are built with
 //   subnet   { cidr: '172.34.0.0/24', network }   free, or held by that Docker network
 //   udp      { network: 'bridge' }         a container reaches the host's address on it by UDP
-import { execFileSync, spawnSync } from 'node:child_process'
-import dgram from 'node:dgram'
+import { spawnSync } from 'bare-subprocess'
+import dgram from 'bare-dgram'
+import process from 'bare-process'
 
 const has = cmd => spawnSync('sh', ['-c', `command -v ${cmd}`], { stdio: 'ignore' }).status === 0
 const atLeast = (v, min) => { const a = v.split('.').map(Number); const b = String(min).split('.').map(Number); for (let i = 0; i < b.length; i++) { if ((a[i] || 0) !== b[i]) return (a[i] || 0) > b[i] } return true }
-const root = () => process.getuid?.() === 0
+const root = () => run('id', ['-u']) === '0'
 // A change to the machine: asked first; run (with sudo unless root),
 // its output the person's to see.
 async function change (ctx, what, cmds) {
@@ -64,7 +64,8 @@ export const dockerGroup = {
   hint: () => 'log in again for the docker group to hold (or: newgrp docker), then boot again'
 }
 
-const run = (cmd, args) => { try { return execFileSync(cmd, args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim() } catch { return null } }
+// A command's output, trimmed; null when it fails or is not there.
+const run = (cmd, args) => { const r = spawnSync(cmd, args, { stdio: ['ignore', 'pipe', 'ignore'] }); return r.status === 0 ? String(r.stdout).trim() : null }
 const exact = (want, actual, keys) => keys.every(k => want[k] === undefined || actual[k] === want[k])
 
 export const os = {
@@ -92,12 +93,6 @@ export const docker = {
   },
   hint: (r, a) => !a ? 'Docker Engine is not running (or not installed): start it, and check with docker info'
     : 'Docker Desktop and rootless Docker are not enough: the managers on the host must reach the networks\' addresses; use Docker Engine, rootful (in WSL2, inside the distribution)'
-}
-
-export const nodejs = {
-  observe: () => ({ version: process.versions.node }),
-  compare: (r, a) => Number(a.version.split('.')[0]) >= (r.want.atLeast ?? 0) ? { status: 'met', detail: a } : { status: 'different', detail: a },
-  hint: r => `Node.js ${r.want.atLeast} or later is needed`
 }
 
 // What images are built with: the bare package's runtime on this host
@@ -146,7 +141,7 @@ export const udp = {
     const port = sock.address().port
     const got = new Promise(resolve => { sock.once('message', () => resolve(true)); setTimeout(() => resolve(false), 8000) })
     const image = r.want.image || 'debian:bookworm-slim'
-    spawnSync('docker', ['run', '--rm', '--network', net, image, 'bash', '-c', `for i in 1 2 3; do echo ok > /dev/udp/${gw}/${port}; sleep 0.3; done`], { stdio: 'ignore', timeout: 30000 })
+    spawnSync('timeout', ['30', 'docker', 'run', '--rm', '--network', net, image, 'bash', '-c', `for i in 1 2 3; do echo ok > /dev/udp/${gw}/${port}; sleep 0.3; done`], { stdio: 'ignore' })
     const reached = await got
     sock.close()
     return { gateway: gw, reached }

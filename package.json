@@ -2,7 +2,7 @@
   "name": "dev-env-2-p2p-cluster",
   "private": true,
   "type": "module",
-  "description": "Every module as one dependency tree (npm workspaces): each module a folder (pear-full-square/<module>), their dependencies resolved together, once. The dependencies here are what the applications composing them need: Bare's runtime (for the third-party package, so the node image needs no global install) and its aliases for Node's built-ins.",
+  "description": "Every module as one dependency tree (npm workspaces): each module a folder (pear-full-square/<module>), their dependencies resolved together, once. The dependencies here are what the applications composing them need: Bare's runtime (for the third-party package, so the node image needs no global install) and its aliases for Node's built-ins. The host side on Bare too: Bare's own modules (bare-fs, bare-subprocess, ...) and brittle for the tests, carried into the packages by the package writer.",
   "workspaces": [
     "pear-full-square/mycelium-topic",
     "pear-full-square/mycelium-repo",
@@ -45,6 +45,16 @@
     "path": "npm:bare-node-path@1.0.1",
     "process": "npm:bare-node-process@1.0.1",
     "url": "npm:bare-node-url@1.0.1",
-    "util": "npm:bare-node-util@1.0.0"
+    "util": "npm:bare-node-util@1.0.0",
+    "bare-fs": "4.8.4",
+    "bare-path": "3.1.2",
+    "bare-os": "3.9.4",
+    "bare-process": "4.5.1",
+    "bare-subprocess": "6.2.2",
+    "bare-url": "2.5.6",
+    "bare-crypto": "1.15.4",
+    "bare-tcp": "2.6.1",
+    "bare-dgram": "1.1.1",
+    "brittle": "4.5.0"
   }
 }

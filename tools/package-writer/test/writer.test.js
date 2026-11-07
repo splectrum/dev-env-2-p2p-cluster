@@ -1,9 +1,13 @@
-import { test } from 'node:test'
-import assert from 'node:assert/strict'
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync, readlinkSync, statSync } from 'node:fs'
-import { join, dirname } from 'node:path'
-import { tmpdir } from 'node:os'
+import test from 'brittle'
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync, readlinkSync, statSync } from 'bare-fs'
+import { join, dirname } from 'bare-path'
+import { tmpdir } from 'bare-os'
 import { writePackages } from '../index.js'
+import { closure } from '../../../pear-full-square/pkgm-base-manager/lib/closure.js'
+import { copy } from '../../../pear-full-square/pkgm-base-manager/lib/tree.js'
+import { fileURLToPath } from 'bare-url'
+
+const real = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', 'node_modules')
 
 const put = (f, s) => { mkdirSync(dirname(f), { recursive: true }); writeFileSync(f, s) }
 const json = (f, v) => put(f, JSON.stringify(v, null, 2))
@@ -13,9 +17,12 @@ const json = (f, v) => put(f, JSON.stringify(v, null, 2))
 // another platform, and a swarm package whose swarm names one module.
 function devRepo () {
   const dev = mkdtempSync(join(tmpdir(), 'writer-dev-'))
-  json(join(dev, 'org/amod/package.json'), { name: 'amod', type: 'module', exports: './index.js', scripts: { test: 'node --test test/*.test.js' } })
+  json(join(dev, 'org/amod/package.json'), { name: 'amod', type: 'module', exports: './index.js', scripts: { test: 'sh test/a.sh' } })
   put(join(dev, 'org/amod/index.js'), "import { b } from 'bmod'\nexport const a = () => b() + 1\n")
-  put(join(dev, 'org/amod/test/a.test.js'), "import { test } from 'node:test'\nimport assert from 'node:assert/strict'\nimport { a } from 'amod'\ntest('a', () => assert.equal(a(), 43))\n")
+  put(join(dev, 'org/amod/test/a.sh'), 'cd "$(dirname "$0")/.." && [ -f index.js ] && echo "# tests 1" && echo "# pass 1"\n')
+  // brittle and what it uses, as this repository has them: the package's
+  // own tests (test/modules-load) run on it.
+  for (const n of closure({ ours: new Map(), third: real, start: [], also: ['brittle'] }).third) copy(join(real, n), join(dev, 'node_modules', n))
   json(join(dev, 'org/bmod/package.json'), { name: 'bmod', type: 'module', exports: './index.js' })
   put(join(dev, 'org/bmod/log/20261107T000000Z.log'), 'a run left this\n')
   put(join(dev, 'org/bmod/index.js'), "import { x } from 'dep-x'\nexport const b = () => x\n")
@@ -34,48 +41,50 @@ function devRepo () {
   return dev
 }
 
-test('written: self-contained, in the package structure, tested first', () => {
+test('written: self-contained, in the package structure, tested first', (t) => {
   const dev = devRepo()
   const out = mkdtempSync(join(tmpdir(), 'writer-out-'))
   try {
     const r = writePackages({ dev, out })
-    assert.equal(r.ok, true, JSON.stringify(r.results))
+    t.is(r.ok, true, JSON.stringify(r.results))
     const y = join(out, 'base-swarm-y')
     // Its swarm's codebase and what that uses, all the way down.
-    assert.ok(existsSync(join(y, 'modules/org/amod/index.js')))
-    assert.ok(existsSync(join(y, 'modules/org/bmod/index.js')))
-    assert.ok(existsSync(join(y, 'modules/node_modules/dep-x/index.js')))
-    assert.ok(!existsSync(join(y, 'modules/node_modules/dep-x/test')), 'third-party tests not shipped')
-    assert.ok(!existsSync(join(y, 'modules/node_modules/dep-x/prebuilds/other-arch')), 'other platforms not shipped')
-    assert.equal(readlinkSync(join(y, 'modules/node_modules/bmod')), '../org/bmod')
-    assert.ok(!existsSync(join(y, 'modules/org/bmod/log')), 'a log a run left: not carried')
-    assert.deepEqual(JSON.parse(readFileSync(join(y, 'modules/third-party.json'), 'utf8')).modules, [{ name: 'dep-x', version: '1.2.3', license: 'MIT', resolved: null, integrity: 'sha512-x' }])
+    t.ok(existsSync(join(y, 'modules/org/amod/index.js')))
+    t.ok(existsSync(join(y, 'modules/org/bmod/index.js')))
+    t.ok(existsSync(join(y, 'modules/node_modules/dep-x/index.js')))
+    t.ok(!existsSync(join(y, 'modules/node_modules/dep-x/test')), 'third-party tests not shipped')
+    t.ok(!existsSync(join(y, 'modules/node_modules/dep-x/prebuilds/other-arch')), 'other platforms not shipped')
+    t.is(readlinkSync(join(y, 'modules/node_modules/bmod')), '../org/bmod')
+    t.ok(!existsSync(join(y, 'modules/org/bmod/log')), 'a log a run left: not carried')
+    t.alike(JSON.parse(readFileSync(join(y, 'modules/third-party.json'), 'utf8')).modules.find(m => m.name === 'dep-x'), { name: 'dep-x', version: '1.2.3', license: 'MIT', resolved: null, integrity: 'sha512-x' })
     // The hand-written parts as they are; the named test written here.
-    assert.equal(readFileSync(join(y, 'README.md'), 'utf8'), '# base-swarm-y\n\nBy hand.\n')
-    assert.ok(existsSync(join(y, 'swarms/s1/nodes.json')))
-    assert.ok(statSync(join(y, 'test/modules-load/test')).mode & 0o100)
+    t.is(readFileSync(join(y, 'README.md'), 'utf8'), '# base-swarm-y\n\nBy hand.\n')
+    t.ok(existsSync(join(y, 'swarms/s1/nodes.json')))
+    t.ok(statSync(join(y, 'test/modules-load/test')).mode & 0o100)
     const m = JSON.parse(readFileSync(join(y, 'package.json'), 'utf8'))
-    assert.equal(m.name, 'base-swarm-y')
-    assert.deepEqual(m.pkgm.modules, { ours: ['org/amod', 'org/bmod'], third: 1 })
-    assert.deepEqual(m.pkgm.swarms, ['s1'])
-    assert.equal(m.pkgm.requires, undefined, 'no requires')
-    assert.match(m.pkgm.hash, /^[0-9a-f]{64}$/)
+    t.is(m.name, 'base-swarm-y')
+    t.alike(m.pkgm.modules.ours, ['org/amod', 'org/bmod'])
+    t.ok(m.pkgm.modules.third > 2, 'dep-x, and brittle with what it uses')
+    t.ok(existsSync(join(y, 'modules/node_modules/brittle/index.js')), 'brittle carried: its own tests run on it')
+    t.alike(m.pkgm.swarms, ['s1'])
+    t.is(m.pkgm.requires, undefined, 'no requires')
+    t.ok(/^[0-9a-f]{64}$/.test(m.pkgm.hash))
     // A generated readme for one without its own.
-    assert.match(readFileSync(join(out, 'base-package-code', 'README.md'), 'utf8'), /Self-contained/)
+    t.ok(/Self-contained/.test(readFileSync(join(out, 'base-package-code', 'README.md'), 'utf8')))
     // Written again: the same hash.
     writePackages({ dev, out })
-    assert.equal(JSON.parse(readFileSync(join(y, 'package.json'), 'utf8')).pkgm.hash, m.pkgm.hash)
+    t.is(JSON.parse(readFileSync(join(y, 'package.json'), 'utf8')).pkgm.hash, m.pkgm.hash)
   } finally { for (const d of [dev, out]) rmSync(d, { recursive: true, force: true }) }
 })
 
-test('a test failing: nothing written', () => {
+test('a test failing: nothing written', (t) => {
   const dev = devRepo()
   const out = mkdtempSync(join(tmpdir(), 'writer-out-'))
   try {
-    put(join(dev, 'org/amod/test/a.test.js'), "import { test } from 'node:test'\nimport assert from 'node:assert/strict'\ntest('a', () => assert.equal(1, 2))\n")
+    put(join(dev, 'org/amod/test/a.sh'), 'echo "# tests 1"; echo "# pass 0"; exit 1\n')
     const r = writePackages({ dev, out })
-    assert.equal(r.ok, false)
-    assert.deepEqual(r.written, [])
-    assert.ok(!existsSync(join(out, 'base-swarm-y')))
+    t.is(r.ok, false)
+    t.alike(r.written, [])
+    t.ok(!existsSync(join(out, 'base-swarm-y')))
   } finally { for (const d of [dev, out]) rmSync(d, { recursive: true, force: true }) }
 })

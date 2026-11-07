@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bare
 // haicc: a node's HAICC (<swarm>/<node>/haicc <command>), from the
 // platform's package (packages/base-package-haicc), copied in by its
 // swarm's cold boot.
@@ -17,10 +17,11 @@
 // command prints goes to log/ too, in order (files of 10 KB named by their
 // start, newest last); --verbose and --debug say more. Exit 0 when done; 1
 // when not (the output says what is missing); 2 on a bad call.
-import process from 'node:process'
-import { existsSync, readFileSync, readdirSync } from 'node:fs'
-import { join, resolve, dirname, basename } from 'node:path'
-import { spawnSync } from 'node:child_process'
+import process from 'bare-process'
+import { existsSync, readFileSync, readdirSync } from 'bare-fs'
+import { join, resolve, dirname, basename } from 'bare-path'
+import { spawnSync } from 'bare-subprocess'
+import { fileURLToPath } from 'bare-url'
 import { openLog } from './lib/log.js'
 import { selfTest } from './lib/selftest.js'
 import { testPackage } from '../pkgm-base-manager/index.js'
@@ -35,7 +36,7 @@ const haiccing = [join(work, 'haiccing'), join(work, '..', 'haiccing'), join(wor
 
 const log = openLog({ dir: join(work, 'log'), command: [`./${basename(dirname(work))}/${basename(work)}/haicc`, ...argv], level: flags.debug ? 'debug' : flags.verbose ? 'verbose' : 'normal' })
 
-const usage = () => { process.stderr.write(readFileSync(new URL(import.meta.url), 'utf8').split('\n').slice(1, 12).map(l => l.replace(/^\/\/ ?/, '')).join('\n') + '\n'); process.exit(2) }
+const usage = () => { process.stderr.write(readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 12).map(l => l.replace(/^\/\/ ?/, '')).join('\n') + '\n'); process.exit(2) }
 const fetchScript = join(packages, 'base-package-haicc', 'modules', 'pear-full-square', 'haicc-base-boot', 'fetch.sh')
 // What is here: the repositories copied in whole, each with its manifest.
 const packagesHere = () => {

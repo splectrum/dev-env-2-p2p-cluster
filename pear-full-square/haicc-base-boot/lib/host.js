@@ -4,13 +4,14 @@
 // repository keeps the two agreeing). Each fix only with a person's yes,
 // with sudo unless root.
 //   for (const c of CHECKS) { const a = c.observe(); c.met(a); await c.fix(ask, a) }
-import { execFileSync, spawnSync } from 'node:child_process'
+import { spawnSync } from 'bare-subprocess'
+import process from 'bare-process'
 
 // A stuck command (a Docker daemon not answering) counts as no answer.
-const run = (cmd, args) => { try { return execFileSync(cmd, args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 20000 }).trim() } catch { return null } }
+const run = (cmd, args) => { const r = spawnSync('timeout', ['20', cmd, ...args], { stdio: ['ignore', 'pipe', 'ignore'] }); return r.status === 0 ? String(r.stdout).trim() : null }
 const has = cmd => spawnSync('sh', ['-c', `command -v ${cmd}`], { stdio: 'ignore' }).status === 0
 export const atLeast = (v, min) => { const a = v.split('.').map(Number); const b = String(min).split('.').map(Number); for (let i = 0; i < b.length; i++) { if ((a[i] || 0) !== b[i]) return (a[i] || 0) > b[i] } return true }
-const root = () => process.getuid?.() === 0
+const root = () => run('id', ['-u']) === '0'
 const user = () => run('id', ['-un'])
 
 // A change to the machine: asked first; run (with sudo unless root), its

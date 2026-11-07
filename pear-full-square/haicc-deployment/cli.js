@@ -1,12 +1,13 @@
-#!/usr/bin/env node
+#!/usr/bin/env bare
 // A project's deployment from the command line. One JSON line out.
 //   node cli.js deploy|start|stop|teardown|reconcile|status <project.json> [--work=<folder>]
 // The work folder defaults to manager/<owner>, in the current folder. Exit 0 when the verb's
 // state is reached; 1 otherwise (the result says what is missing, and
 // hints what only a human can do); 2 on a bad call.
-import { join } from 'node:path'
-import { readFileSync } from 'node:fs'
+import { join } from 'bare-path'
+import { readFileSync } from 'bare-fs'
 import { openDeployment } from './index.js'
+import process from 'bare-process'
 
 const argv = process.argv.slice(2)
 const flags = Object.fromEntries(argv.filter(a => a.startsWith('--')).map(a => { const [k, v] = a.slice(2).split('='); return [k, v] }))
