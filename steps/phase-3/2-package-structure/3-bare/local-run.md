@@ -70,3 +70,27 @@ The built file in `~/haicc-r7`, on the human's machine: setup, `./boot` and the
 host's checks ok, `Passed: 7 passed, 0 failed, 0 skipped`, the platform's 19
 steps in 26.9 s, 38.0 s in all. Each command on stdout, as asked. Not in the
 output handed back: `--set=validation`, the prompt (finding 4).
+
+# The eighth release (2026-11-07)
+
+`setup-ab3193778713`, boot 0.6.0, Bare v1.36.0, latest, from `99c65fb`: published
+with the human's word: `base-package-haicc` `969a4cd`, the release, `haiccing`'s
+profile `3728924`. The runtime in the setup, no longer in the package's tree: the
+package 27 MB (119 MB before), the setup still 36 MB; the seventh's 34.6 MB stay
+in the history.
+
+- **Before publishing**, the built file in a new folder, Node.js off the PATH,
+  called by path from another folder: 7 passed (the platform's 19 steps), 2
+  passed. A swarm and a master up. `./shutdown --yes` keeps `bare/`, `./boot`
+  again exit 0. No hidden files. `npm install` left `package-lock.json` clean.
+- **After publishing**, the profile's command block as it stands, in a sandboxed
+  home, from the latest link: exit 0. Then 7 passed and 2 passed. The file served
+  is the file built. No hidden files.
+- **The seventh's findings seen fixed**: the lock file; each command echoed as
+  called; no doubled prompt through `script`.
+
+Not checked: a yes on a real terminal (through `script`, `n` kept the swarm and
+`y` removed it, but piped input cannot show the question and the answer on one
+line: the human's to see); the sha256 pin refusing a damaged runtime; the
+`curl -C -` resume from here; the human's manual test.
+
