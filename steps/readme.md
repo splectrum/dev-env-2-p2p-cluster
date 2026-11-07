@@ -35,3 +35,5 @@ done with them.
 | 8. Liveness | `8-liveness/` | done |
 | 9. Click and run | `9-click-and-run/` | done |
 | 10. The deployment on the swarm | `10-deployment-on-swarm/` | done |
+
+Phase 3 (packages, the platform's structure, the demos again): `phase-3/`, its report `phase-3/readme.md`.
