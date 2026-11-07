@@ -22,12 +22,14 @@ from a work folder: no development repository, no `npm install`. The setup
 `haiccing/`; its boot does the rest:
 
 ```bash
-curl -fL --progress-bar --retry 5 --retry-all-errors --connect-timeout 20 \
+rm -f haicc-setup.sh && curl -fL --progress-bar --retry 5 --retry-all-errors --connect-timeout 20 \
      -o haicc-setup.sh https://github.com/haiccing/base-package-haicc/releases/latest/download/haicc-setup.sh \
   && sh haicc-setup.sh ~/haicc-work \
   && ~/haicc-work/boot \
   && cd ~/haicc-work && ./haicc list
 ```
+
+The setup is about 36 MB. On a poor connection: if the download stops, `curl -fL -C - -o haicc-setup.sh https://github.com/haiccing/base-package-haicc/releases/latest/download/haicc-setup.sh` continues it where it stopped; run it again until it ends without an error, then `sh haicc-setup.sh ~/haicc-work && ~/haicc-work/boot`.
 
 Step 0 checks the machine first and fixes what is missing only with your
 yes (git and Docker Engine with `apt`; Bare's runtime comes with the

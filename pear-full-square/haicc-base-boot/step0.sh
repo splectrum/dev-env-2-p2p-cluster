@@ -1,8 +1,8 @@
 #!/bin/sh
 # Step 0: what HAICC needs to run, before anything of it runs (./requirements).
 #   sh step0.sh check <runtime>    each: found, required, ok, and what to do when not
-# <runtime>: Bare's runtime as the platform's package carries it. Nothing to
-# fix here: the runtime comes with the package (no download), and a host
+# <runtime>: Bare's runtime as the setup placed it (<work>/bare/bare). Nothing to
+# fix here: the runtime comes with the setup (no download), and a host
 # that is not Linux x86-64 cannot run it. Exit 0 when all is met, 1 when not.
 set -u
 here=$(cd "$(dirname "$0")" && pwd)
@@ -15,7 +15,7 @@ probe () {
       found="$(uname -s | tr A-Z a-z)-$(uname -m)"
       [ "$found" = "$2" ] && ok=yes || todo="none: HAICC runs on Linux x86-64 only, for now" ;;
     bare)
-      if [ -z "$runtime" ] || [ ! -f "$runtime" ]; then found='not in the package'; todo='a setup whose package carries it'
+      if [ -z "$runtime" ] || [ ! -f "$runtime" ]; then found='not there'; todo='set up from a setup (it carries the runtime)'
       else
         [ -x "$runtime" ] || chmod +x "$runtime" 2>/dev/null
         if v=$("$runtime" --version 2>/dev/null); then found="$v"; ok=yes

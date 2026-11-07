@@ -26,7 +26,7 @@ function runtime (dir, ok = true) {
   return f
 }
 
-test('step 0: Linux x86-64, and the package\'s runtime runs here (exit 0); each said with found, required, ok', (t) => {
+test('step 0: Linux x86-64, and the runtime runs here (exit 0); each said with found, required, ok', (t) => {
   const dir = mkdtempSync(join(tmpdir(), 'step0-'))
   try {
     const r = run('sh', [join(here, 'step0.sh'), 'check', runtime(dir)])
@@ -37,12 +37,12 @@ test('step 0: Linux x86-64, and the package\'s runtime runs here (exit 0); each 
   } finally { rmSync(dir, { recursive: true, force: true }) }
 })
 
-test('step 0: no runtime in the package, or one that does not run here: no (exit 1), what to do said', (t) => {
+test('step 0: no runtime, or one that does not run here: no (exit 1), what to do said', (t) => {
   const dir = mkdtempSync(join(tmpdir(), 'step0-'))
   try {
     const none = run('sh', [join(here, 'step0.sh'), 'check', join(dir, 'nothing')])
     t.is(none.status, 1)
-    t.ok(/^bare +not in the package +runs +no +a setup whose package carries it/m.test(none.stdout), none.stdout)
+    t.ok(/^bare +not there +runs +no +set up from a setup \(it carries the runtime\)/m.test(none.stdout), none.stdout)
     const broken = run('sh', [join(here, 'step0.sh'), 'check', runtime(dir, false)])
     t.is(broken.status, 1)
     t.ok(/does not run +runs +no +Bare's runtime does not run on this host/.test(broken.stdout), broken.stdout)
@@ -104,19 +104,24 @@ test('fetch: from a folder source, the first that has it; plain copies; each sai
 test('the setup: a self-extracting release, extracting haiccing/ (boot, sources, the package)', (t) => {
   const dir = mkdtempSync(join(tmpdir(), 'release-'))
   try {
-    // base-package-haicc in miniature: its manifest, this boot, and a runtime
-    // (a script standing in) where the package carries Bare's.
+    // base-package-haicc in miniature: its manifest and this boot; a runtime
+    // (a script standing in) for the setup to carry.
     const pkg = join(dir, 'base-package-haicc')
-    mkdirSync(join(pkg, 'modules', 'node_modules', 'bare-runtime-linux-x64', 'bin'), { recursive: true })
     mkdirSync(join(pkg, 'modules', 'pear-full-square'), { recursive: true })
     run('cp', ['-a', here, join(pkg, 'modules', 'pear-full-square', 'haicc-base-boot')])
-    runtime(join(pkg, 'modules', 'node_modules', 'bare-runtime-linux-x64', 'bin'))
+    mkdirSync(join(dir, 'rt'))
+    const rt = runtime(join(dir, 'rt'))
     writeFileSync(join(pkg, 'package.json'), JSON.stringify({ name: 'base-package-haicc', pkgm: { package: 'haicc', hash: 'abcdef1234567890' } }))
-    t.is(run('sh', [join(here, 'release.sh'), pkg, join(dir, 'haicc-setup.sh')]).status, 0)
+    const rel = run('sh', [join(here, 'release.sh'), pkg, join(dir, 'haicc-setup.sh'), rt])
+    t.is(rel.status, 0, rel.stdout + rel.stderr)
+    t.ok(/Bare v1\.36\.0/.test(rel.stdout), 'the runtime it carries, said')
     const work = join(dir, 'work')
     const r = run('sh', [join(dir, 'haicc-setup.sh'), work, `--sources=folder:${dir}/repos`, '--sources=github:haiccing'])
     t.is(r.status, 0, r.stdout + r.stderr)
     t.ok(/next: .*\/work\/boot/.test(r.stdout))
+    // Bare's runtime: carried by the setup, placed in bare/, not in the package.
+    t.ok(/v1\.36\.0/.test(run(join(work, 'bare', 'bare'), ['--version']).stdout), "Bare's runtime in bare/")
+    t.ok(!existsSync(join(work, 'haiccing', 'base-package-haicc', 'modules', 'node_modules')), 'not in the package')
     t.ok(existsSync(join(work, 'haiccing', 'base-package-haicc', 'modules', 'pear-full-square', 'haicc-base-boot', 'boot.sh')))
     // The stubs, ./boot and ./shutdown: executable, naming their setup.
     for (const s of ['boot', 'shutdown']) {
@@ -129,19 +134,25 @@ test('the setup: a self-extracting release, extracting haiccing/ (boot, sources,
     const logs = readdirSync(join(work, 'log'))
     t.is(logs.length, 1)
     t.ok(/^\d{8}T\d{6}Z\.log$/.test(logs[0]))
-    t.ok(/^== \d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ sh haicc-setup\.sh .*\nhaicc-setup: base-package-haicc abcdef123456 .*\n(.*\n)*== exit 0, \d+ s\n$/.test(readFileSync(join(work, 'log', logs[0]), 'utf8')))
+    t.ok(/^== \d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ sh \S*haicc-setup\.sh .*\nhaicc-setup: base-package-haicc abcdef123456 .*\n(.*\n)*== exit 0, \d+ s\n$/.test(readFileSync(join(work, 'log', logs[0]), 'utf8')))
     // The first boot's stage 1, on a folder with no packages/ yet: the
-    // runtime at the root, HAICC's package copied in whole (hard links).
+    // runtime checked, HAICC's package copied in whole (hard links).
     const stage1 = run('sh', [join(work, 'boot')], { env: { ...process.env, HAICC_BOOT_LOGGING: '1' } })
     t.is(stage1.status, 0, stage1.stdout + stage1.stderr)
     const inPackages = join(work, 'packages', 'base-package-haicc', 'modules', 'pear-full-square', 'haicc-base-boot', 'haicc.js')
     t.ok(existsSync(inPackages), stage1.stdout + stage1.stderr)
     t.is(statSync(inPackages).ino, statSync(join(work, 'haiccing', 'base-package-haicc', 'modules', 'pear-full-square', 'haicc-base-boot', 'haicc.js')).ino, 'a hard link: no space taken twice')
-    t.ok(/v1\.36\.0/.test(run(join(work, 'bare', 'bare'), ['--version']).stdout), "Bare's runtime at the root")
     t.ok(/exec bare "\$work\/packages\/base-package-haicc\/modules\/pear-full-square\/haicc-base-boot\/haicc\.js"/.test(readFileSync(join(work, 'haicc'), 'utf8')))
     // Nothing hidden: the work folder's shape.
     t.alike(readdirSync(work).sort(), ['bare', 'boot', 'haicc', 'haiccing', 'log', 'packages', 'shutdown'])
     // Again, the same setup: said, exit 0, nothing changed.
+    // A damaged runtime: the setup says so, exit 1.
+    const w3 = join(dir, 'work3')
+    const damaged = join(dir, 'damaged.sh')
+    writeFileSync(damaged, readFileSync(join(dir, 'haicc-setup.sh')))
+    const bad = run('sh', ['-c', `sed 's/^\\(\\[ "\\$(sha256sum[^=]*= "\\)[0-9a-f]*/\\10000/' ${damaged} > ${damaged}.x && sh ${damaged}.x ${w3}`])
+    t.is(bad.status, 1, bad.stdout)
+    t.ok(/is not the one this setup carries/.test(bad.stdout), bad.stdout)
     const again = run('sh', [join(dir, 'haicc-setup.sh'), work])
     t.is(again.status, 0)
     t.ok(/already set up with this setup/.test(again.stdout))

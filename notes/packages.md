@@ -471,11 +471,15 @@ narrowed back to haicc, the human's call.)
   links for copies within a work folder): HAICC, reconcile, deployment and
   the package manager on Bare's own modules (`bare-fs`, `bare-subprocess`,
   `bare-tcp`, `bare-dgram`, ...), their tests on `brittle`; the package
-  writer on Bare too (`tools/bare`, this repository's runtime). The package
-  carries the full runtime (`bare-runtime-linux-x64`, 97 MB; the package
-  119 MB, the setup 36 MB): step 0 checks it runs here, the boot places it
-  at `bare/` (a hard link), the launchers run `bare`; no Node.js, no
-  download. Packages carry `brittle` (their own tests run on it); a named
+  writer on Bare too (`tools/bare`, this repository's runtime). **The
+  setup carries the full runtime** (97 MB; the setup 36 MB), not the
+  package's git (the human, after the local agent's finding: one 92.6 MB
+  file in git, near GitHub's 100 MiB limit, and every Bare upgrade added to
+  the history): `release.sh` puts it in the setup, pinned by its sha256;
+  the setup extracts it to `bare/` and checks it; step 0 checks it runs
+  here; the launchers run `bare`; no Node.js, no download. The package:
+  27 MB, mostly `bare-tls` (12 MB, brought by `brittle`'s dependencies:
+  HAICC makes no TLS connections) and `bare-crypto` (6 MB): to trim, later. Packages carry `brittle` (their own tests run on it); a named
   test, outside `modules/`, imports by its path in the package. Found on
   the way (the probe's record): Bare's `spawnSync` has no time limit
   (coreutils' `timeout`) and hangs on `input`; `console.log` bypasses

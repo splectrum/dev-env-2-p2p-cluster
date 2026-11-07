@@ -50,6 +50,8 @@ export function openLog ({ dir, command, level = 'normal', file: logged = true }
   put(1, `== ${new Date(t0).toISOString()} ${command.join(' ')}  (in ${process.cwd()}${level === 'normal' ? '' : `, ${level}`})\n`)
   process.on('exit', code => put(1, `== exit ${code}, ${((Date.now() - t0) / 1000).toFixed(1)} s\n`))
   return {
+    // To the log only (what the terminal already shows: a question answered there).
+    note: text => write(text),
     level,
     verbose: LEVELS.indexOf(level) >= 1,
     debug: LEVELS.indexOf(level) >= 2

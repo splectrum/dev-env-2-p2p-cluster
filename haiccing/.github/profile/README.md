@@ -9,7 +9,7 @@ makes it so.
 Linux on x86-64 (on Windows: inside WSL2), with `curl` and `tar`:
 
 ```sh
-curl -fL --progress-bar --retry 5 --retry-all-errors --connect-timeout 20 \
+rm -f haicc-setup.sh && curl -fL --progress-bar --retry 5 --retry-all-errors --connect-timeout 20 \
      -o haicc-setup.sh https://github.com/haiccing/base-package-haicc/releases/latest/download/haicc-setup.sh \
   && sh haicc-setup.sh ~/haicc-work \
   && ~/haicc-work/boot \
@@ -17,6 +17,7 @@ curl -fL --progress-bar --retry 5 --retry-all-errors --connect-timeout 20 \
 ```
 
 One command: it stops at the first step that fails (a failed download included).
+The setup is about 36 MB (it carries Bare's runtime). On a poor connection: if the download stops, `curl -fL -C - -o haicc-setup.sh https://github.com/haiccing/base-package-haicc/releases/latest/download/haicc-setup.sh` continues it where it stopped; run it again until it ends without an error, then `sh haicc-setup.sh ~/haicc-work && ~/haicc-work/boot`.
 
 The setup carries everything HAICC runs on (Bare's runtime included: nothing
 to download). The boot checks git and Docker Engine, and fixes what is missing

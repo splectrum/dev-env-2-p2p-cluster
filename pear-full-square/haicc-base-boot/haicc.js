@@ -41,6 +41,7 @@ import process from 'bare-process'
 import { existsSync, readFileSync, openSync, closeSync, mkdirSync, writeFileSync, chmodSync, renameSync, rmSync, rmdirSync, writeSync, readSync } from 'bare-fs'
 import { join, dirname, resolve } from 'bare-path'
 import { spawn, spawnSync } from 'bare-subprocess'
+import { isTTY } from 'bare-tty'
 import { fileURLToPath } from 'bare-url'
 import { openLog } from './lib/log.js'
 import { CHECKS } from './lib/host.js'
@@ -56,7 +57,10 @@ const haiccing = join(work, 'haiccing')
 const level = flags.debug ? 'debug' : flags.verbose ? 'verbose' : 'normal'
 // Said and logged: the command's header and close line (a command run by
 // the root, HAICC_NOLOG, says them only: the root logs what it echoes).
-const log = openLog({ dir: join(work, 'log'), file: process.env.HAICC_NOLOG !== '1', command: flags.cold ? ['./shutdown', ...argv.filter(a => a !== 'shutdown' && a !== '--cold')] : [process.env.HAICC_SWARM ? `./${process.env.HAICC_SWARM}/haicc` : './haicc', ...argv], level })
+// The command as it was called (the launcher's $0, HAICC_AS), not passed on.
+const calledAs = process.env.HAICC_AS || (process.env.HAICC_SWARM ? `./${process.env.HAICC_SWARM}/haicc` : './haicc')
+process.env.HAICC_AS = ''   // (Bare's environment refuses a delete)
+const log = openLog({ dir: join(work, 'log'), file: process.env.HAICC_NOLOG !== '1', command: flags.cold ? [process.env.HAICC_SHUTDOWN_AS || './shutdown', ...argv.filter(a => a !== 'shutdown' && a !== '--cold')] : [calledAs, ...argv], level })
 
 const usage = () => { process.stderr.write(readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 39).map(l => l.replace(/^\/\/ ?/, '')).join('\n') + '\n'); process.exit(2) }
 
@@ -73,7 +77,11 @@ async function ask (what) {
   try { while (readSync(fd, b, 0, 1) === 1 && b[0] !== 10) answer += String.fromCharCode(b[0]) } catch {}
   closeSync(fd)
   const yes = /^y(es)?$/i.test(answer.trim())
-  console.log(`  ${what}? ${yes ? 'yes' : 'no'}`)
+  // The answer recorded: on a terminal, the question and the answer are
+  // already there, so to the log only; to a pipe or a file, said.
+  const record = `  ${what}? ${yes ? 'yes' : 'no'}\n`
+  if (isTTY(1)) log.note?.(`  ${what}? [y/N] ${answer.trim()}\n`)
+  else process.stdout.write(record)
   return yes
 }
 
@@ -218,7 +226,7 @@ async function bootNode (swarm, node) {
 # HAICC for the node ${swarm}/${node} (written by its swarm's HAICC): ${swarm}/${node}/haicc <command>,
 # the node's own HAICC (installed in its packages/).
 work=$(cd "$(dirname "$0")" && pwd)
-HAICC_WORK=$work; export HAICC_WORK
+HAICC_WORK=$work; HAICC_AS=$0; export HAICC_WORK HAICC_AS
 PATH=$work/../../bare:$PATH; export PATH
 exec bare "$work/packages/base-package-haicc/modules/pear-full-square/haicc-deployment/haicc.js" "$@"
 `)
@@ -307,7 +315,7 @@ function addSwarm (swarm) {
 # The swarm ${swarm} on this host (written by the root's HAICC): ${swarm}/haicc <command>,
 # the root's HAICC in this swarm.
 work=$(cd "$(dirname "$0")/.." && pwd)
-HAICC_WORK=$work; HAICC_SWARM=${swarm}; export HAICC_WORK HAICC_SWARM
+HAICC_WORK=$work; HAICC_SWARM=${swarm}; HAICC_AS=$0; export HAICC_WORK HAICC_SWARM HAICC_AS
 PATH=$work/bare:$PATH; export PATH
 exec bare "$work/packages/base-package-haicc/modules/pear-full-square/haicc-base-boot/haicc.js" "$@"
 `)
