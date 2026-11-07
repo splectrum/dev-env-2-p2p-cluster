@@ -34,3 +34,22 @@ test('the master\'s genesis: its repositories as resources', (t) => {
   t.alike(map(r({ module: 'p2p-node', kind: 'genesis', packages: {}, boot: {}, deployment: {} }), m).map(e => e.uri), ['/hosts/master/packages', '/hosts/master/boot', '/hosts/master/deployment'])
   t.alike(map(r({ kind: 'something-else' }), { holds: 'other', context: {} }), [])
 })
+
+test('a node a node manager runs, on a host of its own: not controlled; its lines wait for its manager', (t) => {
+  const map = createMapper()
+  const mgr = { holds: 'p2p-node-manager/manager', context: { host: 'host-b', folder: 'hosts-remote-1' } }
+  const nl = { holds: 'p2p-node/log', context: { host: 'host-b', folder: 'hosts-remote-1' } }
+  const out = []
+  out.push(...map(r({ module: 'p2p-connect', kind: 'connection-opened', peer: 'kb' }), nl))
+  t.is(out.length, 0, 'waits for its manager')
+  out.push(...map(r({ kind: 'starting', swarm: 'hosts', name: 'remote-1' }), mgr))
+  out.push(...map(r({ module: 'p2p-node', kind: 'node-started', owner: 'kr' }), nl))
+  out.push(...map(r({ kind: 'node-ready', uri: '/hosts/remote-1', key: 'kr' }), mgr))
+  out.push(...map({ value: { time: 1, kind: 'action-result', action: 'write', ok: true, result: { uri: '/hosts/remote-1/node', path: '/main/notes/hello.md' } }, headers: [{ key: 'correlation', value: '3' }] }, nl))
+  out.push(...map(r({ kind: 'container-exited', exitCode: 0 }), mgr))
+  t.alike(out.map(e => e.kind), ['nodeStarting', 'connected', 'joined', 'actionResult', 'changed', 'gone'])
+  t.is(out[0].controlled, false)
+  t.is(out[2].controlled, false)
+  t.is(out[3].correlation, '3')
+  t.is(out[5].uri, '/hosts/remote-1')
+})

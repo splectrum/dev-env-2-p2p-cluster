@@ -26,7 +26,7 @@ export const world = {
     say: 'a message for the people watching { text }'
   },
   // Action ids are names (rules.md): what scenarios and pages ask for.
-  actions: ['send-request', 'start-node', 'stop-node', 'pause-node', 'resume-node', 'run-scenario']
+  actions: ['send-request', 'start-node', 'stop-node', 'pause-node', 'resume-node', 'run-scenario', 'invite', 'start-node-from-invitation', 'state', 'write']
 }
 
 const KINDS = ['source', 'mapper', 'page', 'scenario', 'action']

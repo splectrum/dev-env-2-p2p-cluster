@@ -1,37 +1,29 @@
 # base-demo-other-host
 
-Demo project: A node on another host. A two-host test cluster: host A runs the swarm (master, node-1); host B has its own manager and vault and nothing running. With Splectral and the other-host scenario: a node joins from host B by invitation.
-
-Deployed with HAICC (`haicc-deployment`, made true by `haicc-reconcile`);
-its scenario is the Splectral component of the same name
-(`splectral/base-demo-other-host`), carried in this repository.
-
-## Running it
-
-From a work folder (`./boot` done: the setup, `base-package-haicc`'s
-release, explains it), Linux x86-64 with Docker Engine:
-
-```sh
-./haicc run base-demo-other-host        # fetched with what it needs, installed, deployed, started; the browser at http://127.0.0.1:4400
-```
-
-Press Run on the scenario's page; run it again any time: the project is
-brought back to its declared state first. Then:
+A demo: a node on another host. Host A runs the swarm `hosts`, its master
+and node-1, each in a container; host B has its own node manager and vault
+and runs nothing. Its Splectral server shows both and plays the scenario:
+host A gives host B an invitation (public facts only), host B's node
+manager joins remote-1 from it (its key from host B's vault, its code from
+the master, over the swarm), a request from host A crosses to it, it writes
+a note, and it stops while the swarm runs on. On one machine, host B is a
+folder of its own. Self-contained: it carries the code its swarm runs
+(`modules/`: the p2p node, its node manager, Splectral and the scenario),
+its configuration (`swarms/hosts/`) and its tests.
 
 ```sh
-./haicc test base-demo-other-host       # its packages' tests, its state as declared, its page answering
-./haicc stop base-demo-other-host       # nothing runs; the configuration kept
-./haicc teardown base-demo-other-host   # nothing of it left but its record
+./haicc boot base-demo-other-host     # the swarm on host A; Splectral at http://127.0.0.1:4400
 ```
 
-Its deployment is in the work folder's `manager/base-demo-other-host/`.
+Open the page, choose the scenario, press Run; `./haicc boot hosts` brings
+it back to its start for another run. Then `./haicc shutdown hosts` or
+`./haicc teardown hosts`.
 
-## In the development repository
+- `swarms/hosts/`: its nodes (`nodes.json`), its codebase (`modules.json`),
+  its Splectral components, its other host and its port (`splectral.json`).
+- `test/`: `validation` (its modules load, its sets agree), `full` (and the
+  modules' own tests, and `other-host`: the demo played on a fresh
+  install).
 
-Written by the package manager from `haiccing/base-demo-other-host` there (the
-project and this readme) and `splectral/base-demo-other-host`; from its root, the
-code as it is there:
-
-```sh
-sh haicc start base-demo-other-host
-```
+Written by the package writer from the development repository
+([splectrum/dev-env-2-p2p-cluster](https://github.com/splectrum/dev-env-2-p2p-cluster)): not edited here.

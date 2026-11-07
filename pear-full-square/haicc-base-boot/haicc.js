@@ -355,7 +355,13 @@ function writeNodeConfig (swarm, node, dir) {
 // from the master's packages (the components are in the swarm's codebase),
 // in the background, started with the swarm's boot and stopped with its
 // shutdown. Its folder: <swarm>/splectral/ (config.json, server.pid, its
-// output in server.log, runs/: its actions and scenario runs).
+// output in server.log, runs/: its actions and scenario runs). Other hosts
+// a demo plays (splectral.json's `hosts`: a host of its own, its nodes
+// joined by invitation, run by node managers, inside the swarm): a folder
+// each, hosts/<host>/ (its node managers' folders, its invitation), with
+// its vault (vaults/<host>/) and its boot program's code (the swarm's
+// package, as the master's packages/ hold it); its managers stopped with
+// the server.
 const splectralDir = swarm => join(work, swarm, 'splectral')
 const sh = (script, ...args) => { const r = spawnSync('sh', ['-c', script, 'sh', ...args], { stdio: ['ignore', 'pipe', 'pipe'] }); return { ok: r.status === 0, out: String(r.stdout || '').trim() } }
 const runningPid = swarm => {
@@ -366,6 +372,18 @@ const runningPid = swarm => {
 }
 
 function stopSplectral (swarm) {
+  // The other hosts' node managers first: each stops its node gracefully.
+  const others = join(splectralDir(swarm), 'hosts')
+  for (const host of existsSync(others) ? readdirSync(others).sort() : []) {
+    for (const n of readdirSync(join(others, host)).sort()) {
+      const f = join(others, host, n, 'manager.pid')
+      if (!existsSync(f)) continue
+      const pid = readFileSync(f, 'utf8').trim()
+      if (!sh('kill -0 "$1" 2>/dev/null', pid).ok) continue
+      sh('kill "$1"; i=0; while kill -0 "$1" 2>/dev/null && [ $i -lt 600 ]; do sleep 0.1; i=$((i+1)); done; true', pid)
+      console.log(`  ${host}'s node manager ${n} (pid ${pid}): stopped`)
+    }
+  }
   const pid = runningPid(swarm)
   rmSync(join(splectralDir(swarm), 'server.pid'), { force: true })
   if (!pid) return 0
@@ -392,6 +410,12 @@ async function startSplectral (swarm) {
   mkdirSync(join(dir, 'runs'), { recursive: true })
   const host = sp.host || 'host-a'
   const config = { port: sp.port ?? 0, host: '127.0.0.1', extensions: extensions.map(([, d]) => d), sources: [{ kind: 'haicc-swarm', host, folder: join(work, swarm) }], runs: join(dir, 'runs'), hosts: { [host]: { folder: join(work, swarm) } } }
+  for (const other of sp.hosts || []) {
+    const folder = join(dir, 'hosts', other)
+    mkdirSync(folder, { recursive: true })
+    config.hosts[other] = { folder, vault: join(dir, 'vaults', other), boot: dirname(modules) }
+    config.sources.push({ kind: 'p2p-host', host: other, folder })
+  }
   jsonFile.write(join(dir, 'config.json'), config)
   const log = join(dir, 'server.log')
   // In a session of its own, so it outlives this command; its pid kept.

@@ -43,11 +43,11 @@ exit 0
   process.env.HAICC_WORK = '/elsewhere'
   const ctx = { config: { hosts: { 'host-a': { folder: swarm } } } }
   try {
-    t.is(findNode(ctx.config, '/hosts/node-1').state, 'running')
-    t.exception(() => findNode(ctx.config, '/hosts/node-9'), /no node here/)
+    t.is((await findNode(ctx.config, '/hosts/node-1')).state, 'running')
+    await t.exception(findNode(ctx.config, '/hosts/node-9'), /no node here/)
     await t.exception(resume({ node: '/hosts/node-1' }, ctx), /not paused/)
     t.alike(await pause({ node: '/hosts/node-1' }, ctx), { node: '/hosts/node-1', paused: true })
-    t.is(findNode(ctx.config, '/hosts/node-1').state, 'paused')
+    t.is((await findNode(ctx.config, '/hosts/node-1')).state, 'paused')
     t.alike(await resume({ node: '/hosts/node-1' }, ctx), { node: '/hosts/node-1', resumed: true })
     t.alike(await stop({ node: '/hosts/node-1' }, ctx), { node: '/hosts/node-1', stopped: true })
     t.is((await start({ node: '/hosts/node-1' }, ctx)).started, true)
