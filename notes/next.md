@@ -93,6 +93,29 @@ manual test from the local file: passed. Record:
 `steps/phase-3/2-package-structure/3-bare/local-run.md`. Not pushed: the products,
 Codeberg's mirror of `base-package-haicc`.
 
+**Next, agreed (2026-11-07), to start once the eighth release's report is
+back and its findings are dealt with:**
+- **Step 2: a node's boot, validated by the node itself.** Cold boot (the
+  swarm's HAICC): the node's folder, the platform's code copied in
+  (`base-package-haicc`: HAICC and the package manager, hard links), its
+  launcher, then the warm boot. Warm boot (the node's own `./haicc boot`):
+  each copied package intact (its contents' hash against its
+  `package.json`'s, by the package manager's hashing: new) and working (its
+  `validation` set); up only when both pass, else it says which and stops.
+  On demand: `./<swarm>/<node>/haicc test base-package-haicc
+  --set=validation`. The platform test gains the steps (a good node
+  validated; a tampered file: said, not up, the swarm's boot stops). Then a
+  local test (the local agent, the human).
+- **The package manager stays in the platform's package** (the human): no
+  separate `base-package-pkgm` for nodes; "the package manager as the second
+  package" dropped from the plan.
+- **Step 3: another haiccing package deployed into the master's repository
+  from scratch**, with HAICC and the package manager: fetched from the
+  sources, its swarm's codebase assembled into the master's repository,
+  validated the same way. The package: `base-swarm-three-nodes` (the p2p
+  node as its codebase), written on Bare: its modules' tests (p2p,
+  mycelium) move to Bare and brittle with it.
+
 **The local agent's findings on the seventh release, done (2026-11-07)**:
 1. the runtime in the setup, not in git (the human's call): `release.sh
 <package> <out> [<runtime>]`, pinned by its sha256, extracted to `bare/`,
