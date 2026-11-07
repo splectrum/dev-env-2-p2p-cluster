@@ -116,6 +116,16 @@ untested here). From a fresh release, Node.js off the PATH: haicc's full set
 through the root (its swarm made from its configuration, its codebase
 assembled into the master's repository).
 
+**Part 5b built (2026-11-07): the other-host demo.** `base-demo-other-host`:
+host A runs the swarm `hosts` (HAICC, containers); host B, a folder of its
+own on this machine with its vault, joins remote-1 by invitation through
+its node manager (`p2p-node-manager` on Bare, the previous implementation:
+the user, HAICC is the outside), its code replicated from the master; a
+request across, a note written over the management channel, stopped. Its
+test `other-host` (9 steps, a fresh install) passes. With it, every part
+of the phase's request is built; then the tenth release and the local
+agent's check of everything.
+
 **Parts 4 and 5a built (2026-11-07): Splectral on Bare; the liveness demo.**
 `docs/design/platform.md`, "A swarm's Splectral". The generic Splectral
 modules on Bare (the server on `bare-http1`); the p2p side on the new

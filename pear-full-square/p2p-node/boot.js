@@ -67,7 +67,7 @@ export async function boot (flags, log) {
   emit('secret-received', { bytes: primaryKey.length / 2, via: 'auxiliary swarm', ms: Date.now() - t0 })
 
   const args = flags.role === 'master'
-    ? [`${flags.code}/pear-full-square/p2p-node/cli.js`, 'master', `--swarm=${flags.swarm}`, `--name=${flags.name}`, `--host=${flags.host}`,
+    ? [`${flags.code}/modules/pear-full-square/p2p-node/cli.js`, 'master', `--swarm=${flags.swarm}`, `--name=${flags.name}`, `--host=${flags.host}`,
         `--storage=${flags.storage}`, `--code=${flags.code}`, `--metrics-every=${flags['metrics-every'] || 30000}`]
     : await joinCode(flags, log, emit, provisioning, t0)
 
@@ -114,7 +114,7 @@ async function joinCode (flags, log, emit, provisioning, t0) {
   await dht.close()
   await store.close()
 
-  const args = [`${flags.app}/pear-full-square/p2p-node/cli.js`, 'join', `--swarm=${flags.swarm}`, `--name=${flags.name}`, `--host=${flags.host}`,
+  const args = [`${flags.app}/modules/pear-full-square/p2p-node/cli.js`, 'join', `--swarm=${flags.swarm}`, `--name=${flags.name}`, `--host=${flags.host}`,
     `--storage=${flags.storage}`, `--bootstrap=${flags.bootstrap}`, `--master=${flags.master}`,
     `--packages-key=${flags['packages-key']}`, `--packages-commit=${commit}`, `--packages-uri=${flags['packages-uri']}`,
     `--metrics-every=${flags['metrics-every'] || 30000}`]

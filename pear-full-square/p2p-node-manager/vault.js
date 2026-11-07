@@ -7,9 +7,9 @@
 //   v.keyFor(swarm, node)       the node's key (hex), generated if new
 //   v.has(swarm, node)
 
-import { mkdirSync, existsSync, readFileSync, writeFileSync, chmodSync } from 'node:fs'
-import { join } from 'node:path'
-import { randomBytes } from 'node:crypto'
+import { mkdirSync, existsSync, readFileSync, writeFileSync, chmodSync } from 'bare-fs'
+import { join } from 'bare-path'
+import { randomBytes } from 'bare-crypto'
 
 export function vault (dir) {
   mkdirSync(dir, { recursive: true, mode: 0o700 })

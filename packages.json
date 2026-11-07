@@ -52,6 +52,10 @@
     "demo-liveness": {
       "repo": "base-demo-liveness",
       "description": "A demo: a node goes quiet. One host, the swarm hosts (master, node-1) in containers, its Splectral server and the liveness scenario. On Bare."
+    },
+    "demo-other-host": {
+      "repo": "base-demo-other-host",
+      "description": "A demo: a node on another host. Host A runs the swarm hosts (master, node-1) in containers; host B's node manager joins a node from an invitation. Its Splectral server and the other-host scenario. On Bare."
     }
   }
 }

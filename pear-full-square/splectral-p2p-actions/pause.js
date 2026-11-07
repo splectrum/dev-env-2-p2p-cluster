@@ -5,7 +5,7 @@
 import { findNode, run } from './lib/hosts.js'
 
 export const freeze = verb => async ({ node }, ctx) => {
-  const { config, state } = findNode(ctx.config, node)
+  const { config, state } = await findNode(ctx.config, node)
   const want = verb === 'pause' ? 'running' : 'paused'
   if (state !== want) throw new Error(`not ${want}: ${node} (${state})`)
   const r = run('docker', [verb, config.container])
