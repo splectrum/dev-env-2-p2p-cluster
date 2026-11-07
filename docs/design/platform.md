@@ -138,9 +138,23 @@ in scenarios, `port`) gets a Splectral server:
   `shutdown`); `pause-node` and `resume-node` through Docker (pause,
   unpause); `send-request` as a peer of the swarm from the host (its
   gateway on the swarm's network; the master's key and DHT from its
-  config). Waiting: `state` and `write` (they need the node's observer,
-  which a detached container does not reach), the invitations (with the
-  other-host demo).
+  config). `state` and `write` only for a node a node manager runs (below):
+  a node HAICC runs is a detached container, which its observer's
+  management channel does not reach.
+- **Other hosts, inside the swarm** (part 5b; the human: HAICC is the
+  outside, what runs inside the swarm need not use it): a demo's
+  `splectral.json` names them (`hosts`); each is a host of its own on this
+  machine (`<swarm>/splectral/hosts/<host>/`, its vault, its boot program's
+  code: the swarm's package). Joining is the previous implementation,
+  ported to Bare: `invite` (an invitation from what runs on the swarm's
+  host: the master's key and DHT, the network, the packages from the
+  master's genesis, the image), `start-node-from-invitation` (that host's
+  node manager, `p2p-node-manager join`, detached: its node's key from the
+  host's vault over the auxiliary swarm, its code replicated from the
+  master's packages, the management channel kept), `stop-node` (its
+  manager stopped); watched through the manager's topics (`p2p-host`),
+  shown as not controlled by the swarm's host. Its managers stop with the
+  swarm's Splectral.
 - **Splectral on Bare**: the server on `bare-http1` (Server-Sent Events
   down, actions up), the generic modules on Bare's own, their tests on
   brittle; the browser's libraries (React, htm) found in the codebase's
