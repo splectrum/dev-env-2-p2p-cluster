@@ -4,7 +4,16 @@ Written 2026-11-01 after step 7, updated through 2026-11-07 (phase 3, step 2 bui
 compaction). Read this first, then `rules.md` (single concern first), then
 `notes/plan.md`. Everything below is on `main`.
 
-## For the local agent now: the tenth release (the human's OK, 2026-11-07)
+## The tenth release, published (2026-11-08, the human's word)
+
+`setup-795612ec9e16`, latest, from `2e3eb0a`; the five repositories pushed. The
+candidate failed at every node's container (Docker 28 refuses `--ip` on a
+network made without a subnet); fixed here in `ensureNetwork` (`b8c975e`). Then
+every count as below, locally and from GitHub. Record and findings:
+`steps/phase-3/3-demos-again/local-run.md`. Waiting: the human's browser run
+(step 4 below), then products and Codeberg with the human's word.
+
+## For the local agent then: the tenth release (the human's OK, 2026-11-07)
 
 Phase 3, step 2 (the demos again) is built: every part of the request,
 every package's sets passing from a fresh install here (Node.js off the
