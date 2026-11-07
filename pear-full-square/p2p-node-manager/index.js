@@ -36,16 +36,20 @@
 // The node's state is a view: the fold of topics/manager (nodeState),
 // state.json its cache. node.stderr stays a text file.
 
-import { spawn, execFile, execFileSync } from 'node:child_process'
-import { mkdirSync, writeFileSync, renameSync, createWriteStream, existsSync } from 'node:fs'
-import { join } from 'node:path'
+import { spawn, spawnSync } from 'bare-subprocess'
+import { mkdirSync, writeFileSync, renameSync, openSync, writeSync, closeSync, existsSync } from 'bare-fs'
+import { join } from 'bare-path'
 import { openTopic, folderStorage, committedOffsets } from '../mycelium-topic/index.js'
 import crypto from 'hypercore-crypto'
 import { startBootstrap } from 'p2p-dht'
 import { connect } from 'p2p-connect'
 import { openChannel } from 'p2p-channel'
 
-const docker = (...args) => execFileSync('docker', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
+const docker = (...args) => {
+  const r = spawnSync('docker', args, { stdio: ['ignore', 'pipe', 'pipe'] })
+  if (r.status !== 0) throw new Error(`docker ${args[0]}: ${String(r.stderr || '').trim()}`)
+  return String(r.stdout || '').trim()
+}
 const tryDocker = (...args) => { try { return docker(...args) } catch { return null } }
 
 const topicOf = (folder, name) => openTopic({ storage: folderStorage(join(folder, 'topics', name)) })
@@ -78,7 +82,7 @@ export async function stateOffset (folder) {
   return (await topicOf(folder, 'manager')).endOffset()
 }
 
-export async function manageNode ({ folder, vault, image, network, ip, swarm, name, role, aux = null, joining = null, origin = null, observer = false, memory = '1g', storeSize = '512m', codeSize = '256m', metricsEvery = 30000, sampleEvery = 15000 }) {
+export async function manageNode ({ folder, vault, image, boot, network, ip, swarm, name, role, aux = null, joining = null, origin = null, observer = false, memory = '1g', storeSize = '512m', codeSize = '256m', metricsEvery = 30000, sampleEvery = 15000 }) {
   mkdirSync(folder, { recursive: true })
   const container = `p2p-${swarm}-${name}`
   const t0 = Date.now()
@@ -102,7 +106,7 @@ export async function manageNode ({ folder, vault, image, network, ip, swarm, na
     if (provision && kind !== 'resources') provision.shadow(state)
   }
   const flush = () => produced
-  record('starting', { swarm, name, role, container, image, network, ip, memory, storeSize })
+  record('starting', { swarm, name, role, container, image, boot, network, ip, memory, storeSize })
   if (origin) record(origin.kind, origin.facts)
 
   tryDocker('rm', '-f', container)
@@ -129,8 +133,11 @@ export async function manageNode ({ folder, vault, image, network, ip, swarm, na
     ? ['--role=master', '--code=/app']
     : ['--role=join', '--app=/code/app', `--bootstrap=${joining.bootstrap}`, `--master=${joining.master}`,
         `--packages-key=${joining.packages.key}`, `--packages-commit=${joining.packages.commit}`, `--packages-uri=${joining.packages.uri}`]
+  // The image has no code (a plain base and Bare): the boot program's code
+  // is mounted from the host, read-only (`boot`: an assembled package's
+  // folder); the master runs from it, a joining node from the swarm's.
   docker('create', '--name', container, '--network', aux.network, '--ip', aux.ip, ...hardening,
-    '--entrypoint', 'bare', image, '/app/pear-full-square/p2p-node/cli.js', 'boot',
+    '-v', `${boot}:/app:ro`, '--entrypoint', 'bare', image, '/app/modules/pear-full-square/p2p-node/cli.js', 'boot',
     `--swarm=${swarm}`, `--name=${name}`, `--host=${ip}`, '--storage=/data/store',
     `--aux-host=${aux.ip}`, `--aux-bootstrap=${aux.gateway}:${aux.port}`, `--manager=${provision.publicKey}`,
     ...roleFlags, ...(observer ? ['--observer=true'] : []), `--metrics-every=${metricsEvery}`)
@@ -140,7 +147,8 @@ export async function manageNode ({ folder, vault, image, network, ip, swarm, na
   let readyResolve, readyReject
   const ready = new Promise((resolve, reject) => { readyResolve = resolve; readyReject = reject })
   ready.catch(() => {})
-  child.stderr.pipe(createWriteStream(join(folder, 'node.stderr'), { flags: 'a' }))
+  const stderr = openSync(join(folder, 'node.stderr'), 'a')
+  child.stderr.on('data', chunk => writeSync(stderr, chunk))
   // The node's log, a line at a time.
   let rest = ''
   child.stdout.on('data', chunk => {
@@ -219,6 +227,7 @@ export async function manageNode ({ folder, vault, image, network, ip, swarm, na
     const inspected = tryDocker('inspect', '--format', '{{json .State}}', container)
     const s = inspected ? JSON.parse(inspected) : {}
     tryDocker('rm', container)
+    try { closeSync(stderr) } catch {}
     record('container-exited', { exitCode: s.ExitCode ?? code, oomKilled: !!s.OOMKilled, error: s.Error || null, ms: Date.now() - t0 })
     readyReject(new Error('the node exited before it was ready'))
     await flush()
@@ -236,7 +245,7 @@ export async function manageNode ({ folder, vault, image, network, ip, swarm, na
       // Asynchronous: the node's output keeps being read while it stops (a
       // synchronous call blocks this loop, the pipe fills, and the node's
       // last lines are lost).
-      await new Promise(resolve => execFile('docker', ['stop', '-t', String(timeout), container], () => resolve()))
+      await new Promise(resolve => spawn('docker', ['stop', '-t', String(timeout), container], { stdio: ['ignore', 'ignore', 'ignore'] }).once('exit', () => resolve()))
       const end = await done
       record('stopped', { exitCode: end.exitCode, graceful: end.exitCode === 0 })
       await flush()
