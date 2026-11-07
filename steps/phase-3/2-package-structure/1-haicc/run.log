@@ -1,0 +1,22 @@
+ 1 written: base-package-haicc, its tests passed first ... ok
+ 2 the package structure: modules/, test/modules-load, no requires ... ok
+ 3 released: haicc-setup.sh ... ok
+ 4 set up: a fresh work folder ... ok
+ 5 ./boot (cold): stage 1 and 2 ... ok
+ 6 the work folder: base-package-haicc in packages/, ./haicc ... ok
+ 7 a swarm: ./haicc boot hosts ... ok
+ 8 its master, cold and warm: ./hosts/haicc boot master ... ok
+ 9 the node's cold boot: the platform's package only ... ok
+10 the node: list, test a package ... ok
+11 a second node: ./hosts/haicc boot node-1 ... ok
+12 the node level: shutdown, boot ... ok
+13 the swarm level: shutdown (nodes removed, nodes.json kept) ... ok
+14   its nodes gone, its config kept ... ok
+15   boot: rebuilt from nodes.json, the master first ... ok
+16   both up again ... ok
+17 the root level: shutdown, boot ... ok
+18 teardown: the swarm and its entry ... ok
+19 the cold shutdown: ./shutdown ... ok
+20   kept: haiccing/, log/; gone: packages/, ./haicc ... ok
+21 ./boot again: set up from haiccing/ ... ok
+all 21 steps passed

@@ -15,7 +15,7 @@ set -eu
 dev=$(cd "$(dirname "$0")/../../../.." && pwd)
 folder=$(mkdir -p "$1" && cd "$1" && pwd)
 push=1; [ "${2:-}" = --no-push ] && push=0
-repos="base-package-mycelium base-package-haicc base-package-pkgm base-package-p2p base-package-splectral base-demo-liveness base-demo-other-host base-swarm-three-nodes"
+repos="base-package-haicc"
 commit=$(git -C "$dev" rev-parse --short HEAD)
 [ -z "$(git -C "$dev" status --porcelain -- pear-full-square splectral haiccing tools packages.json package.json package-lock.json)" ] || { echo "uncommitted changes in $dev: commit first"; exit 2; }
 for r in $repos; do

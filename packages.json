@@ -1,21 +1,6 @@
 {
-  "description": "haiccing's packages, as the development tool (tools/package-writer) writes them: each self-contained (no requires), in the package structure (notes/packages.md). modules: ours it starts from (and its swarms' modules.json); with: other definitions' modules, written in with it (this tool's convenience); the hand-written parts from haiccing/<repo>/.",
+  "description": "haiccing's packages, as the package writer (tools/package-writer) writes them: each self-contained (no requires), in the package structure (notes/packages.md). Rebuilt one package a step: haicc first; the package manager next. modules: ours it starts from (and its swarms' modules.json); with: other definitions' modules, written in with it (the writer's convenience); the hand-written parts from haiccing/<repo>/.",
   "packages": {
-    "mycelium": {
-      "description": "The repository layer: layered git repositories (mycelium-git, -layer, -repo), topics, URIs and paths; with p2p-git, git on Hyperdrive, which mycelium-git runs on. Code only: published for development.",
-      "modules": [
-        "pear-full-square/mycelium-uri",
-        "pear-full-square/mycelium-xpath",
-        "pear-full-square/mycelium-topic",
-        "pear-full-square/mycelium-git",
-        "pear-full-square/mycelium-layer",
-        "pear-full-square/mycelium-repo",
-        {
-          "path": "pear-full-square/p2p-git",
-          "from": "node_modules/p2p-git"
-        }
-      ]
-    },
     "haicc": {
       "description": "HAICC, the platform: its boot (haicc-base-boot), declaring and reconciling (haicc-reconcile), the lifecycle (haicc-deployment) and the package manager (pkgm-base-manager). The entry: everything starts here.",
       "modules": [
@@ -43,73 +28,6 @@
         "",
         "The rest of HAICC (`haicc-reconcile`, `haicc-deployment`) runs in the nodes: `./haicc boot <swarm>` makes a swarm (in `swarms.json`), `<swarm>/haicc boot <node>` a node in it (in `<swarm>/nodes.json`; the first is the master), with its own HAICC and package manager. `haicc boot` and `haicc shutdown` work on the config of the folder they are called from."
       ]
-    },
-    "pkgm": {
-      "description": "The package manager: a swarm's codebase assembled from a package into its master's package repository; a package's tests, bottom up. Node's built-ins only. (Published for development; the platform carries it.)",
-      "modules": [
-        "pear-full-square/pkgm-base-manager"
-      ],
-      "readme": [
-        "## Installed",
-        "",
-        "Into each swarm node's manager (`<swarm>/<node>/packages/`), copied in whole by the root's `./haicc boot <swarm>/<node>`; not at the root, which runs HAICC alone."
-      ]
-    },
-    "p2p": {
-      "description": "The p2p substrate, ours: store, discovery, connections, replication, channels, repositories on Hypercore, the name service, the node and its managers. Code only: published for development.",
-      "modules": [
-        "pear-full-square/p2p-store",
-        "pear-full-square/p2p-dht",
-        "pear-full-square/p2p-connect",
-        "pear-full-square/p2p-replicate",
-        "pear-full-square/p2p-channel",
-        "pear-full-square/p2p-mrepo",
-        "pear-full-square/p2p-rns",
-        "pear-full-square/p2p-node",
-        "pear-full-square/p2p-node-manager",
-        "pear-full-square/p2p-swarm-manager"
-      ]
-    },
-    "splectral": {
-      "description": "The Splectral platform: the server, its shell, the contract and model, transports, and the extensions for p2p swarms (watchers, actions, observer), scenarios, the timeline and replay; the map view (splectral/base-view-map), shared by the demos. Code only: published for development.",
-      "modules": [
-        "pear-full-square/splectral-contract",
-        "pear-full-square/splectral-model",
-        "pear-full-square/splectral-transport",
-        "pear-full-square/splectral-server",
-        "pear-full-square/splectral-shell",
-        "pear-full-square/splectral-p2p-observer",
-        "pear-full-square/splectral-p2p-watchers",
-        "pear-full-square/splectral-p2p-actions",
-        "pear-full-square/splectral-scenario",
-        "pear-full-square/splectral-timeline",
-        "pear-full-square/splectral-replay",
-        "splectral/base-view-map"
-      ]
-    },
-    "demo-liveness": {
-      "repo": "base-demo-liveness",
-      "description": "Demo project: A node goes quiet. Its project (project.json) and its Splectral component (splectral/base-demo-liveness).",
-      "modules": [
-        "splectral/base-demo-liveness"
-      ],
-      "with": [
-        "splectral"
-      ]
-    },
-    "demo-other-host": {
-      "repo": "base-demo-other-host",
-      "description": "Demo project: A node on another host. Its project (project.json) and its Splectral component (splectral/base-demo-other-host).",
-      "modules": [
-        "splectral/base-demo-other-host"
-      ],
-      "with": [
-        "splectral"
-      ]
-    },
-    "swarm-three-nodes": {
-      "repo": "base-swarm-three-nodes",
-      "description": "A configured swarm, no application: a master and two nodes on one host, the p2p node as its codebase."
     }
   }
 }
