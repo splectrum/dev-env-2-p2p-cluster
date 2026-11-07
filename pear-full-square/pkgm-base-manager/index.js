@@ -10,6 +10,8 @@
 //        its modules' own, its swarms', its named tests (test/<test>/test);
 //        each run stopped and failed after `timeout` (10 minutes)
 //   contentsOf(dir)    a repository's contents.json, or null
+//   packageHash(dir)   a package's identity (what the package writer records)
+//   verify(dir)        the package intact: its hash against its package.json's
 // A package's structure: notes/packages.md, "Packages, platforms, swarms
 // and tests".
 import { readFileSync, writeFileSync, existsSync, mkdirSync, renameSync, readdirSync, statSync, symlinkSync } from 'bare-fs'
@@ -22,6 +24,15 @@ import process from 'bare-process'
 const readJson = f => JSON.parse(readFileSync(f, 'utf8'))
 const writeJson = (f, v) => { mkdirSync(dirname(f), { recursive: true }); writeFileSync(f + '.tmp', JSON.stringify(v, null, 2) + '\n'); renameSync(f + '.tmp', f) }
 export const manifest = dir => existsSync(join(dir, 'package.json')) ? readJson(join(dir, 'package.json')).pkgm || null : null
+// A package's identity: everything in it but its manifest and git, its readme
+// last. The package writer records it; a copy is checked against it.
+export const packageHash = dir => hashTree(dir, [...readdirSync(dir).filter(n => !['package.json', 'README.md', '.git'].includes(n)).sort(), ...(existsSync(join(dir, 'README.md')) ? ['README.md'] : [])])
+export function verify (dir) {
+  const recorded = manifest(dir)?.hash
+  if (!recorded) return { ok: false, said: 'no hash recorded (no package.json with pkgm.hash)' }
+  const hash = packageHash(dir)
+  return hash === recorded ? { ok: true, hash, said: `intact (${hash.slice(0, 12)})` } : { ok: false, hash, recorded, said: `changed since it was written: its hash ${hash.slice(0, 12)}, written ${recorded.slice(0, 12)}` }
+}
 export const contentsOf = dir => existsSync(join(dir, 'contents.json')) ? readJson(join(dir, 'contents.json')) : null
 
 // ---- a swarm's codebase into its master's package repository -------------

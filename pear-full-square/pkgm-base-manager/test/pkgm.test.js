@@ -2,7 +2,7 @@ import test from 'brittle'
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync, chmodSync, readlinkSync, symlinkSync } from 'bare-fs'
 import { join, dirname } from 'bare-path'
 import { tmpdir } from 'bare-os'
-import { assemble, testPackage, contentsOf, closure, oursIn } from '../index.js'
+import { assemble, testPackage, contentsOf, closure, oursIn, packageHash, verify } from '../index.js'
 
 const put = (f, s, x = false) => { mkdirSync(dirname(f), { recursive: true }); writeFileSync(f, s); if (x) chmodSync(f, 0o755) }
 const json = (f, v) => put(f, JSON.stringify(v, null, 2))
@@ -113,5 +113,27 @@ test('test: a set, its in-place tests and (or not) the modules; a booted test li
     const f = testPackage(dir, { set: 'full' })
     t.alike([f.ok, f.runs.map(r => r.what), f.booted], [true, ['modules/org/amod', 'test/t1'], ['b1']])
     t.exception(() => testPackage(dir, { set: 'nope' }), /no test set nope/)
+  } finally { rmSync(dir, { recursive: true, force: true }) }
+})
+
+test('verify: a package intact against the hash it was written with; changed, or one file replaced: said, not intact', (t) => {
+  const dir = pkg()
+  try {
+    t.absent(verify(dir).ok, 'a made-up hash: not intact')
+    json(join(dir, 'package.json'), { name: 'base-x', pkgm: { package: 'x', hash: packageHash(dir) } })
+    const v = verify(dir)
+    t.ok(v.ok, v.said)
+    t.ok(/^intact \([0-9a-f]{12}\)$/.test(v.said))
+    // The manifest is not part of what is hashed: rewriting it changes nothing.
+    t.is(packageHash(dir), v.hash)
+    // A file replaced (a new file, as a hard-linked copy is changed without touching its original).
+    rmSync(join(dir, 'modules/org/cmod/index.js'))
+    put(join(dir, 'modules/org/cmod/index.js'), 'export const c = 2\n')
+    const w = verify(dir)
+    t.absent(w.ok)
+    t.ok(/^changed since it was written: its hash [0-9a-f]{12}, written [0-9a-f]{12}$/.test(w.said), w.said)
+    // A file gone.
+    rmSync(join(dir, 'modules/org/cmod/index.js'))
+    t.absent(verify(dir).ok)
   } finally { rmSync(dir, { recursive: true, force: true }) }
 })
