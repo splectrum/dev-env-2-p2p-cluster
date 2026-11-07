@@ -116,6 +116,23 @@ untested here). From a fresh release, Node.js off the PATH: haicc's full set
 through the root (its swarm made from its configuration, its codebase
 assembled into the master's repository).
 
+**Part 3 built (2026-11-07): nodes running the swarm's codebase in
+containers.** `docs/design/platform.md`, "A node runs the swarm's codebase,
+in a container". A node's config `node.json` (its key in readable text,
+kept while its folder is: the human, for now); its warm boot starts its
+container (Debian base, Bare's stripped runtime, the master's
+`packages/<package>/` mounted read-only, hardened); one Docker network per
+swarm, labelled with the install. From a fresh release, Node.js off the
+PATH: haicc full 6 (24 platform steps), `base-swarm-three-nodes` full 17
+(its deploy test 13 steps: three containers, the nodes registered with the
+master, a node's key kept across its shutdown and boot, nothing left in
+Docker after teardown), validation 3. The setup 66 MB (both runtimes);
+**open with the human**: carry the stripped runtime only (the setup about
+39 MB). **For the local agent, with the human's OK**: the tenth release as
+for part 2, and by hand `./haicc boot base-swarm-three-nodes`, `docker ps`,
+`docker logs <master's container>`, `./haicc teardown three-nodes`. Then
+part 4 (Splectral on Bare).
+
 **Part 2 built (2026-11-07): a package deployed through the root.**
 `./haicc boot <repo>[/<swarm>] [--from=<folder>] [--as=<name>]
 [--strict]`: the package checked intact (from `--from` without a hash:

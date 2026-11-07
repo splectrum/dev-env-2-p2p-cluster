@@ -27,8 +27,9 @@ one 92.6 MB file sat near GitHub's 100 MiB limit and every Bare upgrade
 would have added to the history (the seventh release carried it; its 34.6
 MB stay in the history: no force-push).
 
-**Agreed**: the nodes' containers get the stripped runtime (68 MB); the
-full one stays at the root, and is used by an override where needed.
+**Built** (part 3): the nodes' containers get the stripped runtime (68 MB,
+`bare/bare-stripped`, carried by the setup beside the full one: the setup
+66 MB); the full one stays at the root.
 
 ## Copies within a work folder are hard links
 

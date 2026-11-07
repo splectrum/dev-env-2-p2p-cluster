@@ -59,6 +59,7 @@ import { fileURLToPath } from 'bare-url'
 import { openLog } from './lib/log.js'
 import { CHECKS } from './lib/host.js'
 import { pkgm } from './lib/pkgm.js'
+import crypto from 'bare-crypto'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const argv = process.argv.slice(2)
@@ -223,6 +224,12 @@ async function bootNode (swarm, node) {
   const dir = join(work, swarm, node)
   if (existsSync(dir) && !existsSync(join(dir, 'packages'))) { console.log(`The node ${swarm}/${node}: ${dir} is there, and not a node's manager`); return 1 }
   console.log(`The node ${swarm}/${node} (${readNodes(swarm).nodes[node]?.role}), its manager (${dir}):`)
+  // Built again from scratch: a node running is stopped first (its own
+  // shutdown), as what it runs from is copied in again.
+  if (existsSync(join(dir, 'haicc')) && nodeConfigOf(swarm, node)?.container) {
+    const code = await echoed(join(dir, 'haicc'), ['shutdown'], { HAICC_WORK: dir, HAICC_NOLOG: '', HAICC_SWARM: '' })
+    if (code !== 0) { console.log(`  its shutdown ended with exit ${code}: not built again`); return 1 }
+  }
   mkdirSync(join(dir, 'packages'), { recursive: true })
   // The platform's pair, copied in afresh every time (as haiccing/ has it: the
   // root's boot refreshes it); the node's warm boot deploys it properly.
@@ -239,6 +246,7 @@ async function bootNode (swarm, node) {
     console.log(`  copied ${repo} (${hash}) into ${join(dir, 'packages')}`)
   }
   if (readNodes(swarm).nodes[node]?.role === 'master' && await assembleRepository(swarm, dir)) return 1
+  if (writeNodeConfig(swarm, node, dir)) return 1
   if (!existsSync(join(dir, 'haicc'))) {
     writeFileSync(join(dir, 'haicc.new'), `#!/bin/sh
 # HAICC for the node ${swarm}/${node} (written by its swarm's HAICC): ${swarm}/${node}/haicc <command>,
@@ -274,6 +282,69 @@ async function assembleRepository (swarm, dir) {
     console.log(`  its packages: the codebase of ${entry.package}/swarms/${entry.swarm} assembled into ${swarm}/${dir.split('/').pop()}/packages/${entry.package}/: ${a.ours} modules of ours, ${a.third} third-party (${a.hash.slice(0, 12)})`)
     return 0
   } catch (err) { console.log(`  its codebase could not be assembled: ${err.message}`); return 1 }
+}
+
+// ---- a swarm's nodes running: Docker -------------------------------------
+
+const dockerRun = (...args) => { const r = spawnSync('docker', args, { stdio: ['ignore', 'pipe', 'pipe'] }); return { ok: r.status === 0, out: String(r.stdout || '').trim(), err: String(r.stderr || '').trim() } }
+// This install's id: its folder, hashed (Docker's names are host-wide).
+const installId = crypto.createHash('sha256').update(work).digest('hex').slice(0, 8)
+const networkOf = swarm => `haicc-${installId}-${swarm}`
+const labels = swarm => ({ 'haicc.install': work, 'haicc.swarm': swarm })
+
+// The swarm's network (one per swarm, labelled with the install): made on
+// its first node's boot, removed with its shutdown. Its subnet, as
+// [a, b, c, d] and the prefix.
+function ensureNetwork (swarm) {
+  const name = networkOf(swarm)
+  if (!dockerRun('network', 'inspect', name).ok) {
+    const c = dockerRun('network', 'create', ...Object.entries(labels(swarm)).flatMap(([k, v]) => ['--label', `${k}=${v}`]), name)
+    if (!c.ok) { console.log(`  the swarm's network ${name}: could not be made: ${c.err}`); return null }
+    console.log(`  the swarm's network ${name}: made`)
+  }
+  const subnet = dockerRun('network', 'inspect', '-f', '{{(index .IPAM.Config 0).Subnet}}', name).out
+  const [base, bits] = subnet.split('/')
+  return { name, subnet, base: base.split('.').map(Number), bits: Number(bits) }
+}
+function removeNetwork (swarm) {
+  const name = networkOf(swarm)
+  if (!dockerRun('network', 'inspect', name).ok) return
+  const r = dockerRun('network', 'rm', name)
+  console.log(r.ok ? `  the swarm's network ${name}: removed` : `  the swarm's network ${name}: not removed: ${r.err}`)
+}
+
+const nodeConfigOf = (swarm, node) => jsonFile.read(join(work, swarm, node, 'node.json'), null)
+
+// A node's config (node.json, in its folder): its name, role and key (made
+// at its first build, kept while its folder is: in readable text for now);
+// for a swarm with a codebase, its container, network, address, the code
+// (the master's packages/<package>/) and, for a node that is not the
+// master, the master's key and DHT (from the master's config, once it runs).
+function writeNodeConfig (swarm, node, dir) {
+  const role = readNodes(swarm).nodes[node]?.role || 'node'
+  const had = jsonFile.read(join(dir, 'node.json'), {})
+  const config = { swarm, name: node, role, key: had.key || crypto.randomBytes(32).toString('hex') }
+  const entry = readSwarms().swarms[swarm] || {}
+  const nodes = readNodes(swarm).nodes
+  const master = Object.keys(nodes).find(n => nodes[n].role === 'master')
+  if (entry.package && existsSync(join(work, swarm, 'modules.json')) && master) {
+    const net = ensureNetwork(swarm)
+    if (!net) return 1
+    // Its address: kept, else the first free one from .10 on in the subnet.
+    const taken = new Set(Object.keys(nodes).filter(n => n !== node).map(n => nodeConfigOf(swarm, n)?.ip).filter(Boolean))
+    const at = i => { const n = ((net.base[0] << 24) >>> 0) + (net.base[1] << 16) + (net.base[2] << 8) + net.base[3] + i; return [n >>> 24, (n >>> 16) & 255, (n >>> 8) & 255, n & 255].join('.') }
+    let ip = had.ip && had.network === net.name ? had.ip : null
+    for (let i = 10; !ip; i++) if (!taken.has(at(i))) ip = at(i)
+    Object.assign(config, { container: `${net.name}-${node}`, network: net.name, ip, labels: labels(swarm), code: join(work, swarm, master, 'packages', entry.package) })
+    if (role !== 'master') {
+      const live = nodeConfigOf(swarm, master)?.live
+      if (!live?.dht) { console.log(`  the master ${swarm}/${master} is not running (its node.json has no live key): boot it first (${swarm}/haicc boot ${master})`); return 1 }
+      config.master = live
+    }
+  }
+  jsonFile.write(join(dir, 'node.json'), config)
+  console.log(`  its config ${swarm}/${node}/node.json: its key${had.key ? ' (kept)' : ' (new)'}${config.container ? `, its container ${config.container} at ${config.ip}` : ''}`)
+  return 0
 }
 
 // A node's cold shutdown: its own shutdown (its container removed), then
@@ -315,7 +386,7 @@ async function swarmBoot (swarm, node) {
   }
   if (!hostReady()) return 1
   // Each node in nodes.json, the master first.
-  const order = downOrder(s).reverse()
+  const order = [...downOrder(s).filter(n => s.nodes[n].role === 'master'), ...downOrder(s).filter(n => s.nodes[n].role !== 'master')]
   console.log(`The swarm ${swarm}: its nodes booted, the master first (${order.join(', ') || 'none in nodes.json'})`)
   for (const n of order) if (await bootNode(swarm, n)) return 1
   return 0
@@ -332,6 +403,7 @@ async function swarmShutdown (swarm, node, { asked = false } = {}) {
   if (!asked && !(await confirm(`The swarm ${swarm}: its nodes' cold shutdown, the master last (${order.join(', ') || 'none'}): their folders removed; kept: nodes.json`))) return 1
   console.log(`The swarm ${swarm}: its nodes shut down, the master last (${order.join(', ') || 'none'})`)
   for (const n of order) if (await removeNode(swarm, n)) return 1
+  removeNetwork(swarm)
   return 0
 }
 

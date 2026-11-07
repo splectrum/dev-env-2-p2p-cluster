@@ -4,9 +4,12 @@
 // swarm's cold boot.
 //   haicc boot                        the node's warm boot: what was copied in validated by
 //                                     the node itself: each package intact (its hash), then
-//                                     its validation set, in place; up only when all pass
-//   haicc shutdown                    the node's shutdown: its container removed (with the
-//                                     swarm's step); its folder kept, for its boot
+//                                     its validation set, in place; then, the swarm having a
+//                                     codebase, its container started from its config
+//                                     (node.json): the swarm's node running, from the master's
+//                                     packages (mounted read-only); up when it says it started
+//   haicc shutdown                    the node's shutdown: its container stopped and removed;
+//                                     its folder kept (its config, its key), for its boot
 // Removing a node is its swarm's: <swarm>/haicc shutdown <node>.
 //   haicc test <package> [--set=<set>]   a package here: intact (its hash), then its tests, bottom up
 //   haicc fetch <repository>          a repository into the root's haiccing/
@@ -19,13 +22,14 @@
 // start, newest last); --verbose and --debug say more. Exit 0 when done; 1
 // when not (the output says what is missing); 2 on a bad call.
 import process from 'bare-process'
-import { existsSync, readFileSync, readdirSync } from 'bare-fs'
+import { existsSync, readFileSync, readdirSync, writeFileSync, renameSync } from 'bare-fs'
 import { join, resolve, dirname, basename } from 'bare-path'
 import { spawnSync } from 'bare-subprocess'
 import { fileURLToPath } from 'bare-url'
 import { openLog } from './lib/log.js'
 import { selfTest } from './lib/selftest.js'
 import { pkgm } from './lib/pkgm.js'
+import { ensureImage, startContainer, stopContainer } from './lib/container.js'
 
 const { testPackage, verify } = await pkgm()
 
@@ -42,7 +46,7 @@ const calledAs = process.env.HAICC_AS || `./${basename(dirname(work))}/${basenam
 process.env.HAICC_AS = ''   // (Bare's environment refuses a delete)
 const log = openLog({ dir: join(work, 'log'), command: [calledAs, ...argv], level: flags.debug ? 'debug' : flags.verbose ? 'verbose' : 'normal' })
 
-const usage = () => { process.stderr.write(readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 12).map(l => l.replace(/^\/\/ ?/, '')).join('\n') + '\n'); process.exit(2) }
+const usage = () => { process.stderr.write(readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1).filter((l, i, a) => a.slice(0, i + 1).every(x => x.startsWith('//'))).map(l => l.replace(/^\/\/ ?/, '')).join('\n') + '\n'); process.exit(2) }
 const fetchScript = join(packages, 'base-package-haicc', 'modules', 'pear-full-square', 'haicc-base-boot', 'fetch.sh')
 // What is here: the repositories copied in whole, each with its manifest.
 const packagesHere = () => {
@@ -59,12 +63,24 @@ function printTest (n, t) {
   return t.ok
 }
 
+// The node's config (node.json, written by its swarm's cold boot): its
+// name, role, key, container, network, address, its codebase and master.
+const configFile = join(work, 'node.json')
+const readConfig = () => existsSync(configFile) ? JSON.parse(readFileSync(configFile, 'utf8')) : null
+const writeConfig = c => { writeFileSync(configFile + '.new', JSON.stringify(c, null, 2) + '\n'); renameSync(configFile + '.new', configFile) }
+
 try {
   if (verb === 'shutdown') {
-    // The node's shutdown: its container removed; its folder kept (its
-    // HAICC, its log, its state), for its boot to start it again.
+    // The node's shutdown: its container stopped and removed; its folder
+    // kept (its HAICC, its config and key, its log), for its boot.
     console.log(`The node ${basename(dirname(work))}/${basename(work)}: its shutdown`)
-    console.log('  its container: none yet (nothing deployed here), nothing to remove')
+    const c = readConfig()
+    if (c?.container) {
+      const r = stopContainer(c)
+      console.log(`  ${r.said}`)
+      if (!r.ok) process.exit(1)
+      if (c.live) { delete c.live; writeConfig(c) }
+    } else console.log('  its container: none (no codebase here), nothing to stop')
     console.log('Shut down')
     process.exit(0)
   } else if (verb === 'boot') {
@@ -76,8 +92,19 @@ try {
     const failed = t.runs.filter(r => !r.ok)
     if (!t.repos.length) console.log('  no packages here: nothing to test')
     console.log(t.ok ? `Ready: ${t.runs.length} test runs passed (${t.repos.join(', ')})` : `Not ready: ${failed.length} of ${t.runs.length} test runs failed`)
-    if (t.ok) console.log('  its container: none yet (nothing deployed here), nothing to start')
-    process.exit(t.ok ? 0 : 1)
+    if (!t.ok) process.exit(1)
+    const c = readConfig()
+    if (!c?.code) { console.log('  its container: none (the swarm has no codebase), nothing to start'); process.exit(0) }
+    const img = ensureImage(dirname(process.execPath))
+    if (!img.ok) { console.log(`  its image ${img.tag}: could not be built: ${img.said}`); process.exit(1) }
+    console.log(`  its image: ${img.tag}${img.built ? ', built' : ''} (Bare's ${basename(img.runtime)}; the code mounted, not in it)`)
+    console.log(`  its container ${c.container} (${c.role}, ${c.ip} on ${c.network}): the swarm's codebase from ${c.code}, read-only`)
+    const r = await startContainer(c, work, img.tag)
+    console.log(`  ${r.ok ? 'ok    ' : 'FAILED'} the node ${r.said}${r.ok ? ` (${(r.ms / 1000).toFixed(1)} s)` : ''}`)
+    if (!r.ok) { console.log(`  its log: docker logs ${c.container}`); process.exit(1) }
+    writeConfig({ ...c, live: { key: r.owner, dht: r.dht } })
+    console.log('Running')
+    process.exit(0)
   } else if (verb === 'version') {
     console.log(`haicc, the node ${work}`)
     for (const [n, p] of Object.entries(packagesHere())) console.log(`  ${n}: ${p.hash.slice(0, 12)}`)

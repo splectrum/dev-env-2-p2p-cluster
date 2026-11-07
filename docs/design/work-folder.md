@@ -53,7 +53,7 @@ folder it is called from, and keeps it.
 
 | called from | its config (kept) | `haicc shutdown` | `haicc boot` |
 |---|---|---|---|
-| a node | its own | its container removed (none yet) | its warm boot (validation; its container started: none yet) |
+| a node | its own (`node.json`) | its container stopped and removed | its warm boot (validation; then its container started: the swarm's node running) |
 | a swarm | `nodes.json`, its launcher | each node's cold shutdown (its folder removed), the master last | each node in `nodes.json` built from scratch and booted, the master first |
 | the root | `swarms.json` | each swarm's shutdown | the host's prerequisites; each swarm booted; `haiccing/install` |
 | the work folder, cold | `haiccing/`, `log/`, `bare/` | `./shutdown`: everything else removed, back to the setup | `./boot`: set up from `haiccing/`, then `./haicc boot` |

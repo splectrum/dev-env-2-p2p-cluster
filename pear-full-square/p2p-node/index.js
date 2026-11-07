@@ -184,6 +184,12 @@ async function start (opts, opened) {
     const ch = await masterChannel
     await ch.opened
     const registered = await toMaster.registerNode(name)
+    // The packages it runs, when not told: the master's, as p2p-rns names
+    // them (a node on the master's host runs them from its mount).
+    if (!packages) {
+      const p = await toMaster.resolve(`/${swarm}/master/packages`)
+      packages = p ? { uri: p.uri, key: p.key } : null
+    }
     const resources = []
     rns = {
       register: r => { resources.push(r); return toMaster.register(r) },

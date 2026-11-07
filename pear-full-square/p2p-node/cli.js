@@ -7,10 +7,12 @@
 //                      --master=<key> --packages-key --packages-commit --packages-uri
 //                      (a joining node: provisioned, then run from the swarm's code)
 //   bare cli.js join   --swarm --name --host --storage --bootstrap --master
-//                      --packages-key --packages-commit --packages-uri
-// For master and join, the node's primary key comes first on stdin, as hex,
-// from its node manager (or, for join, its boot program): never from a file
-// the node keeps. Everything the node does goes
+//                      [--packages-key --packages-commit --packages-uri]
+//                      (without them: the master's packages, as p2p-rns names them)
+// For master and join, the node's primary key: from --key-file=<file> (the
+// node's config, node.json, its `key`, as hex; for now, in readable text:
+// a more secure way once it all runs), else first on stdin, as hex, from
+// its node manager (or, for join, its boot program). Everything the node does goes
 // to stdout as JSON lines (its log: the audit and metrics of every module),
 // which the node manager follows. SIGTERM stops it gracefully.
 
@@ -27,6 +29,12 @@ const [role] = argv.filter(a => !a.startsWith('--'))
 const log = e => fs.writeSync(1, JSON.stringify(e) + '\n')
 
 function readSecret () {
+  if (flags['key-file']) {
+    const text = fs.readFileSync(flags['key-file'], 'utf8').trim()
+    const key = Buffer.from(text.startsWith('{') ? JSON.parse(text).key || '' : text, 'hex')
+    if (key.length !== 32) return Promise.reject(new Error(`${flags['key-file']}: no primary key in it (32 bytes of hex)`))
+    return Promise.resolve(key)
+  }
   return new Promise((resolve, reject) => {
     let text = ''
     const ondata = chunk => {
@@ -69,7 +77,7 @@ try {
     ...(role === 'join' ? {
       bootstrap: [hostPort(flags.bootstrap)],
       master: flags.master,
-      packages: { uri: flags['packages-uri'], key: flags['packages-key'], commit: flags['packages-commit'] }
+      packages: flags['packages-key'] ? { uri: flags['packages-uri'], key: flags['packages-key'], commit: flags['packages-commit'] } : null
     } : {}),
     observer: log,
     metricsEvery: Number(flags['metrics-every'] || 30000)
