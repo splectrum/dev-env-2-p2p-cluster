@@ -1,11 +1,11 @@
 // The hosts this server may act on, from its configuration:
-//   config.hosts = { '<host>': { folder, vault? } }
-// A node is found by its URI among the node folders under a host's folder
-// (its state, the fold of its manager's topic).
-
-import { readdirSync, existsSync } from 'node:fs'
-import { join } from 'node:path'
-import { nodeState } from '../../p2p-node-manager/index.js'
+//   config.hosts = { '<host>': { folder: <a swarm's folder, as HAICC runs it> } }
+// A node is found by its URI among the node folders there (their configs,
+// node.json); its container's state from Docker.
+import { readdirSync, existsSync, readFileSync } from 'bare-fs'
+import { join } from 'bare-path'
+import { spawnSync } from 'bare-subprocess'
+import process from 'bare-process'
 
 export function hostOf (config, host) {
   const h = config.hosts?.[host]
@@ -13,22 +13,32 @@ export function hostOf (config, host) {
   return h
 }
 
-export async function findNode (config, uri) {
+export const run = (cmd, args, env = {}) => {
+  const r = spawnSync(cmd, args, { stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, ...env } })
+  return { ok: r.status === 0, status: r.status, out: String(r.stdout || '').trim(), err: String(r.stderr || '').trim() }
+}
+
+// A container's state: running, paused, exited, ..., or gone.
+export const containerState = container => {
+  const r = run('docker', ['inspect', '-f', '{{.State.Status}}', container])
+  return r.ok ? r.out : 'gone'
+}
+
+export function nodeConfig (folder) {
+  const f = join(folder, 'node.json')
+  return existsSync(f) ? JSON.parse(readFileSync(f, 'utf8')) : null
+}
+
+export function findNode (config, uri) {
   for (const [host, h] of Object.entries(config.hosts || {})) {
     if (!existsSync(h.folder)) continue
-    for (const name of readdirSync(h.folder)) {
+    for (const name of readdirSync(h.folder).sort()) {
       const folder = join(h.folder, name)
-      if (!existsSync(join(folder, 'topics', 'manager'))) continue
-      const st = await nodeState(folder)
-      if (st && st.uri === uri) return { host, folder, state: st }
+      const c = nodeConfig(folder)
+      if (c && `/${c.swarm}/${c.name}` === uri) return { host, folder, config: c, state: c.container ? containerState(c.container) : 'none' }
     }
   }
   throw new Error(`no node here: ${uri}`)
-}
-
-export function swarmFolderOf (h) {
-  for (const name of readdirSync(h.folder)) if (existsSync(join(h.folder, name, 'topics', 'swarm'))) return join(h.folder, name)
-  return null
 }
 
 export const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))

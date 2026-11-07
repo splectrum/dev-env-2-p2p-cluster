@@ -1,12 +1,12 @@
 // send-request { from, to, name }: a request to a node's repository (named
-// <name>-<a suffix of its own>, unique per request), from
-// host `from`, as a peer of the swarm (its address on the data plane: the
-// host's gateway there). The repository resolved by URI, the request sent
-// as a bundle, the response read back from a replica. A node p2p-rns flags
-// absent is refused at once.
-import { readFileSync, mkdtempSync, rmSync, existsSync } from 'node:fs'
-import { join } from 'node:path'
-import { tmpdir } from 'node:os'
+// <name>-<a suffix of its own>, unique per request), from host `from`, as a
+// peer of the swarm (its address on the swarm's network: the host's gateway
+// there; the master's key and DHT from the master's config). The repository
+// resolved by URI, the request sent as a bundle, the response read back from
+// a replica. A node p2p-rns flags absent is refused at once.
+import { mkdtempSync, rmSync, readdirSync } from 'bare-fs'
+import { join } from 'bare-path'
+import { tmpdir } from 'bare-os'
 import crypto from 'hypercore-crypto'
 import { openStore } from 'p2p-store'
 import { startDht } from 'p2p-dht'
@@ -17,22 +17,28 @@ import { rnsClient } from 'p2p-rns'
 import { mrepos } from 'p2p-mrepo'
 import { askRequest, requestBundle } from 'p2p-node'
 import { openRepo } from '../mycelium-git/index.js'
-import { invite } from '../p2p-swarm-manager/index.js'
-import { hostOf, swarmFolderOf } from './lib/hosts.js'
+import { hostOf, nodeConfig, run } from './lib/hosts.js'
+
+// The swarm as a peer sees it from this host: the master's key and DHT, and
+// the host's own address on the swarm's network (its gateway).
+export function swarmOf (h) {
+  const master = readdirSync(h.folder).sort().map(n => nodeConfig(join(h.folder, n))).find(c => c?.role === 'master')
+  if (!master?.live?.dht) throw new Error(`no master running in ${h.folder}`)
+  const gateway = run('docker', ['network', 'inspect', '-f', '{{(index .IPAM.Config 0).Gateway}}', master.network]).out
+  if (!gateway) throw new Error(`no gateway for the swarm's network ${master.network}`)
+  return { master: master.live.key, bootstrap: master.live.dht, gateway }
+}
 
 export default async ({ from, to, name: given }, ctx) => {
   // A request is taken once under its name: the name made unique per
   // request (the requester's concern), so a scenario can run again.
   const name = `${given}-${Date.now().toString(36)}`
-  const h = hostOf(ctx.config, from)
-  const own = swarmFolderOf(h)
-  const inv = own ? await invite({ folder: own }) : JSON.parse(readFileSync(join(h.folder, 'invitation.json'), 'utf8'))
-  if (!own && !existsSync(join(h.folder, 'invitation.json'))) throw new Error(`${from} knows no swarm`)
+  const inv = swarmOf(hostOf(ctx.config, from))
   const t0 = Date.now()
   const storage = mkdtempSync(join(tmpdir(), 'splectral-request-'))
   const store = await openStore({ storage })
   const [bh, bp] = inv.bootstrap.split(':')
-  const d = await startDht({ host: inv.network.gateway, bootstrap: [{ host: bh, port: Number(bp) }] })
+  const d = await startDht({ host: inv.gateway, bootstrap: [{ host: bh, port: Number(bp) }] })
   const net = connect({ dht: d.dht, keyPair: crypto.keyPair() })
   const rep = replicator({ store })
   const channels = new Map()

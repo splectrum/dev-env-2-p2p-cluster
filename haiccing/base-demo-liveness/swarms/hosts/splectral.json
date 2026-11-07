@@ -1,0 +1,5 @@
+{
+  "components": ["splectral-p2p-watchers", "splectral-p2p-actions", "splectral-scenario", "base-demo-liveness"],
+  "host": "host-a",
+  "port": 4400
+}

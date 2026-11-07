@@ -153,7 +153,7 @@ function installFile () {
 // The work folder's own folders and files: not a swarm's name; a swarm's
 // own files: not a node's name.
 const OWN = ['packages', 'haiccing', 'bare', 'nodejs', 'log', 'haicc', 'boot', 'shutdown', 'swarms.json', 'swarms', 'user']
-const SWARM_OWN = ['haicc', 'nodes.json']
+const SWARM_OWN = ['haicc', 'nodes.json', 'splectral']
 const ROLES = ['master', 'node']
 const inSwarm = process.env.HAICC_SWARM || null
 // A name made a URI part: lowercase a-z, 0-9, words joined by single '-'.
@@ -347,6 +347,69 @@ function writeNodeConfig (swarm, node, dir) {
   return 0
 }
 
+// ---- a swarm's Splectral: its server, on this host ----------------------
+
+// A swarm whose package names Splectral components (splectral.json:
+// components, the host's name in scenarios, a port) gets a Splectral
+// server: on the host (it reads the containers' logs and acts on them),
+// from the master's packages (the components are in the swarm's codebase),
+// in the background, started with the swarm's boot and stopped with its
+// shutdown. Its folder: <swarm>/splectral/ (config.json, server.pid, its
+// output in server.log, runs/: its actions and scenario runs).
+const splectralDir = swarm => join(work, swarm, 'splectral')
+const sh = (script, ...args) => { const r = spawnSync('sh', ['-c', script, 'sh', ...args], { stdio: ['ignore', 'pipe', 'pipe'] }); return { ok: r.status === 0, out: String(r.stdout || '').trim() } }
+const runningPid = swarm => {
+  const f = join(splectralDir(swarm), 'server.pid')
+  if (!existsSync(f)) return null
+  const pid = readFileSync(f, 'utf8').trim()
+  return sh('kill -0 "$1" 2>/dev/null', pid).ok ? pid : null
+}
+
+function stopSplectral (swarm) {
+  const pid = runningPid(swarm)
+  rmSync(join(splectralDir(swarm), 'server.pid'), { force: true })
+  if (!pid) return 0
+  sh('kill "$1"; i=0; while kill -0 "$1" 2>/dev/null && [ $i -lt 50 ]; do sleep 0.1; i=$((i+1)); done; kill -9 "$1" 2>/dev/null; true', pid)
+  console.log(`  its Splectral server (pid ${pid}): stopped`)
+  return 0
+}
+
+async function startSplectral (swarm) {
+  const sp = jsonFile.read(join(work, swarm, 'splectral.json'), null)
+  if (!sp?.components?.length) return 0
+  const entry = readSwarms().swarms[swarm] || {}
+  const nodes = readNodes(swarm).nodes
+  const master = Object.keys(nodes).find(n => nodes[n].role === 'master')
+  const modules = join(work, swarm, master || 'master', 'packages', entry.package || '', 'modules')
+  // A module of the codebase by its name: modules/<org>/<name>.
+  const find = name => (existsSync(modules) ? readdirSync(modules).sort() : []).filter(o => o !== 'node_modules').map(o => join(modules, o, name)).find(d => existsSync(join(d, 'package.json')))
+  const server = find('splectral-server')
+  const extensions = sp.components.map(c => [c, find(c)])
+  const missing = [...(server ? [] : ['splectral-server']), ...extensions.filter(([, d]) => !d || !existsSync(join(d, 'splectral.json'))).map(([c]) => c)]
+  if (missing.length) { console.log(`  its Splectral: not in the swarm's codebase (${modules}): ${missing.join(', ')}`); return 1 }
+  stopSplectral(swarm)
+  const dir = splectralDir(swarm)
+  mkdirSync(join(dir, 'runs'), { recursive: true })
+  const host = sp.host || 'host-a'
+  const config = { port: sp.port ?? 0, host: '127.0.0.1', extensions: extensions.map(([, d]) => d), sources: [{ kind: 'haicc-swarm', host, folder: join(work, swarm) }], runs: join(dir, 'runs'), hosts: { [host]: { folder: join(work, swarm) } } }
+  jsonFile.write(join(dir, 'config.json'), config)
+  const log = join(dir, 'server.log')
+  // In a session of its own, so it outlives this command; its pid kept.
+  const r = sh('setsid "$1" "$2" "--config=$3" > "$4" 2>&1 < /dev/null & echo $!', process.execPath, join(server, 'cli.js'), join(dir, 'config.json'), log)
+  if (!r.ok || !r.out) { console.log('  its Splectral server: could not be started'); return 1 }
+  writeFileSync(join(dir, 'server.pid'), r.out + '\n')
+  for (let i = 0; i < 300; i++) {
+    const text = existsSync(log) ? readFileSync(log, 'utf8') : ''
+    const url = text.split('\n').map(l => { try { return JSON.parse(l).url } catch { return null } }).find(Boolean)
+    if (url) { console.log(`  its Splectral: ${url} (${sp.components.join(', ')}; pid ${r.out}, its output ${swarm}/splectral/server.log)`); return 0 }
+    if (!runningPid(swarm)) break
+    await new Promise(resolve => setTimeout(resolve, 200))
+  }
+  console.log(`  its Splectral server did not start: ${(existsSync(log) ? readFileSync(log, 'utf8') : '').trim().split('\n').slice(-3).join(' | ')}`)
+  stopSplectral(swarm)
+  return 1
+}
+
 // A node's cold shutdown: its own shutdown (its container removed), then
 // its folder removed.
 async function removeNode (swarm, node) {
@@ -389,7 +452,7 @@ async function swarmBoot (swarm, node) {
   const order = [...downOrder(s).filter(n => s.nodes[n].role === 'master'), ...downOrder(s).filter(n => s.nodes[n].role !== 'master')]
   console.log(`The swarm ${swarm}: its nodes booted, the master first (${order.join(', ') || 'none in nodes.json'})`)
   for (const n of order) if (await bootNode(swarm, n)) return 1
-  return 0
+  return startSplectral(swarm)
 }
 
 async function swarmShutdown (swarm, node, { asked = false } = {}) {
@@ -402,6 +465,7 @@ async function swarmShutdown (swarm, node, { asked = false } = {}) {
   const order = downOrder(s)
   if (!asked && !(await confirm(`The swarm ${swarm}: its nodes' cold shutdown, the master last (${order.join(', ') || 'none'}): their folders removed; kept: nodes.json`))) return 1
   console.log(`The swarm ${swarm}: its nodes shut down, the master last (${order.join(', ') || 'none'})`)
+  stopSplectral(swarm)
   for (const n of order) if (await removeNode(swarm, n)) return 1
   removeNetwork(swarm)
   return 0
