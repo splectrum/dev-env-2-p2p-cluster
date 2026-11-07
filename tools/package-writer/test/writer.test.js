@@ -17,6 +17,7 @@ function devRepo () {
   put(join(dev, 'org/amod/index.js'), "import { b } from 'bmod'\nexport const a = () => b() + 1\n")
   put(join(dev, 'org/amod/test/a.test.js'), "import { test } from 'node:test'\nimport assert from 'node:assert/strict'\nimport { a } from 'amod'\ntest('a', () => assert.equal(a(), 43))\n")
   json(join(dev, 'org/bmod/package.json'), { name: 'bmod', type: 'module', exports: './index.js' })
+  put(join(dev, 'org/bmod/log/20261107T000000Z.log'), 'a run left this\n')
   put(join(dev, 'org/bmod/index.js'), "import { x } from 'dep-x'\nexport const b = () => x\n")
   json(join(dev, 'node_modules/dep-x/package.json'), { name: 'dep-x', version: '1.2.3', license: 'MIT', type: 'module', exports: './index.js' })
   put(join(dev, 'node_modules/dep-x/index.js'), 'export const x = 42\n')
@@ -47,6 +48,7 @@ test('written: self-contained, in the package structure, tested first', () => {
     assert.ok(!existsSync(join(y, 'modules/node_modules/dep-x/test')), 'third-party tests not shipped')
     assert.ok(!existsSync(join(y, 'modules/node_modules/dep-x/prebuilds/other-arch')), 'other platforms not shipped')
     assert.equal(readlinkSync(join(y, 'modules/node_modules/bmod')), '../org/bmod')
+    assert.ok(!existsSync(join(y, 'modules/org/bmod/log')), 'a log a run left: not carried')
     assert.deepEqual(JSON.parse(readFileSync(join(y, 'modules/third-party.json'), 'utf8')).modules, [{ name: 'dep-x', version: '1.2.3', license: 'MIT', resolved: null, integrity: 'sha512-x' }])
     // The hand-written parts as they are; the named test written here.
     assert.equal(readFileSync(join(y, 'README.md'), 'utf8'), '# base-swarm-y\n\nBy hand.\n')

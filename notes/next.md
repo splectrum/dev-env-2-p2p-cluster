@@ -56,6 +56,16 @@ package manager work:
    **Done (2026-11-06):** a path for a name is refused (exit 2, nothing
    made), naming the command to use: `hosts/haicc boot master`; a test added.
 
+**The switch to Bare, at the start (2026-11-07, the human: Bare only,
+`brittle` for tests, no Node.js equivalence)**: before the package manager
+becomes the second package. The probe done:
+`steps/phase-3/2-package-structure/2-bare-probe/` (20 of 22; what fails:
+`fetch` over HTTPS through a proxy, so downloads stay in the shell; a
+module's type comes from its folder's `package.json`). The sixth release's
+finding fixed (a run's log in the source: removed, ignored, and the package
+writer no longer carries a module's `log/`). Next, with the human's go:
+`base-package-haicc` on Bare.
+
 **Published: the sixth release (2026-11-07), the human's word.**
 `setup-25c91afc4801`, boot 0.6.0, latest; `base-package-haicc` `8ac17a0`. From
 GitHub: 7 passed and 2 passed, as expected. One finding for the implementer, a
