@@ -38,6 +38,8 @@ packages; nothing depends on outside software once a package is made.
 
 ## Testing: always within the package
 
+(Where tests run, who runs them and where their logs go: superseded by "Packages, platforms, swarms and tests", Tests.)
+
 Agreed 2026-11-04.
 - **Tests live in a module and in its package**: a module's own tests,
   and the package's tests of its modules together.
@@ -214,11 +216,13 @@ section and older ones differ, this one holds.
 - The instructions (the readmes, `haiccing`'s profile) say where the log
   is: in `log/`, newest last.
 
-## Packages, platforms, swarms and tests (agreed 2026-11-06, not built)
+## Packages, platforms, swarms and tests (agreed 2026-11-06/07, not built)
 
-Supersedes the layout and the swarm commands of "Boot and shutdown by
-level" below; its level table stands. Judged by consistency with the
-design, not by what exists: the rebuild is step by step.
+Supersedes "Boot and shutdown by level" below (its table restated here,
+with the new paths) and, where they differ, the earlier sections on the
+work folder and on where tests run. Judged by consistency with the design,
+not by what exists: the rebuild is step by step. Reviewed independently
+(2026-11-07); its findings settled here.
 
 ### A package
 
@@ -229,98 +233,150 @@ design, not by what exists: the rebuild is step by step.
     <org>/<module>/              each module whole, as developed
       test/                      the module's own tests
   swarms/
-    <swarm>/                     one per swarm: copied as is into a work folder's swarms/<swarm>/
+    <swarm>/                     one per swarm, named by its folder
       nodes.json                 its nodes and their roles
-      install.json               what each node gets (packages, this package's modules), by role
+      install.json               what each node gets: whole packages, by role
       splectral.json             its Splectral components: which, on which node, their settings
-      host.json                  what the host must provide for it (networks, Docker)
+      host.json                  what the host must provide for it (networks, Docker): requirements
       README.md
-      test/                      the swarm's own: its config valid
+      test/                      the swarm's own: its config valid (against the platform's schemas)
   platform/
-    host/  swarm/  node/         the levels: each its layout (layout.json, data), its
-                                 Splectral components, its tests; swarm/ the config schemas
+    host/  swarm/  node/         the levels: each its layout (layout.json, data), its Splectral
+                                 components, its tests; swarm/ the config schemas
   test/
     <test>/                      a named test, for what it checks (e.g. three-nodes-up)
       README.md
-      modules/  swarms/  platform/   the package's structure, only the parts it uses
-      test.js                    its run: exit 0 when it passes
+      modules/  swarms/  platform/   the package's structure, only the parts it adds
+      test                       its run: an executable, any language; exit 0 when it passes
 ```
 
 - **Every part is optional; a package is what it holds**: modules only (a
   package of code), swarms only (a configured swarm), both (a demo: swarms
   and the Splectral components they show), a platform. Recognized by its
-  contents, not its name. `base-` is a convention for a package group (a
-  package of packages).
+  contents, not its name. `base-` is a convention for a package group.
 - **One concern per file** (`rules.md`): a swarm's nodes, what they get,
   what Splectral shows, what the host provides.
-- **Modules once, at the package's top**; swarms name them. Packages from
-  elsewhere (`p2p`, `splectral`) are named in `install.json`.
+- **Modules once, at the package's top.** A named test's `modules/`,
+  `swarms/`, `platform/` add to the package's parts (test-only ones); a
+  name the package already has: refused.
 - **The platform is a part like any other**: any package may carry
-  `platform/`, and any package that does can be released (a setup) the
-  same way: the platform plus that package's own content. HAICC's code in
-  `modules/`; `platform/` holds no code, only each level's shape and what
-  it shows. The swarm config schemas are the platform's: a swarm's test
-  checks its config against them, before anything boots.
-- **Tests at their level, run in place, from the bottom up**: the modules',
-  the swarms' (config), the package's named tests. A named test has the
-  package's structure (no `test/` inside it: its run is `test.js` at its
-  top); a check that the package's parts fit together is a named test too.
-  `test` is reserved as a name within a package.
+  `platform/`, and any package that does can be released (a setup): the
+  platform plus that package's content. `platform/` holds the levels'
+  shape, what they show and their tests; the code is in `modules/`. The
+  swarm config schemas are the platform's: a swarm's test checks its
+  config against them, before anything boots.
+- **Tests at their level, from the bottom up**: the modules', the
+  swarms' (config), the package's named tests. A named test has the
+  package's structure, no `test/` inside it; a check that the package's
+  parts fit together is a named test too. `test` is reserved as a name
+  within a package.
+
+### Sealed, validated, mixed
+
+- **haiccing's packages are sealed**: self-contained (they carry what they
+  import), used as they are. A swarm made only from sealed packages of one
+  source and ref (all `github haiccing main`, or one release) is
+  **validated**: the setup that was tested together.
+- **Mix and match is allowed, and knowingly gives that up**: working
+  trees, other branches, `user/` packages; for development. A swarm made so
+  is **mixed**; `./haicc list` says which a swarm is. Local and
+  self-contained, even mixed, beats importing from remote (air-gapping).
+- **`install.json`** names whole packages by role (nothing taken apart),
+  each by its root and path, like a swarm's source. The platform's levels
+  are separate: the host and swarm folders run the root's HAICC (the work
+  folder's `packages/`); each node gets its own HAICC and package manager,
+  always, plus what `install.json` names. A node's HAICC can differ from
+  the root's. A role without an entry: nothing more.
+- **Recorded, not refused**: `swarms.json` records each package's hash as
+  the swarm is made. A node rebuilt later takes what the roots hold now,
+  and says what differs from what the swarm was made with.
 
 ### A work folder
 
 ```
 <parent>/                        a folder of installs: platform releases, side by side
-  <install>/                     a work folder: one platform, named (the setup's target)
+  <install>/                     a work folder: one platform (the setup's target)
     boot  shutdown  haicc        the cold boot and shutdown; the launcher
+    haicc.lock                   while a command that changes state runs (visible)
     haiccing/                    haiccing's packages; sources, contents.json
     user/                        other packages; sources, contents.json
-    packages/  nodejs/  log/     what runs; Node.js; the log
+    packages/  nodejs/  log/     what runs at the root (with contents.json); Node.js; the log
     swarms/
-      swarms.json                the host's swarms, fully qualified (below)
-      <swarm>/                   any URI-part name
-        haicc  nodes.json  install.json  splectral.json  host.json   copied from its package
+      swarms.json                the host's swarms, fully qualified
+      <swarm>/                   a swarm: its whole folder from its package, and its launcher
+        haicc  nodes.json  install.json  splectral.json  host.json  README.md  test/
         <node>/                  haicc  packages/ (with contents.json)  log/
       test/                      reserved: test runs
         <test>/                  one run: swarms.json, <swarm>/<node>/, the same shape
 ```
 
 - **The top is fixed**; the user's names are under `swarms/`. The URI
-  stays `/<swarm>/<node>`.
+  stays `/<swarm>/<node>` (a test run's: `/test/<test>/<swarm>/<node>`).
 - **One platform per work folder**, the one it was set up from. Another
-  platform, or another release of it: another install in the parent
-  folder, with its own `swarms/`, `swarms/test/`, log. Docker's containers
-  and networks are named after the install and the path within it, so
-  installs on one host never clash.
-- **A swarm comes only from a package** (no empty swarms, no building by
-  hand); its nodes are its config's: `./swarms/<swarm>/haicc boot|shutdown
-  [<node>]` only for nodes in its `nodes.json`; `teardown <node>` goes. A
-  swarm changed: its package changed, the swarm made again.
+  platform, or another release: another install in the parent folder. A
+  package that brings a different platform: refused in this install.
+- **Docker**: every container, network and image labelled with its
+  install (its absolute path: two installs may share a name) and its path
+  within it; names derived from the same, within Docker's limits.
+  Cleanup goes by label: a shutdown, a cold `./shutdown`, a test run's
+  leftovers after an interruption.
+- **One state-changing command at a time** per work folder:
+  `haicc.lock`, visible; a second says what holds it and stops.
+
+### The levels
+
+A `haicc boot` or `shutdown` works on the config of the folder it is
+called from, and keeps it.
+
+| Called from | Its config (kept) | `haicc shutdown` | `haicc boot` |
+|---|---|---|---|
+| node `swarms/<swarm>/<node>/` | the node's own | its container removed | its container started again |
+| swarm `swarms/<swarm>/` | its config files (and its launcher) | each node's cold shutdown (its folder removed), the master last | each node in `nodes.json` built from scratch and booted, the master first; `boot <node>`: that node rebuilt |
+| root `<work>/` | `swarms/swarms.json` | each swarm's shutdown (not `swarms/test/`) | the host's prerequisites, then each swarm booted (not `swarms/test/`) |
+| work folder, cold | `haiccing/`, `user/`, `log/`, `nodejs/` | `./shutdown`: its Docker resources (by label), `swarms/`, `packages/`, `./haicc` removed | `./boot`: set up from `haiccing/`, then `./haicc boot` |
+
+- **A swarm comes only from a package**; no empty swarms, no building by
+  hand. Its nodes are its config's: `./swarms/<swarm>/haicc boot|shutdown
+  <node>` only for nodes in its `nodes.json`. A swarm changed: its package
+  changed, the swarm made again (`teardown`, then `boot`). Upgrading a
+  running swarm: out of scope.
+- **`./haicc teardown <swarm>`**: its shutdown, its folder and its entry
+  removed; asked first. A plain remove; logs kept; checkpointing and
+  backup: on the roadmap.
 - **No current swarm**: the folder is the context (`cd swarms/<swarm>`,
   its own `./haicc`). KISS.
-- **A cold `./shutdown`** removes `swarms/`, `packages/`, `./haicc`; kept:
-  `haiccing/`, `user/`, `log/`, `nodejs/`.
+- The host's structure (the root, a swarm's folder) runs the root's HAICC
+  and logs in the root's `log/`; each node runs its own, logging in its
+  own `log/`, echoed back (`--no-echo`: the outcome only).
+- Whole packages copied into each node: a step, until the swarm's code
+  replicates (`vision.md`: links, not copies).
 
-### `--from`: where the swarms come from
+### `./haicc boot`: what, and from where
 
 ```sh
-./haicc boot base-package-haicc                                    # short for --from=haiccing/base-package-haicc
-./haicc boot t1 --from=haiccing/base-package-haicc/three-nodes     # one swarm, under the name given
-./haicc boot --from=haiccing/base-package-haicc/test/three-nodes-up # a named test's swarms
-./haicc boot --from=user/my-swarms                                 # a package of the user's
+./haicc boot base-package-haicc                          # all its swarms, named by the repository
+./haicc boot base-package-haicc/three-nodes --as=t1      # one swarm, under another name
+./haicc boot base-package-haicc/test/three-nodes-up      # a test's swarms, into swarms/test/three-nodes-up/
+./haicc boot my-swarms --from=user                       # a package of the user's
+./haicc boot my-swarms/test/smoke --from=/home/you/repos/myorg
 ```
 
-- `--from=<path>[/test/<test>][/<swarm>]`: a path from the work folder to
-  a folder with the package structure; the default root is `haiccing/`.
-  `swarms/` is left out (`--from` always points at swarms).
-- Without a name, each swarm under its own; a name only with one swarm.
-  A name already a swarm: refused (its config is not overwritten). A
-  swarm already here: booted from its own copy; the package not read
-  again (versions later).
-- **`swarms.json` is fully qualified**: each swarm's full `from`, and its
-  package's entry from `contents.json` as it was when the swarm was made
-  (source, commit, uncommitted, hash): traceable after `haiccing/` is
-  fetched again. `./haicc list` shows where each swarm came from.
+- **The argument is a repository and a path within it**:
+  `<repo>[/test/<test>][/<swarm>]`. Most commands are this alone: a
+  haiccing package.
+- **`--from` is the root**, the folder the repository sits in: `haiccing`
+  by default, `user`, or any folder (read in place, recorded like any
+  source). It kicks in for tests and user packages.
+- **`--as`** renames, only when the path names one swarm.
+- **Swarms are named by the repository**, its folder names under
+  `swarms/`: one or several, all booted. Each stands alone: those made
+  stay made, a failure is said. A config is checked against the
+  platform's schemas before it is copied: a broken copy is never made.
+- **A swarm already here**: from the same root and path, booted from its
+  own copy (the package not read again); from another: refused.
+- **`swarms.json` is fully qualified**: each swarm's root and path, and
+  each package's `contents.json` entry as it was when the swarm was made
+  (source, commit, uncommitted, hash).
 
 ### Sources and contents: each packages folder describes itself
 
@@ -332,37 +388,38 @@ base-package-p2p    git    /home/you/repos/haiccing feature-x   # committed, a l
 ```
 
 - **`folder`**: any folder, as it is, uncommitted changes included (test
-  before committing). **`git`**: a ref of a local clone, the same content
-  as GitHub, without the network. **`github`**: as now, with a ref.
-  Locally, clones in `<org>/<repo>`: a `folder` or `git` line on the
-  `haiccing` org folder.
-- **Mix and match**: per package; the folder's `contents.json` shows the
-  mix, `./haicc list` flags working-tree and non-`main` packages.
+  before committing). **`git`**: a ref of a local clone: the same content
+  as GitHub, without the network. **`github`**: with a ref. Locally,
+  clones in `<org>/<repo>`: a `folder` or `git` line on the org's folder.
+- **Mix and match**, per package: the folder's `contents.json` shows it.
 - **`contents.json`** in every packages folder (`haiccing/`, `user/`, the
   root's and each node's `packages/`): each package, its source, commit,
-  uncommitted or not, hash, when; written by what put it there. A hash
-  that no longer matches: "changed since fetched". The history is the
-  log's. HAICC writes into `user/` only what it fetches there and the
-  contents file; a package placed by hand: "placed by hand", its hash,
-  recorded on first use.
+  uncommitted or not, hash (SHA-256 over its sorted paths and contents,
+  `.git` excluded), when it came; written by what put it there. A hash
+  that no longer matches: "changed since fetched". A package placed by
+  hand: "placed by hand", recorded on first use.
+- **A missing package is fetched** as its root's `sources` say. Sources
+  changed: nothing fetched again until `./haicc fetch`; `./haicc list`
+  shows the difference.
 - **Air-gapped**: no `github` line; Node.js from a local folder named in
   the sources; the node containers' base image from a local file
   (`docker load`), with the master's swarm step.
 
-### Test runs
+### Tests
 
-- A named test runs in `swarms/test/<test>/` of the work folder it is
-  run from: the same platform and packages, no setup; its swarms' URIs
-  `/test/<test>/<swarm>/<node>`, its Docker names from that path. Passed:
-  its folder removed, its logs kept; failed: kept to look at, replaced by
-  the next run. The root's `boot` and `shutdown` with no name leave
-  `swarms/test/` alone.
+- **Run by the user** (a person or an AI), by hand: no `test` command at
+  the root, no package manager there. The package manager runs a
+  package's tests where it runs (in a swarm), later.
+- A named test's `test` runs with `HAICC_WORK` set to the work folder;
+  it boots its swarms with `./haicc boot <repo>/test/<test>` (into
+  `swarms/test/<test>/`), checks them, and shuts them down. It never
+  writes into the package; its output goes to `log/`.
+- Passed: its run's folder removed (its Docker resources by label);
+  failed: kept to look at; the next run removes it first.
 - A test that brings its own `platform/` runs in its own install in the
-  parent folder (another platform, another work folder), with its own
-  `swarms/test/`.
-- Run by the package manager when it tests a package (with that work).
+  parent folder.
 
-## Boot and shutdown by level (agreed 2026-11-06)
+## Boot and shutdown by level (agreed 2026-11-06; superseded by the section above, kept as history)
 
 ```
 <work>/
