@@ -93,6 +93,22 @@ manual test from the local file: passed. Record:
 `steps/phase-3/2-package-structure/3-bare/local-run.md`. Not pushed: the products,
 Codeberg's mirror of `base-package-haicc`.
 
+**Step 2 built (2026-11-07): a node's boot, validated by the node itself.**
+`notes/packages.md`, "Step 2". From a fresh release, Node.js off the PATH:
+7 passed, the platform test 23 steps. **For the local agent, with the
+human's OK: the ninth release, and the local test**: publish (`publish.sh`),
+from GitHub `./haicc boot base-package-haicc/test` (7 passed); then by hand,
+in a new work folder: `./haicc boot hosts`, `./hosts/haicc boot master`
+(the master's warm boot: `base-package-haicc: intact (...)`, `modules-load`,
+`sets`, `Ready: 3 test runs passed`); `./hosts/master/haicc test
+base-package-haicc --set=validation`; a file replaced in the master's copy
+(`rm` it, write a new one: never edit it in place, the copies are hard
+links) and `./hosts/master/haicc boot` (not intact, said, not up);
+`./hosts/haicc shutdown master --yes`, `./hosts/haicc boot master` (up
+again). The human's manual test from the local file. Record in
+`steps/phase-3/2-package-structure/4-node-validated/local-run.md`. Then
+step 3, with the human's go.
+
 **Next, agreed (2026-11-07), to start once the eighth release's report is
 back and its findings are dealt with:**
 - **Step 2: a node's boot, validated by the node itself.** Cold boot (the

@@ -68,8 +68,10 @@ Making and removing one thing, from its parent:
   (the first: `master`, then `node`; `--role=`); its cold boot: its folder
   made, the platform's package (`base-package-haicc`: HAICC and the package
   manager) copied in whole, its launcher written; then its warm boot,
-  `<swarm>/<node>/haicc boot`: the self-test of what was copied in, bottom
-  up, up when all pass. Its output shown as it happens (`--no-echo`: its
+  `<swarm>/<node>/haicc boot`: what was copied in, validated by the node
+  itself: each package intact (its hash against the one it was written
+  with, by the package manager), then its validation set; up only when all
+  pass, else it says which and the swarm's boot stops there. Its output shown as it happens (`--no-echo`: its
   outcome only). `<swarm>/haicc teardown <node>`: its shutdown, its folder
   and its entry removed.
 - Names are required, made URI parts if they are not (the change said).
