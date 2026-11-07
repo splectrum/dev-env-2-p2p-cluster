@@ -56,6 +56,31 @@ package manager work:
    **Done (2026-11-06):** a path for a name is refused (exit 2, nothing
    made), naming the command to use: `hosts/haicc boot master`; a test added.
 
+**For the local agent, now (2026-11-07, the human's word): the sixth
+release, created and tested before anything else.** From `main` at or after
+`38ed4f9`, with this repository installed (`npm install` at its root):
+
+1. Publish: `sh steps/phase-3/1-packages-and-boot/5-validation/publish.sh
+   <folder for the haiccing clones>`. It writes `base-package-haicc` only, with
+   the package writer (its tests first), in the new structure (`modules/`,
+   `test/`, `platform/`), pushes it, builds `haicc-setup.sh` and uploads it as
+   the release `setup-<hash>` (with `gh`).
+2. Test the release as a user would, in a new folder, from GitHub:
+   ```sh
+   curl -fL -o haicc-setup.sh https://github.com/haiccing/base-package-haicc/releases/latest/download/haicc-setup.sh
+   sh haicc-setup.sh ~/haicc-r6 && ~/haicc-r6/boot && ~/haicc-r6/haicc boot base-package-haicc/test
+   ```
+   Expect `Passed: 7 passed, 0 failed, 0 skipped` (the modules' tests,
+   `modules-load`, `sets`, and `platform`: a fresh install inside its run,
+   19 steps). Then `~/haicc-r6/haicc boot base-package-haicc/test --set=validation`
+   (2 passed).
+3. Record it in `steps/phase-3/2-package-structure/1-haicc/` (`local-run.md`:
+   the release's tag, the commands, the result, anything found), commit,
+   push, merge into `main`. Findings for the implementer, not fixed there.
+
+Not part of it: `base-package-third-party` is no longer written (the human
+archives it); the other packages come one a step, later.
+
 **Tests on the platform (2026-11-07)**: a package's functionality booted
 by its URI (`./haicc boot <repo>/test[/<test>]`, its cold boot, its
 teardown); `base-package-haicc` carries its tests (`validation`, `full`,
