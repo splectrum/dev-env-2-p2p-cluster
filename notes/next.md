@@ -88,7 +88,8 @@ the published release from GitHub.
 
 **Published: the eighth release (2026-11-07), the human's word.**
 `setup-ab3193778713`, Bare v1.36.0, latest; `base-package-haicc` `969a4cd`;
-`haiccing`'s profile `3728924`. From GitHub: 7 passed, 2 passed. Record:
+`haiccing`'s profile `3728924`. From GitHub: 7 passed, 2 passed; the human's
+manual test from the local file: passed. Record:
 `steps/phase-3/2-package-structure/3-bare/local-run.md`. Not pushed: the products,
 Codeberg's mirror of `base-package-haicc`.
 

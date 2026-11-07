@@ -92,5 +92,8 @@ in the history.
 Not checked: a yes on a real terminal (through `script`, `n` kept the swarm and
 `y` removed it, but piped input cannot show the question and the answer on one
 line: the human's to see); the sha256 pin refusing a damaged runtime; the
-`curl -C -` resume from here; the human's manual test.
+`curl -C -` resume from here.
+
+**The human's manual test (2026-11-07)**: the local build in `~/haicc-r8`, from
+the local file: "test passed ok". The output was not handed back.
 
