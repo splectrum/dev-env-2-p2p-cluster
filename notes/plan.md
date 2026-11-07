@@ -240,7 +240,11 @@ Design: `packages.md`. Its own request is written as its scope settles.
   to end, from three angles: cloud (a session on a GitHub checkout, in a
   sandbox), local (an always-on Linux machine, a swarm node, with agents that
   take part in the local test automatically while cloud development goes
-  on), and the swarm. Under discussion; built over time.
+  on), and the swarm. Under discussion; built over time. Agreed so far
+  (`docs/design/pipeline.md`): the modules as the source of truth; cloud
+  and local through GitHub; candidates rebuilt and compared; tailored
+  development environments, one per set of requirements, from a template,
+  discarded when done (its open questions there).
 - **The host on Bare** (the human, 2026-11-06: where we need to get to). **Done
   for the platform (2026-11-07)**: `notes/packages.md`, "On Bare"; each later
   package on Bare from the start.
