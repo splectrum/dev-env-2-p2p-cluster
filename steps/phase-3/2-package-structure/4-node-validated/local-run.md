@@ -35,7 +35,10 @@ identity; a test added to `verify` (fails without the fix, 5 of 6; 6 of 6 with i
   intact, up.
 - A file added: refused, exit 1. No hidden files.
 
-Not run: from GitHub (nothing published), the human's manual test.
+Not run: from GitHub (nothing published).
+
+**The human's manual test (2026-11-07)**: the local build in `~/haicc-r9`, from
+the local file: "great, all passed". The output was not handed back.
 
 ## Findings, for the implementer
 
