@@ -81,8 +81,14 @@ base-package-haicc/test` (expect 7 passed; the setup is now 36 MB), and
 `steps/phase-3/2-package-structure/3-bare/local-run.md`. Then the package
 manager as the second package, on Bare from the start.
 
-**Next here, first: the human's feedback on the sixth release (2026-11-07):
-the commands are not on stdout.** "What I notice is that the commands are not
+**The seventh release: built and tested locally, not published (2026-11-07).**
+`setup-bb5ab8f7a96d`: 7 passed and 2 passed with Node.js off the PATH. Before
+publishing, the human's to settle: the 92.6 MB runtime in git, or a downloadable
+asset (the human's proposal). Findings:
+`steps/phase-3/2-package-structure/3-bare/local-run.md`.
+
+**Done (below, seen working on the seventh release): the human's feedback on the
+sixth release (2026-11-07): the commands are not on stdout.** "What I notice is that the commands are not
 echoed into the stdout. That would be useful. Now I have to guess where the
 commands are." The human's run chained setup, `./boot` and the test: their output
 runs together, with nothing saying which command is running. Each command's
