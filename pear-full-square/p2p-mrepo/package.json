@@ -8,7 +8,7 @@
     "./engine": "./engine.js"
   },
   "scripts": {
-    "test": "node --test test/*.test.js"
+    "test": "bare ../../node_modules/brittle/cmd.js test/*.test.js"
   },
   "license": "MIT",
   "dependencies": {

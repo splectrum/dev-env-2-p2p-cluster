@@ -4,8 +4,8 @@
 // deployed too. Files keep their mode as git records it: executable,
 // symbolic link, or plain. Empty folders are left out, as git does.
 
-import fs from 'node:fs'
-import { join } from 'node:path'
+import fs from 'bare-fs'
+import { join } from 'bare-path'
 import { writer } from '../../mycelium-git/index.js'
 
 // backend: the repository deployed into; layer: the branch (created as a
@@ -25,7 +25,7 @@ export async function deploy ({ backend, layer, folder, message, author, time })
 // The tree of a folder on disk, or null if it holds no files.
 async function folderTree (backend, dir, count) {
   const entries = []
-  for (const name of fs.readdirSync(dir)) {
+  for (const name of fs.readdirSync(dir).sort()) {
     const path = join(dir, name)
     const stat = fs.lstatSync(path)
     if (stat.isSymbolicLink()) {

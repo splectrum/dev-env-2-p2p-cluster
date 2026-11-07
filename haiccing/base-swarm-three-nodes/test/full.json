@@ -1,0 +1,6 @@
+{
+  "description": "Everything that runs in place: the modules' own tests, the swarm's configuration, the package's named tests.",
+  "modules": true,
+  "swarms": true,
+  "tests": ["modules-load", "sets"]
+}

@@ -2,7 +2,7 @@
 // commands.txt (native git on Node): the same invocations and expectations,
 // run with another engine or on Bare.
 //   node test/variants.js
-import { readFileSync, writeFileSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'bare-fs'
 
 const here = new URL('.', import.meta.url)
 const base = readFileSync(new URL('commands.txt', here), 'utf8')

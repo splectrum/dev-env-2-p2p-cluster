@@ -24,7 +24,7 @@
 // boundary: on opening, the producer finds the active segment and the end
 // offset. Reading never needs to know which segments are archived.
 
-import { createHash } from 'node:crypto'
+import { createHash } from 'bare-crypto'
 import { parseRecords, encodeJson } from './format.js'
 
 const PARTITION = 'partition-0'

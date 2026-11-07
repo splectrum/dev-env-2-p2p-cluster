@@ -3,7 +3,7 @@
 // read and written by an engine that also runs where native git does not.
 // isoStyleBackend serves any engine with isomorphic-git's API (p2p-git).
 
-import nodeFs from 'node:fs'
+import nodeFs from 'bare-fs'
 import isogit from 'isomorphic-git'
 
 export function isogitBackend (gitdir, { fs = nodeFs } = {}) {

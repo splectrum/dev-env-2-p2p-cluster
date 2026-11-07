@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bare
 // Command line for mycelium-git, the test entry point.
 //   node cli.js [--engine=isogit|p2pgit|<module>] <op> ...  (default engine: native)
 //   An engine given as a module (a path, relative to this file) exports
@@ -21,7 +21,7 @@
 // lowercase form: inside our repositories every name is lowercase. A branch
 // name is validated as a URI.
 
-import process from 'node:process'
+import process from 'bare-process'
 import { validate, sameName } from '../mycelium-uri/index.js'
 import { nativeBackend, isogitBackend, p2pgitBackend, openRepo, writer } from './index.js'
 

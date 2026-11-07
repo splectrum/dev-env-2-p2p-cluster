@@ -1,8 +1,7 @@
 // Compatibility: the same writes give the same objects on every engine, so
 // a repository written by one is the same repository for the other.
 
-import { test } from 'node:test'
-import assert from 'node:assert/strict'
+import test from 'brittle'
 import { fixture } from './contract.js'
 import { isogitBackend, nativeBackend, p2pgitBackend, transfer, writer, openRepo } from '../index.js'
 
@@ -47,16 +46,16 @@ async function scenario (make) {
   return out
 }
 
-test('native, isomorphic-git and p2p-git: same writes, same oids and outcomes', async () => {
+test('native, isomorphic-git and p2p-git: same writes, same oids and outcomes', async (t) => {
   const native = await scenario(nativeBackend)
-  assert.equal(native.length, 11)
-  assert.deepEqual(await scenario(isogitBackend), native)
-  assert.deepEqual(await scenario(p2pgitBackend), native)
+  t.is(native.length, 11)
+  t.alike(await scenario(isogitBackend), native)
+  t.alike(await scenario(p2pgitBackend), native)
 })
 
 // A layer copied between every pair of engines arrives whole and the same,
 // and can be imported and read on the other side.
-test('transfer and importLayer between every pair of engines', async () => {
+test('transfer and importLayer between every pair of engines', async (t) => {
   const engines = { native: nativeBackend, isogit: isogitBackend, p2pgit: p2pgitBackend }
   for (const [fromName, makeFrom] of Object.entries(engines)) {
     for (const [toName, makeTo] of Object.entries(engines)) {
@@ -69,10 +68,10 @@ test('transfer and importLayer between every pair of engines', async () => {
       await c.put('/deep/two.md', 'two')
       const head = await c.commit('Put', { author, time })
       const pair = `${fromName} → ${toName}`
-      assert.equal(await transfer(from, to, head), 6, pair)
-      assert.equal(await transfer(from, to, head), 0, pair)
+      t.is(await transfer(from, to, head), 6, pair)
+      t.is(await transfer(from, to, head), 0, pair)
       await writer(to).importLayer('data/sets', head)
-      assert.equal((await openRepo(to).read('/data/sets/deep/two.md')).toString(), 'two', pair)
+      t.is((await openRepo(to).read('/data/sets/deep/two.md')).toString(), 'two', pair)
     }
   }
 })

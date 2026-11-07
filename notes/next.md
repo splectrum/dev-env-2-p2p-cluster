@@ -101,6 +101,26 @@ platform's 23 steps; the tamper checks as asked; the human's manual test from th
 local file: passed. Next: step 3, with the human's go. Record and findings:
 `steps/phase-3/2-package-structure/4-node-validated/local-run.md`.
 
+**Phase 3, step 2, the demos again (the phase's last): request
+`pending/default:pending/phase-3/step-2-the-demos-again/request.md`.
+Part 1 built (2026-11-07): `p2p` and `mycelium` on Bare.** The 13 modules
+of the swarm's codebase (`mycelium-uri`, `-xpath`, `-git`, `-layer`,
+`p2p-store`, `-dht`, `-connect`, `-replicate`, `-channel`, `-mrepo`, `-rns`,
+`-node`, `splectral-p2p-observer`) and `mycelium-topic`, `mycelium-repo`:
+Bare's own modules, tests on brittle (180 in the codebase's 13). The two
+managers (`p2p-node-manager`, `p2p-swarm-manager`) wait for part 3
+(containers: they are reworked there). `base-swarm-three-nodes` written by
+the package writer (64 MB; its swarm's codebase assembles into a master's
+repository, 166 tests passing there). From a fresh release, Node.js off the
+PATH: haicc's full set 7 passed; `./haicc boot base-swarm-three-nodes/test`
+(fetched from the sources) 16 passed, `--set=validation` 3 passed. Record:
+`steps/phase-3/3-demos-again/1-p2p-mycelium/`. **For the human**: create
+`haiccing/base-swarm-three-nodes`. **For the local agent, with the human's
+OK**: the tenth release (`publish.sh` now publishes both packages; `npm
+install` first), tested from GitHub: haicc's full set (7 passed), then
+`./haicc boot base-swarm-three-nodes/test` (16 passed) and `--set=
+validation` (3 passed). Then part 2.
+
 **The ninth release's findings, done (2026-11-07)** (`setup-434506b82414`
 published, 7 passed from GitHub, the human: "great, all passed"; the
 candidate as handed over had failed, fixed by the local agent: the hash was

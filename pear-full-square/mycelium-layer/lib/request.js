@@ -3,8 +3,8 @@
 // go in as they are. A request that's already there is refused: requests
 // are only added. (Executing requests is still the test-run machinery.)
 
-import fs from 'node:fs'
-import { join } from 'node:path'
+import fs from 'bare-fs'
+import { join } from 'bare-path'
 import { openRepo, writer } from '../../mycelium-git/index.js'
 
 // backend: the repository; folder: the request on disk; name: its name in
@@ -23,6 +23,7 @@ export async function intake ({ backend, folder, name, author, time }) {
 
 // The files in a folder, as paths relative to it.
 function listFiles (dir, at = '') {
-  return fs.readdirSync(join(dir, at), { withFileTypes: true }).flatMap(e =>
+  // In name order (Bare lists a folder unsorted).
+  return fs.readdirSync(join(dir, at), { withFileTypes: true }).sort((a, b) => a.name < b.name ? -1 : a.name > b.name ? 1 : 0).flatMap(e =>
     e.isDirectory() ? listFiles(dir, join(at, e.name)) : e.isFile() ? [join(at, e.name)] : [])
 }

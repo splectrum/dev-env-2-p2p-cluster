@@ -15,8 +15,8 @@
 //      management channel), passes SIGTERM on, and exits as the node does.
 // Every step to the log, as JSON lines; never the secret.
 
-import process from 'node:process'
-import { spawn } from 'node:child_process'
+import process from 'bare-process'
+import { spawn } from 'bare-subprocess'
 import crypto from 'hypercore-crypto'
 import { openStore } from 'p2p-store'
 import { startDht } from 'p2p-dht'

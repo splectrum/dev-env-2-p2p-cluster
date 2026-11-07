@@ -38,6 +38,12 @@ test('what it checks, in words', async (t) => {
   `timeout`.
 - A file written at run time and then imported: `.mjs`, or its folder's
   `package.json` (`"type": "module"`) written first.
+- An expected `TypeError` (or another native error): `t.exception.all`;
+  `t.exception` rethrows those as bugs.
+- A folder listed and its order relied on: sort it (Bare lists unsorted).
+- Don't name a local variable `t`: it hides brittle's.
+- Setup before a group: `hook(name, fn)`; closing what a file opened: a
+  last test in the file (tests run in order).
 
 Run them: `../../tools/bare ../../node_modules/brittle/cmd.js test/*.test.js`
 from the module's folder (or with `bare` on the PATH).
@@ -55,6 +61,9 @@ test/<test>/
   (or) boot     its cold boot, when it needs a work folder: booted, then torn down
 ```
 
+- **Every package has `modules-load` and `sets`** (the package writer
+  writes them), and the sets `validation` and `full` (its own, else the
+  writer's defaults).
 - **Add it to the sets** that name it (`test/validation.json`,
   `test/full.json`), and put the same names in its `categories`: the `sets`
   test checks they agree.

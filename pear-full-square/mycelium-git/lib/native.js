@@ -1,9 +1,9 @@
 // Native git backend: the reference. Implements the backend contract over
 // git's plumbing.
 
-import { spawn } from 'node:child_process'
-import process from 'node:process'
-import fs from 'node:fs'
+import { spawn } from 'bare-subprocess'
+import process from 'bare-process'
+import fs from 'bare-fs'
 
 const ZERO = '0000000000000000000000000000000000000000'
 

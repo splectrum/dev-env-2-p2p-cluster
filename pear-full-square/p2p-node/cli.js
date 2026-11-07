@@ -14,8 +14,8 @@
 // to stdout as JSON lines (its log: the audit and metrics of every module),
 // which the node manager follows. SIGTERM stops it gracefully.
 
-import process from 'node:process'
-import fs from 'node:fs'
+import process from 'bare-process'
+import fs from 'bare-fs'
 import { startNode } from './index.js'
 import { validateName } from '../mycelium-uri/index.js'
 

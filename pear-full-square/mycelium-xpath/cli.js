@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bare
 // Command line for mycelium-xpath, the test entry point.
 //   node cli.js select <tree.json> <path>
 // The tree is a JSON file of plain objects (folders) and values (leaves).
@@ -7,9 +7,10 @@
 // from outside, so this is the boundary: validate it, then select with
 // sameName to find the stored names.
 
-import { readFileSync } from 'node:fs'
+import { readFileSync } from 'bare-fs'
 import { validate, sameName } from '../mycelium-uri/index.js'
 import { select, objectChildren } from './index.js'
+import process from 'bare-process'
 
 const ops = { select }
 const [op, file, path] = process.argv.slice(2)
