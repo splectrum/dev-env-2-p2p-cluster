@@ -1,8 +1,54 @@
 # Handover: where the phase stands, and how to continue
 
-Written 2026-11-01 after step 7, updated 2026-11-02 after steps 8, 9 and 10 (the phase's request met), for the next session (or after
+Written 2026-11-01 after step 7, updated through 2026-11-07 (phase 3, step 2 built), for the next session (or after
 compaction). Read this first, then `rules.md` (single concern first), then
 `notes/plan.md`. Everything below is on `main`.
+
+## For the local agent now: the tenth release (the human's OK, 2026-11-07)
+
+Phase 3, step 2 (the demos again) is built: every part of the request,
+every package's sets passing from a fresh install here (Node.js off the
+PATH). Published nothing since the ninth release. On a machine with push
+access to github.com/haiccing, from this repository at `main`:
+
+1. `npm install` at the root (new dependencies since the ninth: `bare-http1`
+   among them).
+2. Publish: `sh steps/phase-3/1-packages-and-boot/5-validation/publish.sh
+   <folder for the haiccing clones>`. Five repositories now:
+   `base-package-haicc`, `base-package-pkgm`, `base-swarm-three-nodes`,
+   `base-demo-liveness`, `base-demo-other-host` (the two demos' repositories
+   exist from before: their contents are replaced by the new structure).
+   The setup (`haicc-setup.sh`, about 39 MB: the stripped runtime only) is
+   released on `base-package-haicc`.
+3. From GitHub, in a new folder (the published setup, the default sources),
+   Node.js off the PATH:
+   `sh haicc-setup.sh <folder> && <folder>/boot`, then in it, each with its
+   expected count:
+   - `./haicc boot base-package-haicc/test` (6 passed; the platform test 24
+     steps), `--set=validation` (2)
+   - `./haicc boot base-swarm-three-nodes/test` (17; its deploy test 13
+     steps), `--set=validation` (3)
+   - `./haicc boot base-demo-liveness/test` (25; the demo 8 steps),
+     `--set=validation` (2)
+   - `./haicc boot base-demo-other-host/test` (25; the demo 9 steps),
+     `--set=validation` (2)
+4. By hand, with a browser:
+   - `./haicc boot base-demo-liveness`: it says `its Splectral:
+     http://127.0.0.1:4400`; open it: the map (master, node-1), the
+     scenario's page; press Run: node-1 frozen, absent (a dashed ring), a
+     request refused, back, a request answered, node-1 leaving.
+     `docker ps` (two containers, `haicc-...-hosts-master`, `-node-1`);
+     `./haicc teardown hosts --yes`: nothing left (`docker ps -a`, `docker
+     network ls`).
+   - `./haicc boot base-demo-other-host`: the same page; Run: host B
+     invited, remote-1 joining (outlined: not host A's), a request across,
+     a note written, remote-1 stopped. `./haicc teardown hosts --yes`.
+   - `./haicc boot base-swarm-three-nodes`, `./haicc list`,
+     `ls three-nodes/master/packages`, `docker logs` of the master's
+     container, `./haicc teardown three-nodes --yes`.
+5. Record the run (`local-run.md` in `steps/phase-3/3-demos-again/`), each
+   finding with what was seen; commit on `pending/default` or as the human
+   says.
 
 ## Now: phase 3, step 1, done with part 6; the local agent's turn
 
