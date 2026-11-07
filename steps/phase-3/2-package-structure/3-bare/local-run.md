@@ -49,6 +49,15 @@ git missing.
    through `script` with piped input, which may be the cause: to check on a real
    terminal (the human's manual test).
 
-## The human's manual test
+5. **The echoed command is not always the command as run.** The human ran
+   `~/haicc-r7/boot` and `~/haicc-r7/haicc boot ...` from `/home/herma`; stdout
+   and the log say `./boot` and `./haicc boot ...` `(in /home/herma)`, where no
+   such file is. Print the path as called, or the launcher's folder.
 
-To come. The built file, in a new folder.
+## The human's manual test (2026-11-07)
+
+The built file in `~/haicc-r7`, on the human's machine: setup, `./boot` and the
+host's checks ok, `Passed: 7 passed, 0 failed, 0 skipped`, the platform's 19
+steps in 26.9 s, 38.0 s in all. Each command on stdout, as asked. Not in the
+output handed back: `--set=validation`, the prompt (finding 4). Not published:
+the runtime's place is still the human's to settle (finding 1).
