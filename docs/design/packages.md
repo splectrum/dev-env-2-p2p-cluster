@@ -94,7 +94,11 @@ its copy; found by the local agent.)
 ## Packages in this repository
 
 **Built.** `packages.json` defines the packages the writer writes, one a
-step: `haicc` (the platform) for now. The code-only packages (`p2p`,
+step: `haicc` (the platform) and `swarm-three-nodes` (a configured swarm,
+the p2p node as its codebase: 13 modules of ours, all on Bare). The writer
+knows every module of this repository (its workspaces, `splectral/`), writes
+every package's `modules-load` and `sets` tests, and gives a package that
+brings no test sets the defaults (`validation`, `full`). The code-only packages (`p2p`,
 `mycelium`, `splectral`) and the demos return one at a time, each on Bare,
 each with its tests on the platform. `base-package-third-party` is no
 longer written.

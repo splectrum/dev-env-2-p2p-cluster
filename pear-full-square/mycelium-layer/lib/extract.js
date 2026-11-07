@@ -4,8 +4,8 @@
 // provenance is written beside the folder, as <folder>.provenance.json, so
 // the folder is exactly the tree: deployed again, it gives the same tree.
 
-import fs from 'node:fs'
-import { join } from 'node:path'
+import fs from 'bare-fs'
+import { join } from 'bare-path'
 
 // backend: the repository; layer: the branch; path: a folder in it ('/' for
 // the whole layer); folder: on disk, must not exist; source: optional, where

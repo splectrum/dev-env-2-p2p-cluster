@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bare
 // Command line for mycelium-repo, the test entry point.
 //   node cli.js [--engine=E] [--product-engine=E] publish <repo> <package> <product>
 //   node cli.js [--engine=E] receive <product>
@@ -10,7 +10,7 @@
 // Prints the outcome as one JSON line: {"result": ...}, or {"error": "..."}
 // with exit 1. Names come in from outside: validated here.
 
-import process from 'node:process'
+import process from 'bare-process'
 import { validate } from '../mycelium-uri/index.js'
 import { nativeBackend, isogitBackend, p2pgitBackend } from '../mycelium-git/index.js'
 import { publish, receive, sync, seed } from './index.js'

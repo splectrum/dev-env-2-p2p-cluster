@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bare
 // The boundary for p2p-mrepo's repositories, from the command line.
 //   node cli.js create <storage> [name]                 a new, empty repository
 //   node cli.js import <storage> <native-repo> [name]   a native repository's
@@ -10,8 +10,8 @@
 // module as its engine: node ../mycelium-git/cli.js --engine=../p2p-mrepo/engine.js ...
 // Prints one JSON line, {"result": ...} or {"error": "..."} with exit 1.
 
-import fs from 'node:fs'
-import process from 'node:process'
+import fs from 'bare-fs'
+import process from 'bare-process'
 import { openStore } from 'p2p-store'
 import { writeBundle } from '../mycelium-git/index.js'
 import { extract } from '../mycelium-layer/index.js'

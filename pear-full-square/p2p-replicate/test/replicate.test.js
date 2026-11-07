@@ -1,14 +1,13 @@
-import { test } from 'node:test'
-import assert from 'node:assert/strict'
-import { mkdtempSync } from 'node:fs'
-import { join } from 'node:path'
-import { tmpdir } from 'node:os'
+import test from 'brittle'
+import { mkdtempSync } from 'bare-fs'
+import { join } from 'bare-path'
+import { tmpdir } from 'bare-os'
 import { openStore } from 'p2p-store'
 import { replicator } from '../index.js'
 
 const dir = () => mkdtempSync(join(tmpdir(), 'p2p-replicate-'))
 
-test('over a direct stream: read lazily, counted per peer, then held whole', async () => {
+test('over a direct stream: read lazily, counted per peer, then held whole', async (t) => {
   const events = []
   const observer = e => events.push(e)
   const a = await openStore({ storage: dir() })
@@ -25,26 +24,26 @@ test('over a direct stream: read lazily, counted per peer, then held whole', asy
   const replica = await b.replica(drive.key)
   rb.track(replica)
   await replica.update({ wait: true })
-  assert.equal((await replica.get('/f3')).length, 1000)
+  t.is((await replica.get('/f3')).length, 1000)
   const lazy = b.resources().find(r => r.how === 'replica')
-  assert.ok(lazy.db.contiguous < lazy.db.length, 'only what was read')
+  t.ok(lazy.db.contiguous < lazy.db.length, 'only what was read')
 
   const down = rb.metrics().filter(m => m.downloaded.blocks > 0)
-  assert.ok(down.length >= 1)
-  assert.ok(down.every(m => /^[0-9a-f]{64}$/.test(m.peer)), 'each counted against the peer key')
+  t.ok(down.length >= 1)
+  t.ok(down.every(m => /^[0-9a-f]{64}$/.test(m.peer)), 'each counted against the peer key')
   const blobsDown = down.find(m => m.part === 'blobs')
-  assert.equal(blobsDown.downloaded.bytes, 1000, 'one file')
+  t.is(blobsDown.downloaded.bytes, 1000, 'one file')
   const up = ra.metrics().find(m => m.part === 'blobs')
-  assert.equal(up.uploaded.bytes, 1000)
+  t.is(up.uploaded.bytes, 1000)
 
   const held = await rb.hold(replica)
-  assert.equal(held.db.length, replica.core.length)
+  t.is(held.db.length, replica.core.length)
   const whole = b.resources().find(r => r.how === 'replica')
-  assert.equal(whole.db.contiguous, whole.db.length)
-  assert.equal(whole.blobs.contiguous, whole.blobs.length)
+  t.is(whole.db.contiguous, whole.db.length)
+  t.is(whole.blobs.contiguous, whole.blobs.length)
 
   await a.close()
   await b.close()
   const kinds = events.map(e => e.kind)
-  assert.ok(kinds.includes('replication-started') && kinds.includes('held'))
+  t.ok(kinds.includes('replication-started') && kinds.includes('held'))
 })

@@ -21,6 +21,7 @@ import { readBundle, writeBundle, writer, openRepo } from '../mycelium-git/index
 import { executeRequests } from '../mycelium-layer/index.js'
 import { validateName } from '../mycelium-uri/index.js'
 import { checkDeployment } from './deployment.js'
+import process from 'bare-process'
 
 const author = { name: 'p2p-node', email: 'p2p-node@localhost' }
 

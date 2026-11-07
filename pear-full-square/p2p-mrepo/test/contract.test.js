@@ -2,16 +2,15 @@
 // fixture imported into a p2p-mrepo repository, then the same tests as on
 // every other engine.
 
-import { after } from 'node:test'
-import { existsSync, mkdtempSync } from 'node:fs'
-import { join } from 'node:path'
-import { tmpdir } from 'node:os'
+import test from 'brittle'
+import { existsSync, mkdtempSync } from 'bare-fs'
+import { join } from 'bare-path'
+import { tmpdir } from 'bare-os'
 import { openStore } from 'p2p-store'
 import { contract } from '../../mycelium-git/test/contract.js'
 import { mrepos } from '../index.js'
 
 const open = []
-after(async () => { for (const s of open) await s.close() })
 
 let n = 0
 async function onMrepo (gitdir) {
@@ -26,3 +25,6 @@ async function onMrepo (gitdir) {
 }
 
 contract('p2p-mrepo', onMrepo)
+
+// Last, the stores this file opened, closed.
+test('its stores closed', async (t) => { for (const s of open) await s.close(); t.pass() })

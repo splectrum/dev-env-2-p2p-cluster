@@ -5,8 +5,8 @@
 // becomes a layer with one seed commit; then execute/main is created from
 // main. The repository must be new: it is initialised here.
 
-import fs from 'node:fs'
-import { join } from 'node:path'
+import fs from 'bare-fs'
+import { join } from 'bare-path'
 import { writer } from '../../mycelium-git/index.js'
 import { deploy } from '../../mycelium-layer/index.js'
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bare
 // Command line for mycelium-uri, the test entry point: one call per invocation.
 //   node cli.js <op> <arg>...
 // Prints the outcome as one JSON line: {"result": ...}, or {"error": "..."}
@@ -6,6 +6,7 @@
 // branch names as a comma-separated list.
 
 import * as uri from './index.js'
+import process from 'bare-process'
 
 const [op, ...args] = process.argv.slice(2)
 

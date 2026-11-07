@@ -86,7 +86,7 @@ export function assemble ({ from, swarm, into, log = () => {} }) {
 
 const executable = f => { try { return (statSync(f).mode & 0o111) !== 0 && statSync(f).isFile() } catch { return false } }
 
-// A set (test/<set>.json): { description, modules: true|false, tests: [...] }.
+// A set (test/<set>.json): { description, modules: true|false, swarms: true|false, tests: [...] }.
 // Without one: everything that runs in place. A test with a `boot` is booted
 // (it needs a work folder: ./haicc boot <repo>/test/<test>): listed, not run here.
 export function testSet (dir, set) {
@@ -127,7 +127,7 @@ export function testPackage (dir, { log = () => {}, env: extra = {}, timeout = 1
   }
   // The swarms': each executable in swarms/<swarm>/test/, in the swarm's folder.
   const swarms = join(dir, 'swarms')
-  if (!chosen && existsSync(swarms)) for (const s of readdirSync(swarms).sort()) {
+  if ((!chosen || chosen.swarms) && existsSync(swarms)) for (const s of readdirSync(swarms).sort()) {
     const t = join(swarms, s, 'test')
     if (existsSync(t)) for (const f of readdirSync(t).sort()) if (executable(join(t, f))) run(`swarms/${s}/test/${f}`, join(t, f), [], join(swarms, s))
   }

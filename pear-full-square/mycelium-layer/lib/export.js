@@ -3,7 +3,7 @@
 // repository takes it in itself, with importBundle: nobody writes into
 // another repository.
 
-import fs from 'node:fs'
+import fs from 'bare-fs'
 import { readBundle, writeBundle, writer } from '../../mycelium-git/index.js'
 
 // backend: the repository; layer: the branch; file: the bundle to write.

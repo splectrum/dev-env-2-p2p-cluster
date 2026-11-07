@@ -6,7 +6,7 @@
 // delta-compressed objects native git's bundles hold, and writes every
 // object as a loose object.
 
-import { createHash } from 'node:crypto'
+import { createHash } from 'bare-crypto'
 import pako from 'pako'
 
 const TYPES = { commit: 1, tree: 2, blob: 3, tag: 4 }

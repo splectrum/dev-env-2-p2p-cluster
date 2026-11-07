@@ -56,6 +56,12 @@ copy only, and the package's hash says so.
   tests = 3/4 pass` (the package manager reads both forms).
 - `bare-fetch` does not go through an HTTPS proxy: downloads stay in the
   shell.
+- `readdirSync` lists a folder in directory order, unsorted (Node.js's
+  comes sorted): code that relies on the order sorts.
+- `brittle`'s `t.exception` rethrows native errors (`TypeError`, ...) as
+  bugs; `t.exception.all` when one is expected.
+- Bare 1.36 resolves `node:` imports itself; ours use Bare's own modules
+  all the same (rule 26).
 - npm leaves the runtime without its exec bit: the package writer and the
   release set it on their copies, never on npm's.
 

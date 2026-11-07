@@ -39,11 +39,12 @@ lifecycle, so the package is the environment (the human).
     package under test), `HAICC_RUN` (its run); **its result its exit
     code**; then its teardown, on completion (`--keep`: left to look at).
 - **Sets**: `test/<set>.json` lists its tests in order, and whether the
-  modules' own tests are in it. `validation` (the package as it is, nothing
+  modules' own tests (`modules`) and the swarms' (`swarms`) are in it. `validation` (the package as it is, nothing
   started: what an install and a node's warm boot run) and `full`
   (everything: before a release, and on a downloaded release). A test's
   `categories` and the sets agree (the `sets` test checks it).
-- **Bottom up**: the modules' own tests, then the swarms' (agreed), then
+- **Bottom up**: the modules' own tests, then the swarms'
+  (`swarms/<swarm>/test/`: each executable, in the swarm's folder), then
   the package's named tests.
 - **Needs and destroys**: a test that needs what the host does not have is
   skipped and said, never passed; one that changes what is outside its run

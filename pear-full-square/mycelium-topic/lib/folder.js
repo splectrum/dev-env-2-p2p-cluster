@@ -6,8 +6,9 @@
 //   remove(path)       a file or a directory, recursively
 //   isDirectory(path)
 
-import fs from 'node:fs'
-import { join, dirname } from 'node:path'
+import fs from 'bare-fs'
+import { join, dirname } from 'bare-path'
+import process from 'bare-process'
 
 export function folderStorage (root) {
   const at = p => join(root, ...p.split('/').filter(Boolean))

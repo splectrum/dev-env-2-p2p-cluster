@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bare
 // Command line for mycelium-layer, the test entry point.
 //   node cli.js [--engine=E] [--from-engine=E] import <repo> <from-repo> <branch> [as]
 //   node cli.js [--engine=E] deploy <repo> <layer> <folder>
@@ -12,7 +12,7 @@
 // Prints the outcome as one JSON line: {"result": ...}, or {"error": "..."}
 // with exit 1. Branch names come in from outside: validated here.
 
-import process from 'node:process'
+import process from 'bare-process'
 import { validate } from '../mycelium-uri/index.js'
 import { nativeBackend, isogitBackend, p2pgitBackend } from '../mycelium-git/index.js'
 import { importLayer, exportLayer, importBundle, deploy, extract, intake } from './index.js'

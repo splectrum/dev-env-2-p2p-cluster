@@ -33,10 +33,19 @@ const platform = () => `${os.platform()}-${os.arch()}`
 export const repoOf = (name, def) => def.repo || `base-package-${name}`
 const entry = m => typeof m === 'string' ? { path: m, from: m } : m
 
-// Our modules, by the name they are imported by: every module any
-// definition names (a module from elsewhere: { path, from }).
+// Our modules, by the name they are imported by: every module of this
+// repository (its npm workspaces, and splectral/'s components), and any a
+// definition names from elsewhere ({ path, from }).
 export function oursOf (dev, defs) {
   const ours = new Map()
+  const root = existsSync(join(dev, 'package.json')) ? readJson(join(dev, 'package.json')) : {}
+  const folders = [...(root.workspaces || [])]
+  for (const org of ['splectral']) if (existsSync(join(dev, org))) for (const c of readdirSync(join(dev, org)).sort()) folders.push(`${org}/${c}`)
+  for (const f of folders) {
+    if (!existsSync(join(dev, f, 'package.json'))) continue
+    const pj = readJson(join(dev, f, 'package.json'))
+    ours.set(pj.name || f.split('/')[1], { path: f, dir: join(dev, f) })
+  }
   for (const def of Object.values(defs.packages)) {
     for (const m of (def.modules || []).map(entry)) {
       const pj = readJson(join(dev, m.from, 'package.json'))
@@ -103,9 +112,17 @@ function stage (dev, defs, name, ours, lock, dir, out) {
   // The hand-written parts: haiccing/<repo>/ as it is.
   const hand = join(dev, ORG, repo)
   if (existsSync(hand)) for (const n of readdirSync(hand)) if (!['package.json', 'modules', '.git'].includes(n)) copy(join(hand, n), join(dir, n))
-  // The package's own named test, written here: every module loads.
-  copy(join(here, 'modules-load'), join(dir, 'test', 'modules-load'))
-  chmodSync(join(dir, 'test', 'modules-load', 'test'), 0o755)
+  // The package's own named tests, written here (every package has them):
+  // every module loads; the sets and the tests' categories agree.
+  for (const t of ['modules-load', 'sets']) {
+    copy(join(here, t), join(dir, 'test', t))
+    chmodSync(join(dir, 'test', t, 'test'), 0o755)
+  }
+  // Its test sets: its own, else the defaults (every package has them).
+  if (!readdirSync(join(dir, 'test')).some(n => n.endsWith('.json'))) {
+    writeJson(join(dir, 'test', 'validation.json'), { description: 'The package as it is, nothing started.', modules: false, swarms: true, tests: ['modules-load', 'sets'] })
+    writeJson(join(dir, 'test', 'full.json'), { description: 'Everything that runs in place: the modules\' own tests, the swarms\', the package\'s.', modules: true, swarms: true, tests: ['modules-load', 'sets'] })
+  }
   // Bare's runtime, when the package carries it: executable (npm keeps no exec bit).
   const rt = join(dir, 'modules', 'node_modules', `bare-runtime-${platform()}`, 'bin', 'bare')
   if (existsSync(rt)) chmodSync(rt, 0o755)

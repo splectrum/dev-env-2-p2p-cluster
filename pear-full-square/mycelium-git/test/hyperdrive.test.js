@@ -4,10 +4,10 @@
 // other engine. Corestore and Hyperdrive are development dependencies, for
 // this test only: storage on Hypercore belongs below mycelium.
 
-import { after } from 'node:test'
-import { existsSync, mkdtempSync } from 'node:fs'
-import { join } from 'node:path'
-import { tmpdir } from 'node:os'
+import test from 'brittle'
+import { existsSync, mkdtempSync } from 'bare-fs'
+import { join } from 'bare-path'
+import { tmpdir } from 'bare-os'
 import Corestore from 'corestore'
 import Hyperdrive from 'hyperdrive'
 import { createFs } from 'p2p-git/hyperdrive-fs'
@@ -15,7 +15,6 @@ import { contract } from './contract.js'
 import { nativeBackend, p2pgitBackend, transfer } from '../index.js'
 
 const open = []
-after(async () => { for (const s of open) await s.close() })
 
 async function onHyperdrive (dir) {
   const store = new Corestore(mkdtempSync(join(tmpdir(), 'corestore-')))
@@ -36,3 +35,6 @@ async function onHyperdrive (dir) {
 }
 
 contract('p2p-git on Hyperdrive', onHyperdrive)
+
+// Last, the stores this file opened, closed.
+test('its stores closed', async (t) => { for (const s of open) await s.close(); t.pass() })

@@ -32,6 +32,10 @@
         "",
         "Tested by its own tests, on your machine: after the boot, `./haicc boot base-package-haicc/test` (the full set: the modules' tests, the package's, and the platform test, which sets up a fresh install inside its run and works it through every level), or `--set=validation` (the package as it is, nothing started)."
       ]
+    },
+    "swarm-three-nodes": {
+      "repo": "base-swarm-three-nodes",
+      "description": "A configured swarm, no application: a master and two nodes on one host, the p2p node as its codebase. On Bare."
     }
   }
 }

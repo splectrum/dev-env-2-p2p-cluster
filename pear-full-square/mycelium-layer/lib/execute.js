@@ -15,9 +15,9 @@
 // The response is main:responses/<name>/: the handler's files, unit.json,
 // and response.md. pending/default is not written: it holds the requests.
 
-import fs from 'node:fs'
-import { join } from 'node:path'
-import { tmpdir } from 'node:os'
+import fs from 'bare-fs'
+import { join } from 'bare-path'
+import { tmpdir } from 'bare-os'
 import { openRepo, writer } from '../../mycelium-git/index.js'
 
 const byName = requests => [...requests].sort((a, b) => a.name.localeCompare(b.name))
@@ -71,7 +71,7 @@ async function execute (backend, capability, author, environment, handle, reques
     const w = writer(backend)
     await w.merge('main', 'execute/main', 'Merge main into execute/main', { author, fastForward: true })
     const c = await w.change('execute/main')
-    for (const file of fs.readdirSync(out)) await c.put(`/responses/${name}/${file}`, fs.readFileSync(join(out, file)))
+    for (const file of fs.readdirSync(out).sort()) await c.put(`/responses/${name}/${file}`, fs.readFileSync(join(out, file)))
     await c.commit(`Respond to ${name}\n\n${outcome}\n\n${ref}\n`, { author })
     await w.merge('execute/main', 'main', `Merge execute/main: response to ${name}\n\n${ref}\n`, { author })
   } finally {

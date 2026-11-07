@@ -3,7 +3,7 @@
 // p2p-mrepo repository through mycelium-git's CLI with this module as its
 // engine, on Node and on Bare.
 //   node test/variants.js
-import { readFileSync, writeFileSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'bare-fs'
 
 const here = new URL('.', import.meta.url)
 const base = readFileSync(new URL('../../mycelium-git/test/commands.txt', here), 'utf8')
