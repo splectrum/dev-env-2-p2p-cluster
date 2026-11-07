@@ -11,7 +11,10 @@ export default async function replay (cfg, platform) {
   const all = []
   for (const topic of topics) for (const record of await platform.readAll(topic)) all.push({ topic, record })
   // Time order across topics; within a topic, offset order (stable sort).
-  all.sort((a, b) => (a.record.value?.time ?? 0) - (b.record.value?.time ?? 0))
+  // At the same millisecond a scenario's own record (its message) comes
+  // first: it announces what follows (a step's say, then its action's effect).
+  const told = x => (x.topic.holds === 'splectral/world' ? 0 : 1)
+  all.sort((a, b) => ((a.record.value?.time ?? 0) - (b.record.value?.time ?? 0)) || (told(a) - told(b)))
   const speed = cfg.speed ?? 10
   const maxGap = cfg.maxGap ?? 2000
   let stopped = false
