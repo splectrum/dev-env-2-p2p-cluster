@@ -141,7 +141,8 @@ PATH: haicc's full set 7 passed; `./haicc boot base-swarm-three-nodes/test`
 `steps/phase-3/3-demos-again/1-p2p-mycelium/`. **For the human**: create
 `haiccing/base-swarm-three-nodes`. **For the local agent, with the human's
 OK**: the tenth release (`publish.sh` now publishes both packages; `npm
-install` first), tested from GitHub: haicc's full set (7 passed), then
+install` first), tested from GitHub: haicc's full set (6 passed since
+part 2: the package manager's modules moved to `base-package-pkgm`), then
 `./haicc boot base-swarm-three-nodes/test` (16 passed) and `--set=
 validation` (3 passed). Then part 2.
 
