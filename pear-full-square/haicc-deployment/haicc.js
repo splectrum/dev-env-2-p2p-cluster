@@ -97,7 +97,7 @@ try {
     if (!c?.code) { console.log('  its container: none (the swarm has no codebase), nothing to start'); process.exit(0) }
     const img = ensureImage(dirname(process.execPath))
     if (!img.ok) { console.log(`  its image ${img.tag}: could not be built: ${img.said}`); process.exit(1) }
-    console.log(`  its image: ${img.tag}${img.built ? ', built' : ''} (Bare's ${basename(img.runtime)}; the code mounted, not in it)`)
+    console.log(`  its image: ${img.tag}${img.built ? ', built' : ''} (Bare's runtime; the code mounted, not in it)`)
     console.log(`  its container ${c.container} (${c.role}, ${c.ip} on ${c.network}): the swarm's codebase from ${c.code}, read-only`)
     const r = await startContainer(c, work, img.tag)
     console.log(`  ${r.ok ? 'ok    ' : 'FAILED'} the node ${r.said}${r.ok ? ` (${(r.ms / 1000).toFixed(1)} s)` : ''}`)

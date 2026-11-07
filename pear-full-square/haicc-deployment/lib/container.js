@@ -3,7 +3,7 @@
 // else.
 //   containerArgs(config, nodeDir, image)   docker run's arguments (pure)
 //   ensureImage(runtimeDir)                 the image: a plain Debian base and Bare's
-//                                           stripped runtime (the setup's bare/), no code
+//                                           runtime (the setup's bare/, stripped), no code
 //   startContainer(config, nodeDir, say)    started, then waited on until the node says
 //                                           node-started: { ok, owner, dht, said }
 //   stopContainer(config)                   stopped (SIGTERM, then removed)
@@ -40,8 +40,7 @@ export function containerArgs (config, nodeDir, image) {
 
 // The image, built here once per runtime: tagged by the runtime's hash.
 export function ensureImage (runtimeDir) {
-  const stripped = join(runtimeDir, 'bare-stripped')
-  const runtime = existsSync(stripped) ? stripped : join(runtimeDir, 'bare')
+  const runtime = join(runtimeDir, 'bare')
   const hash = crypto.createHash('sha256').update(readFileSync(runtime)).digest('hex').slice(0, 12)
   const tag = `haicc-node:${hash}`
   if (docker('image', 'inspect', tag).ok) return { ok: true, tag, built: false, runtime }

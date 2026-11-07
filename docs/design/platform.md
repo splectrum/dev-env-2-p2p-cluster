@@ -91,8 +91,8 @@ its config alone:
   address, its code (the master's `packages/<package>/`) and, for a node
   that is not the master, the master's key and DHT (from the master's
   config, written there when it started).
-- **The image**: a plain Debian base and Bare's **stripped** runtime (the
-  setup's `bare/bare-stripped`), built locally, tagged by the runtime's
+- **The image**: a plain Debian base and Bare's runtime (the setup's
+  `bare/bare`, stripped), built locally, tagged by the runtime's
   hash; no code in it.
 - **The code**: the master's `packages/<package>/`, mounted read-only at
   `/app` in every node's container on its host (other hosts: replicated,

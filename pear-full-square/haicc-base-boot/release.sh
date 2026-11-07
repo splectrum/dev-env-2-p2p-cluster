@@ -2,16 +2,16 @@
 # The setup: a release of base-package-haicc as one self-extracting file
 # (sh and tar only), extracting a work folder: ./boot and ./shutdown (the
 # cold pair, naming this setup), bare/ (Bare's runtime: carried by the setup,
-# not by the package's git; pinned by its sha256, checked once extracted:
-# bare, the full one, for the root; bare-stripped, without its debug
-# information, for the nodes' containers),
+# not by the package's git; pinned by its sha256, checked once extracted;
+# stripped of its debug information: the root and the nodes' containers run
+# it alike),
 # haiccing/sources, and the platform's pair as a bootstrap:
 # haiccing/base-package-haicc/ and haiccing/base-package-pkgm/ (beside it, as
 # written); the root's boot refreshes both from the sources.
 #   sh release.sh <base-package-haicc, as written> <out file> [<Bare's runtime>]
 # The runtime: the one named, else the `bare` on the PATH (in a work folder,
-# the one it runs on); its stripped one beside it (bare-stripped), else made
-# here (strip).
+# the one it runs on, stripped already); stripped here when `strip` is
+# there (stripping a stripped one changes nothing).
 set -eu
 pkg=$(cd "$1" && pwd)
 out=$2
@@ -26,14 +26,12 @@ pkgm=$(dirname "$pkg")/base-package-pkgm
 [ -f "$pkgm/package.json" ] || { echo "release.sh: no base-package-pkgm beside $pkg (the platform is a pair)"; exit 1; }
 cp -a "$pkg" "$tmp/haiccing/$name" && rm -rf "$tmp/haiccing/$name/.git"
 cp -a "$pkgm" "$tmp/haiccing/base-package-pkgm" && rm -rf "$tmp/haiccing/base-package-pkgm/.git"
-mkdir "$tmp/bare" && cp "$runtime" "$tmp/bare/bare" && chmod 755 "$tmp/bare/bare"
+mkdir "$tmp/bare"
+# Said in the setup: the published version, and whether stripped here.
+if command -v strip >/dev/null 2>&1 && strip -o "$tmp/bare/bare" "$runtime" 2>/dev/null; then how=stripped; else cp "$runtime" "$tmp/bare/bare"; how='as given'; fi
+chmod 755 "$tmp/bare/bare"
 runtime_version=$("$tmp/bare/bare" --version)
 runtime_sum=$(sha256sum "$tmp/bare/bare" | cut -d' ' -f1)
-if [ -f "$(dirname "$runtime")/bare-stripped" ]; then cp "$(dirname "$runtime")/bare-stripped" "$tmp/bare/bare-stripped"
-elif command -v strip >/dev/null 2>&1; then strip -o "$tmp/bare/bare-stripped" "$tmp/bare/bare"
-else echo "release.sh: no stripped runtime beside $runtime, and no strip here to make one"; exit 1; fi
-chmod 755 "$tmp/bare/bare-stripped"
-stripped_sum=$(sha256sum "$tmp/bare/bare-stripped" | cut -d' ' -f1)
 # The work folder's cold pair, at its top: ./boot (set up from haiccing/,
 # then ./haicc boot) and ./shutdown (everything removed back to haiccing/).
 cat > "$tmp/boot" <<EOS
@@ -56,7 +54,7 @@ github haiccing
 EOS
 cat > "$out" <<EOS
 #!/bin/sh
-# haicc-setup: the setup $name ($hash, boot $version, Bare $runtime_version), self-extracting.
+# haicc-setup: the setup $name ($hash, boot $version, Bare $runtime_version, $how), self-extracting.
 #   sh haicc-setup.sh [<work folder>] [--sources=folder:<path>|github:<org>]...
 # Extracts <work folder>/: boot, shutdown, bare/ (Bare's runtime), haiccing/ (sources, $name, base-package-pkgm); then:
 #   <work folder>/boot
@@ -94,7 +92,7 @@ fi
 line=\$(awk '/^__PAYLOAD__\$/ { print NR + 1; exit }' "\$0")
 tail -n +"\$line" "\$0" | tar -xzf - -C "\$work"
 # Bare's runtime, as this setup pinned it.
-[ "\$(sha256sum "\$work/bare/bare" | cut -d' ' -f1)" = "$runtime_sum" ] && [ "\$(sha256sum "\$work/bare/bare-stripped" | cut -d' ' -f1)" = "$stripped_sum" ] || { say "Bare's runtime in \$work/bare is not the one this setup carries (sha256): the setup file is damaged; download it again"; end 1; }
+[ "\$(sha256sum "\$work/bare/bare" | cut -d' ' -f1)" = "$runtime_sum" ] || { say "Bare's runtime in \$work/bare is not the one this setup carries (sha256): the setup file is damaged; download it again"; end 1; }
 if [ -n "\$sources" ]; then { echo "# Where this work folder's repositories come from, in order."; printf '%s' "\$sources"; } > "\$work/haiccing/sources"; fi
 say "set up: \$work/haiccing ($name $hash); sources: \$(grep -v '^#' "\$work/haiccing/sources" | tr '\\n' ';' | sed 's/;\$//')"
 say "next: \$work/boot"
@@ -103,4 +101,4 @@ __PAYLOAD__
 EOS
 tar -czf - -C "$tmp" haiccing bare boot shutdown >> "$out"
 chmod 755 "$out"
-echo "$out: $name $hash, Bare $runtime_version, $(wc -c < "$out") bytes"
+echo "$out: $name $hash, Bare $runtime_version ($how), $(wc -c < "$out") bytes"

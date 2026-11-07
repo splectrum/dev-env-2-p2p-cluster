@@ -126,9 +126,8 @@ swarm, labelled with the install. From a fresh release, Node.js off the
 PATH: haicc full 6 (24 platform steps), `base-swarm-three-nodes` full 17
 (its deploy test 13 steps: three containers, the nodes registered with the
 master, a node's key kept across its shutdown and boot, nothing left in
-Docker after teardown), validation 3. The setup 66 MB (both runtimes);
-**open with the human**: carry the stripped runtime only (the setup about
-39 MB). **For the local agent, with the human's OK**: the tenth release as
+Docker after teardown), validation 3. Then the stripped runtime only, at
+the root too (the human): the setup about 39 MB. **For the local agent, with the human's OK**: the tenth release as
 for part 2, and by hand `./haicc boot base-swarm-three-nodes`, `docker ps`,
 `docker logs <master's container>`, `./haicc teardown three-nodes`. Then
 part 4 (Splectral on Bare).
