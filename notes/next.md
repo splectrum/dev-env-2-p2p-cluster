@@ -122,14 +122,14 @@ assembled into the master's repository).
 mixed, said); each swarm made from its configuration (its `.json` files
 copied, its entry in `swarms.json`), then booted; again: from its own copy.
 The master's build assembles the swarm's codebase into
-`<swarm>/master/repository/` (every build; the human: the repository is
-the master's). Strict is an option (the human): by default nodes are added
+`<swarm>/master/packages/<package>/` (every build; the human: the
+master's, and the same name for the same kind of folder at every level). Strict is an option (the human): by default nodes are added
 (`--role`) and torn down by hand; `--strict` refuses that. **For the local
 agent, with the human's OK: the tenth release** (`npm install` first;
 `publish.sh` publishes the three), tested from GitHub: haicc full,
 `./haicc boot base-swarm-three-nodes/test`, `--set=validation`; then by
 hand: `./haicc boot base-swarm-three-nodes`, `./haicc list`,
-`ls three-nodes/master/repository`, `./haicc teardown three-nodes`. Then
+`ls three-nodes/master/packages`, `./haicc teardown three-nodes`. Then
 part 3 (containers, `host.json`, the managers).
 
 **Agreed (2026-11-07), the start of part 2: the platform as two packages,
