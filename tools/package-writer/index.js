@@ -72,7 +72,8 @@ export function startOf (dev, defs, name) {
 
 // Third-party code as shipped: no tests, no .bin, this platform's prebuilds only.
 const skipThird = (r, base) => base === 'test' || base === '.bin' || (r.split('/').at(-2) === 'prebuilds' && base !== platform())
-const skipOurs = (r, base) => base === 'node_modules' || base === '.git' || base === 'record'
+// Not a module's: its dependencies, git, records, and a log/ a run there left.
+const skipOurs = (r, base) => base === 'node_modules' || base === '.git' || base === 'record' || r === 'log'
 
 function stage (dev, defs, name, ours, lock, dir) {
   const def = defs.packages[name]
