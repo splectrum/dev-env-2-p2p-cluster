@@ -81,6 +81,11 @@ base-package-haicc/test` (expect 7 passed; the setup is now 36 MB), and
 `steps/phase-3/2-package-structure/3-bare/local-run.md`. Then the package
 manager as the second package, on Bare from the start.
 
+**The human's manual tests, from now on (2026-11-07): from a local folder**, "as
+my network connection is not good enough": the setup the local agent built
+(`~/haiccing-publish/haicc-setup.sh`), not a download. The local agent still runs
+the published release from GitHub.
+
 **Published: the eighth release (2026-11-07), the human's word.**
 `setup-ab3193778713`, Bare v1.36.0, latest; `base-package-haicc` `969a4cd`;
 `haiccing`'s profile `3728924`. From GitHub: 7 passed, 2 passed. Record:
