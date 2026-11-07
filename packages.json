@@ -48,6 +48,10 @@
     "swarm-three-nodes": {
       "repo": "base-swarm-three-nodes",
       "description": "A configured swarm, no application: a master and two nodes on one host, the p2p node as its codebase. On Bare."
+    },
+    "demo-liveness": {
+      "repo": "base-demo-liveness",
+      "description": "A demo: a node goes quiet. One host, the swarm hosts (master, node-1) in containers, its Splectral server and the liveness scenario. On Bare."
     }
   }
 }
