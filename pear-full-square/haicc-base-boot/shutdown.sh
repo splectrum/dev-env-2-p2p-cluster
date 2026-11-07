@@ -18,10 +18,10 @@ log=$(ls "$work/log" | grep -E '^[0-9]{8}T[0-9]{6}Z\.log$' | sort | tail -1)
 if [ -z "$log" ] || [ "$(wc -c < "$work/log/$log")" -ge 10240 ]; then log=$(date -u +%Y%m%dT%H%M%SZ).log; fi
 log=$work/log/$log
 t0=$(date +%s)
-echo "== $(date -u +%Y-%m-%dT%H:%M:%SZ) ./shutdown $*  (in $(pwd))" >> "$log"
+echo "== $(date -u +%Y-%m-%dT%H:%M:%SZ) ./shutdown $*  (in $(pwd))" | tee -a "$log"
 {
   echo "The work folder, cold: no ./haicc here (the root never finished booting); removing what is left: packages/, swarms.json"
   rm -rf "$work/packages" "$work/swarms.json" && echo "  removed packages/, swarms.json"
   echo "Kept: haiccing/, log/, nodejs/; ./boot sets it up again"
 } 2>&1 | tee -a "$log"
-echo "== exit 0, $(( $(date +%s) - t0 )) s" >> "$log"
+echo "== exit 0, $(( $(date +%s) - t0 )) s" | tee -a "$log"
