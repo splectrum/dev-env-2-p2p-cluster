@@ -116,6 +116,26 @@ untested here). From a fresh release, Node.js off the PATH: haicc's full set
 through the root (its swarm made from its configuration, its codebase
 assembled into the master's repository).
 
+**Part 2 built (2026-11-07): a package deployed through the root.**
+`./haicc boot <repo>[/<swarm>] [--from=<folder>] [--as=<name>]`: the
+package checked intact (from `--from` without a hash: mixed, said); each
+swarm made from its configuration (its `.json` files copied, its codebase
+assembled into `<swarm>/repository/`, its entry in `swarms.json`), then
+booted; again: from its own copy. A swarm's nodes are its package's (no
+`--role`, no node added or torn down by hand). The repository sits in the
+swarm's folder, not the master's (a swarm's shutdown removes its nodes'
+folders): raised with the human. From a fresh release, Node.js off the PATH:
+haicc's full set 6 passed (the platform test 24 steps: its swarm from its
+own configuration, `--from`), `base-swarm-three-nodes` full 17 passed (its
+new `deploy` test: 9 steps, a fresh root inside its run, the package
+deployed, three nodes up, `--as`, teardown), validation 3 passed. **For the
+local agent, with the human's OK: the tenth release** (`npm install` first;
+`publish.sh` publishes the three), tested from GitHub: haicc full (6),
+`./haicc boot base-swarm-three-nodes/test` (17), `--set=validation` (3);
+then by hand: `./haicc boot base-swarm-three-nodes`, `./haicc list`,
+`ls three-nodes/repository`, `./haicc teardown three-nodes`. Then part 3
+(containers, `host.json`, the managers).
+
 **Agreed (2026-11-07), the start of part 2: the platform as two packages,
 refreshed from the sources at every root boot.** `docs/design/platform.md`:
 `base-package-pkgm` the package manager's own package again (a concern of
